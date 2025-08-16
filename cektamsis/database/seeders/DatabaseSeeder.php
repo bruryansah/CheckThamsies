@@ -2,9 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Enums\UserRole;
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -14,10 +16,59 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        User::create([
+            'name' => 'Ragil',
+            'email' => 'ragil@gmail.com',
+            'role' => UserRole::Admin,
+            'password' => Hash::make('1234578'),
+        ]);
+        User::create([
+            'name' => 'Ki Ali',
+            'email' => 'kiali@gmail.com',
+            'role' => UserRole::Guru,
+            'password' => Hash::make('1234578'),
+        ]);
+        User::create([
+            'name' => 'Ki Juli',
+            'email' => 'kijuli@gmail.com',
+            'role' => UserRole::Guru,
+            'password' => Hash::make('1234578'),
+        ]);
+        User::create([
+            'name' => 'Ki Jalu',
+            'email' => 'kijalu@gmail.com',
+            'role' => UserRole::Guru,
+            'password' => Hash::make('1234578'),
+        ]);
+        User::create([
+            'name' => 'Ki Dzul',
+            'email' => 'kidzul@gmail.com',
+            'role' => UserRole::Guru,
+            'password' => Hash::make('1234578'),
+        ]);
+        User::create([
+            'name' => 'tubagus',
+            'email' => 'agus@gmail.com',
+            'role' => UserRole::Siswa,
+            'password' => Hash::make('1234578'),
+        ]);
+        User::create([
+            'name' => 'Ryan',
+            'email' => 'ryan@gmail.com',
+            'role' => UserRole::Siswa,
+            'password' => Hash::make('1234578'),
+        ]);
+        User::create([
+            'name' => 'Kenzo',
+            'email' => 'kenzo@gmail.com',
+            'role' => UserRole::Siswa,
+            'password' => Hash::make('1234578'),
+        ]);
+        User::create([
+            'name' => 'brury',
+            'email' => 'brury@gmail.com',
+            'role' => UserRole::Siswa,
+            'password' => Hash::make('1234578'),
         ]);
     }
 }
