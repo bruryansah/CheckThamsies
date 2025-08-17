@@ -41,15 +41,15 @@
             icon: GraduationCap,
             children: [{
                     title: 'X RPL',
-                    href: '/xrpl',
+                    href: '/siswax',
                 },
                 {
                     title: 'XI RPL',
-                    href: '/xirpl',
+                    href: '/siswaxi',
                 },
                 {
                     title: 'XII RPL',
-                    href: '/xiirpl',
+                    href: '/siswaxii',
                 },
             ],
         },

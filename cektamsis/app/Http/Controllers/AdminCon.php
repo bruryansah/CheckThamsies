@@ -12,7 +12,12 @@ class AdminCon extends Controller
     // Admin Section Start
     public function index()
     {
-        $guru = DB::table('guru')->join('kelas', 'guru.id_kelas', '=', 'kelas.id_kelas')->join('mapel', 'guru.id_mapel', '=', 'mapel.id_mapel')->select('guru.id_guru', 'guru.nama', 'guru.email', 'kelas.nama_kelas as kelas', 'mapel.nama_mapel as mapel')->get();
+        $guru = DB::table('guru')
+        ->join('kelas', 'guru.id_kelas', '=', 'kelas.id_kelas')
+        ->join('mapel', 'guru.id_mapel', '=', 'mapel.id_mapel')
+        ->select('guru.id_guru', 'guru.nama', 'guru.email',
+        'kelas.nama_kelas as kelas',
+        'mapel.nama_mapel as mapel')->get();
         return Inertia::render('guru', ['guru' => $guru]);
     }
 
@@ -96,6 +101,24 @@ class AdminCon extends Controller
         // passing data pegawai yang didapat ke view edit.blade.php
         return redirect('/guru');
     }
-
     // Admin Section End
+
+    // Siswa X Section Start
+public function siswax()
+{
+    $siswax = DB::table('siswa')
+        ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
+        ->join('jurusan', 'siswa.id_jurusan', '=', 'jurusan.id_jurusan')
+        ->select(
+            'siswa.id_siswa',
+            'siswa.nama',
+            'siswa.email',
+            'kelas.nama_kelas as kelas',
+            'jurusan.nama_jurusan as jurusan'
+        )
+        ->where('kelas.nama_kelas', '=', 'X RPL') // Filter hanya kelas X RPL
+        ->get();
+
+    return Inertia::render('xrpl', ['siswa' => $siswax]);
+}
 }

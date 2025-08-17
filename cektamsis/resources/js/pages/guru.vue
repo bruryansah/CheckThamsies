@@ -84,7 +84,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
                     <table class="min-w-full divide-y divide-zinc-800">
                         <thead class="bg-zinc-800">
                             <tr>
-                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Id Guru
+                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Id Siswa
                                 </th>
                                 <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Nama
                                 </th>
@@ -92,7 +92,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
                                 </th>
                                 <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Kelas
                                 </th>
-                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Mapel
+                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Jurusan
                                 </th>
                                 <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Aksi
                                 </th>
