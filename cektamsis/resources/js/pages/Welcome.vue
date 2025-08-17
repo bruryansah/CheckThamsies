@@ -1,4 +1,3 @@
-
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
 import { onMounted, ref } from 'vue';
@@ -72,13 +71,8 @@ onMounted(() => {
                         </Link>
                     </li>
                     <li>
-                        <Link href="/fitur" :class="{ active: activeMenu === 'laporan' }" @click="setActiveMenu('laporan')">
-                            <span class="nav-icon">📊</span> Fitur
-                        </Link>
-                    </li>
-                    <li>
                         <Link href="/kontak" :class="{ active: activeMenu === 'siswa' }" @click="setActiveMenu('siswa')">
-                            <span class="nav-icon">👥</span> Kontak
+                            <span class="nav-icon">📥</span> Kontak
                         </Link>
                     </li>
                 </ul>
@@ -152,17 +146,62 @@ onMounted(() => {
                         alt="Logo SMK Tamansiswa 2 Jakarta"
                         class="footer-logo"
                     />
-                    <div class="footer-info">
-                        <span class="footer-text">© 2024 Sistem Absensi SMK TAMANSISWA 2 JAKARTA</span>
-                        <span class="footer-subtitle">"Teknologi untuk Pendidikan yang Lebih Baik"</span>
-                    </div>
+                    <span class="footer-text">© 2024 SMK TAMANSISWA 2 JAKARTA | RPL</span>
                 </div>
                 <div class="footer-right">
-                    <div class="footer-links">
-                        <Link href="/help" class="footer-link">Bantuan</Link>
-                        <Link href="/privacy" class="footer-link">Kebijakan</Link>
-                        <Link href="/kontak" class="footer-link">Kontak</Link>
-                    </div>
+                    <a href="https://facebook.com/smktamansiswa2jakarta" class="social-link" target="_blank" title="Facebook">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="social-icon"
+                        >
+                            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+                        </svg>
+                    </a>
+                    <a href="https://instagram.com/smktamansiswa2jakarta" class="social-link" target="_blank" title="Instagram">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="social-icon"
+                        >
+                            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                        </svg>
+                    </a>
+                    <a href="https://youtube.com/@smktamansiswa2jakarta375?si=XuMQeADTidosYWLq" class="social-link" target="_blank" title="YouTube">
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="social-icon"
+                        >
+                            <path
+                                d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"
+                            ></path>
+                            <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon>
+                        </svg>
+                    </a>
                 </div>
             </div>
         </footer>
@@ -960,18 +999,19 @@ onMounted(() => {
 }
 
 .footer-content {
-    max-width: 1400px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 32px 24px;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
+
 .footer-left {
     display: flex;
     align-items: center;
     gap: 16px;
-    flex: 1;
+    max-width: 70%;
 }
 
 .footer-logo {
@@ -982,44 +1022,40 @@ onMounted(() => {
     filter: brightness(0) invert(1);
 }
 
-.footer-info {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
 .footer-text {
     font-size: 14px;
     color: #e2e8f0;
-    font-weight: 600;
-}
-
-.footer-subtitle {
-    font-size: 12px;
-    color: #94a3b8;
-    font-style: italic;
+    line-height: 1.6;
 }
 
 .footer-right {
     display: flex;
-    align-items: center;
+    gap: 16px;
 }
 
-.footer-links {
-    display: flex;
-    gap: 24px;
-}
-
-.footer-link {
+.social-link {
     color: #cbd5e1;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 500;
-    transition: color 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
 }
 
-.footer-link:hover {
+.social-link:hover {
     color: white;
+    background: #2563eb;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
+}
+
+.social-icon {
+    width: 20px;
+    height: 20px;
 }
 
 /* Responsive Design */
