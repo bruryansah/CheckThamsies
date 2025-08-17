@@ -83,10 +83,10 @@ import AppLayout from '@/layouts/AppLayout.vue';
                                 <td class="px-6 py-4 text-center">{{ guru . mapel }}</td>
                                 <td class="px-6 py-4 text-center">
                                     <div class="flex justify-center gap-2">
-                                        <button
+                                        <TextLink :href="route('guru.edit', guru.id_guru)"
                                             class="rounded-lg bg-yellow-500 px-3 py-1 text-xs font-semibold text-white hover:bg-yellow-600">
                                             Edit
-                                        </button>
+                                        </TextLink>
                                         <button
                                             class="rounded-lg bg-red-600 px-3 py-1 text-xs font-semibold text-white hover:bg-red-700">
                                             Hapus

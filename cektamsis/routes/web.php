@@ -32,9 +32,9 @@ Route::get('/xiirpl', function () {
 });
 
 use App\Http\Controllers\AdminCon;
-    Route::get('/guru', [AdminCon::class, 'index']);
+    Route::get('/guru', [AdminCon::class, 'index'])->name('guru');
     Route::get('/guru/tambah', [AdminCon::class, 'tambah'])->name('guru.tambah');
-    Route::get('/guru/tambahstore', [AdminCon::class, 'store']);
+    Route::post('/guru/tambahstore', [AdminCon::class, 'store']);
 
 
 require __DIR__.'/settings.php';
