@@ -20,9 +20,7 @@ Route::get('/fitur', function () {
 Route::get('/kontak', function () {
     return Inertia::render('Kontak');
 });
-Route::get('/guru', function () {
-    return Inertia::render('guru');
-});
+
 Route::get('/xrpl', function () {
     return Inertia::render('xrpl');
 });
@@ -32,6 +30,12 @@ Route::get('/xirpl', function () {
 Route::get('/xiirpl', function () {
     return Inertia::render('xiirpl');
 });
+
+use App\Http\Controllers\AdminCon;
+    Route::get('/guru', [AdminCon::class, 'index']);
+    Route::get('/guru/tambah', [AdminCon::class, 'tambah'])->name('guru.tambah');
+    Route::get('/guru/tambahstore', [AdminCon::class, 'store']);
+
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';

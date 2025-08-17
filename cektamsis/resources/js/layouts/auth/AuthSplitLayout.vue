@@ -13,26 +13,37 @@ defineProps<{
 </script>
 
 <template>
-    <div class="relative grid h-dvh flex-col items-center justify-center px-8 sm:px-0 lg:max-w-none lg:grid-cols-2 lg:px-0">
-        <div class="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r">
-            <div class="absolute inset-0 bg-zinc-900" />
-            <Link :href="route('home')" class="relative z-20 flex items-center text-lg font-medium">
-                <AppLogoIcon class="mr-2 size-8 fill-current text-white" />
+    <div class="relative grid h-screen lg:grid-cols-2">
+        <!-- Left panel -->
+        <div class="relative hidden h-full flex-col bg-gradient-to-br from-blue-600 to-blue-800 p-10 text-white lg:flex">
+            <!-- Overlay gelap biar teks tetap terbaca -->
+            <div class="absolute inset-0 bg-black/40 rounded-none" />
+
+            <!-- Logo + Nama -->
+            <Link :href="route('home')" class="relative z-20 flex items-center text-lg font-semibold">
+                <AppLogoIcon class="mr-2 size-9 text-white" />
                 {{ name }}
             </Link>
-            <div v-if="quote" class="relative z-20 mt-auto">
-                <blockquote class="space-y-2">
-                    <p class="text-lg">&ldquo;{{ quote.message }}&rdquo;</p>
-                    <footer class="text-sm text-neutral-300">{{ quote.author }}</footer>
+
+            <!-- Quote -->
+            <div v-if="quote" class="relative z-20 mt-auto max-w-lg">
+                <blockquote class="space-y-3">
+                    <p class="text-2xl font-semibold leading-snug">&ldquo;{{ quote.message }}&rdquo;</p>
+                    <footer class="text-sm text-blue-100">— {{ quote.author }}</footer>
                 </blockquote>
             </div>
         </div>
-        <div class="lg:p-8">
-            <div class="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
-                <div class="flex flex-col space-y-2 text-center">
-                    <h1 class="text-xl font-medium tracking-tight" v-if="title">{{ title }}</h1>
-                    <p class="text-sm text-muted-foreground" v-if="description">{{ description }}</p>
+
+        <!-- Right panel (form) -->
+        <div class="flex items-center justify-center p-8 bg-white">
+            <div class="w-full max-w-md space-y-6">
+                <div class="text-center space-y-2">
+                    <h1 v-if="title" class="text-2xl font-bold text-gray-800">{{ title }}</h1>
+                    <p v-if="description" class="text-sm text-gray-500">{{ description }}</p>
+                    <p class="text-xs text-gray-400">SMK Tamansiswa 2 Jakarta</p>
                 </div>
+
+                <!-- Slot form -->
                 <slot />
             </div>
         </div>
