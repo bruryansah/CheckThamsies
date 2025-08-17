@@ -10,35 +10,47 @@
         Link
     } from '@inertiajs/vue3'
     import {
-        watch
+        watch,
+        onMounted
     } from 'vue'
 
+    // Breadcrumb
     const breadcrumbs: BreadcrumbItem[] = [{
             title: 'Dashboard',
             href: '/dashboard'
         },
         {
-            title: 'Tambah Data',
+            title: 'Edit Data Guru',
             href: '/guru'
         },
     ]
 
+    // Props dari controller
     const props = defineProps < {
+        guru: {
+            id_guru: number; // Pastikan menggunakan id_guru sesuai database
+            user_id: number;
+            nama: string;
+            email: string;
+            id_kelas: number;
+            id_mapel: number;
+        },
         users: {
             id: number;
             name: string;
             email: string;
-        } []
+        } [],
         kelas: {
             id_kelas: number;
             nama_kelas: string;
-        } []
+        } [],
         mapel: {
             id_mapel: number;
             nama_mapel: string;
-        } []
+        } [],
     } > ()
 
+    // Inertia form
     const form = useForm({
         user_id: '',
         nama: '',
@@ -47,36 +59,56 @@
         id_mapel: '',
     })
 
-    // 🔹 Hanya pantau perubahan email berdasarkan user yang dipilih
-    watch(() => form.user_id, (newId, oldId) => {
+    // Isi form dengan data guru saat component dimount
+    onMounted(() => {
+        if (props.guru) {
+            form.user_id = props.guru.user_id?.toString() || '';
+            form.nama = props.guru.nama || '';
+            form.email = props.guru.email || '';
+            form.id_kelas = props.guru.id_kelas?.toString() || '';
+            form.id_mapel = props.guru.id_mapel?.toString() || '';
+        }
+    });
+
+    // Auto isi nama & email kalau ganti user
+    watch(() => form.user_id, (newId) => {
         if (newId) {
-            // Cari user yang sesuai dengan id yang dipilih
             const selectedUser = props.users.find(user => user.id === Number(newId))
             if (selectedUser) {
-                // Hanya isi email otomatis, nama biarkan manual
+                form.nama = selectedUser.name
                 form.email = selectedUser.email
             }
-        } else {
-            // Kalau tidak pilih user, reset email saja
-            form.email = ''
         }
     })
+
+    // Function untuk submit form
+    const submitForm = () => {
+        form.put(`/guru/update/${props.guru.id_guru}`, {
+            onSuccess: () => {
+                // Optional: tambahkan notifikasi sukses
+                console.log('Data berhasil diperbarui!');
+            },
+            onError: (errors) => {
+                console.error('Error:', errors);
+            }
+        });
+    }
 </script>
 
 <template>
 
-    <Head title="Data Guru" />
+    <Head title="Edit Data Guru" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-6 p-6 overflow-x-auto">
             <div class="rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-lg max-w-2xl w-full mx-auto">
                 <!-- Header -->
                 <div class="flex items-center justify-between mb-6">
-                    <h1 class="text-xl font-semibold text-white">Form Data Guru</h1>
+                    <h1 class="text-xl font-semibold text-white">Form Edit Guru</h1>
                 </div>
 
                 <!-- Form -->
-                <form @submit.prevent="form.post('/guru/tambahstore')" class="space-y-5">
+                <form @submit.prevent="submitForm" class="space-y-5">
                     <!-- Id Users -->
                     <div>
                         <label class="block text-sm font-medium text-zinc-300 mb-1">Pilih User</label>
@@ -91,21 +123,21 @@
                             class="text-red-500 text-sm">{{ form.errors.user_id }}</span>
                     </div>
 
-                    <!-- Nama (Manual Input) -->
+                    <!-- Nama -->
                     <div>
                         <label class="block text-sm font-medium text-zinc-300 mb-1">Nama Guru</label>
                         <input v-model="form.nama" type="text"
-                            class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 focus:ring focus:ring-green-500 focus:outline-none"
-                            placeholder="Masukkan nama guru secara manual" />
+                            class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 focus:ring focus:ring-green-500 focus:outline-none disabled:opacity-50"
+                            placeholder="Masukkan nama guru" />
                         <span v-if="form.errors.nama" class="text-red-500 text-sm">{{ form.errors.nama }}</span>
                     </div>
 
-                    <!-- Email (Otomatis dari User) -->
+                    <!-- Email -->
                     <div>
                         <label class="block text-sm font-medium text-zinc-300 mb-1">Email</label>
                         <input v-model="form.email" type="email" :readonly="!!form.user_id"
                             class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 focus:ring focus:ring-green-500 focus:outline-none disabled:opacity-50"
-                            :placeholder="form.user_id ? 'Email otomatis dari user yang dipilih' : 'Pilih user terlebih dahulu'" />
+                            placeholder="Masukkan email guru" />
                         <span v-if="form.errors.email" class="text-red-500 text-sm">{{ form.errors.email }}</span>
                     </div>
 

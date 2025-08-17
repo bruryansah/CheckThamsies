@@ -35,6 +35,9 @@ use App\Http\Controllers\AdminCon;
     Route::get('/guru', [AdminCon::class, 'index'])->name('guru');
     Route::get('/guru/tambah', [AdminCon::class, 'tambah'])->name('guru.tambah');
     Route::post('/guru/tambahstore', [AdminCon::class, 'store']);
+    Route::get('/guru/edit/{id}', action: [AdminCon::class, 'edit'])->name('guru.edit');
+    Route::put('/guru/update/{id}', [AdminCon::class, 'update']);
+    Route::get('/uri: guru/delete/{id}', [AdminCon::class, 'destroy'])->name('guru.hapus');
 
 
 require __DIR__.'/settings.php';
