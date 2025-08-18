@@ -10,17 +10,15 @@ use Inertia\Response;
 class AdminCon extends Controller
 {
     // Admin Section Start
+
+    // Menampilkan Data Guru
     public function index()
     {
-        $guru = DB::table('guru')
-        ->join('kelas', 'guru.id_kelas', '=', 'kelas.id_kelas')
-        ->join('mapel', 'guru.id_mapel', '=', 'mapel.id_mapel')
-        ->select('guru.id_guru', 'guru.nama', 'guru.email',
-        'kelas.nama_kelas as kelas',
-        'mapel.nama_mapel as mapel')->get();
+        $guru = DB::table('guru')->join('kelas', 'guru.id_kelas', '=', 'kelas.id_kelas')->join('mapel', 'guru.id_mapel', '=', 'mapel.id_mapel')->select('guru.id_guru', 'guru.nama', 'guru.email', 'kelas.nama_kelas as kelas', 'mapel.nama_mapel as mapel')->get();
         return Inertia::render('guru', ['guru' => $guru]);
     }
 
+    // Menampilkan Form Tambah Guru
     public function tambah()
     {
         $users = \App\Models\User::where('role', 'guru')->select('id', 'name', 'email')->get();
@@ -33,6 +31,7 @@ class AdminCon extends Controller
         ]);
     }
 
+    // Menyimpan Data Guru Yang Dikirim dari Form Tambah Guru
     public function store(Request $request)
     {
         // Validasi
@@ -51,6 +50,7 @@ class AdminCon extends Controller
         return redirect()->route('guru')->with('success', 'Data guru berhasil ditambahkan!');
     }
 
+    // Menampilkan Form Edit Guru
     public function edit($id)
     {
         $guru = DB::table('guru')->where('id_guru', $id)->first(); // gunakan first()
@@ -66,9 +66,10 @@ class AdminCon extends Controller
         ]);
     }
 
+    // Memperbarui Data Guru Yang Dikirim dari Form Edit Guru
     public function update(Request $request, $id)
     {
-        // Validasi
+        // Validasi data
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
             'nama' => 'required|string|max:255',
@@ -77,7 +78,6 @@ class AdminCon extends Controller
             'id_mapel' => 'required|exists:mapel,id_mapel',
         ]);
 
-        // Update data guru
         $updated = DB::table('guru')
             ->where('id_guru', $id)
             ->update([
@@ -94,31 +94,110 @@ class AdminCon extends Controller
             return redirect()->back()->with('error', 'Gagal memperbarui data!');
         }
     }
+
+    // Menghapus Data Guru
     public function destroy($id)
     {
-        // mengambil data pegawai berdasarkan id yang dipilih
         DB::table('guru')->where('id_guru', operator: $id)->delete();
-        // passing data pegawai yang didapat ke view edit.blade.php
         return redirect('/guru');
     }
     // Admin Section End
 
     // Siswa X Section Start
-public function siswax()
-{
-    $siswax = DB::table('siswa')
-        ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
-        ->join('jurusan', 'siswa.id_jurusan', '=', 'jurusan.id_jurusan')
-        ->select(
-            'siswa.id_siswa',
-            'siswa.nama',
-            'siswa.email',
-            'kelas.nama_kelas as kelas',
-            'jurusan.nama_jurusan as jurusan'
-        )
-        ->where('kelas.nama_kelas', '=', 'X RPL') // Filter hanya kelas X RPL
-        ->get();
+    // Menampilkan Data Siswa Kelas X RPL
+    public function siswax()
+    {
+        $siswax = DB::table('siswa')
+            ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
+            ->join('jurusan', 'siswa.id_jurusan', '=', 'jurusan.id_jurusan')
+            ->select('siswa.id_siswa', 'siswa.nama', 'siswa.email', 'kelas.nama_kelas as kelas', 'jurusan.nama_jurusan as jurusan')
+            ->where('kelas.nama_kelas', '=', 'X RPL') // Filter hanya kelas X RPL
+            ->get();
 
-    return Inertia::render('xrpl', ['siswa' => $siswax]);
-}
+        return Inertia::render('xrpl', ['siswa' => $siswax]);
+    }
+
+    // Menampilkan Form Tambah Siswa Kelas X RPL
+    public function tambahx()
+    {
+        $users = \App\Models\User::where('role', 'user')->select('id', 'name', 'email')->get();
+        $kelas = \App\Models\kelas::all(['id_kelas', 'nama_kelas']);
+        $jurusan = \App\Models\Jurusan::all(['id_jurusan', 'nama_jurusan']);
+        return inertia('tambahx', [
+            'users' => $users,
+            'kelas' => $kelas,
+            'jurusan' => $jurusan,
+        ]);
+    }
+    // Menyimpan Data Siswa Kelas X RPL Yang Dikirim dari Form Tambah Siswa
+    public function storex(Request $request)
+    {
+        // Validasi
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id', // id harus ada di tabel users
+            'nama' => 'required|string|max:255',
+            'email' => 'required|email',
+            'id_kelas' => 'required|exists:kelas,id_kelas',
+            'id_jurusan' => 'required|exists:jurusan,id_jurusan',
+        ]);
+
+        // Simpan ke tabel siswa
+        DB::table('siswa')->insert($validated);
+
+        // Redirect balik ke halaman data siswa X RPL
+        return redirect()->route('siswax')->with('success', 'Data Siswa X RPL berhasil ditambahkan!');
+    }
+
+    // Menampilkan Form Edit Siswa Kelas X RPL
+        public function editx($id)
+    {
+        $siswa = DB::table('siswa')->where('id_siswa', $id)->get(); // gunakan first()
+        $users = \App\Models\User::where('role', 'user')->select('id', 'name', 'email')->get();
+        $kelas = \App\Models\kelas::all(['id_kelas', 'nama_kelas']);
+        $jurusan = \App\Models\Jurusan::all(['id_jurusan', 'nama_jurusan']);
+
+        return inertia('editx', [
+            'siswa' => $siswa,
+            'users' => $users,
+            'kelas' => $kelas,
+            'jurusan' => $jurusan,
+        ]);
+    }
+
+    // Memperbarui Data Siswa X RPL Yang Dikirim dari Form Edit Siswa X RPL
+    public function updatex(Request $request, $id)
+    {
+        // Validasi data
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'nama' => 'required|string|max:255',
+            'email' => 'required|email',
+            'id_kelas' => 'required|exists:kelas,id_kelas',
+            'id_jurusan' => 'required|exists:jurusan,id_jurusan',
+        ]);
+
+        $update = DB::table('siswa')
+            ->where('id_siswa', $id)
+            ->update([
+                'user_id' => $request->user_id,
+                'nama' => $request->nama,
+                'email' => $request->email,
+                'id_kelas' => $request->id_kelas,
+                'id_jurusan' => $request->id_jurusan,
+            ]);
+
+        if ($update) {
+            return redirect()->route('siswax')->with('success', 'Data siswa X RPL berhasil diperbarui!');
+        } else {
+            return redirect()->back()->with('error', 'Gagal memperbarui data!');
+        }
+    }
+
+        // Menghapus Data Siswa Kelas X RPL
+    public function destroyx($id)
+    {
+        DB::table('siswa')->where('id_siswa', operator: $id)->delete();
+        return redirect('/xrpl');
+    }
+
 }

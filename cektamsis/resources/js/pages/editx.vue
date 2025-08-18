@@ -27,13 +27,13 @@
 
     // Props dari controller
     const props = defineProps < {
-        guru: {
-            id_guru: number; // Pastikan menggunakan id_guru sesuai database
+        siswa: {
+            id_siswa: number; // Pastikan menggunakan id_siswa sesuai database
             user_id: number;
             nama: string;
             email: string;
             id_kelas: number;
-            id_mapel: number;
+            id_jurusan: number;
         },
         users: {
             id: number;
@@ -44,9 +44,9 @@
             id_kelas: number;
             nama_kelas: string;
         } [],
-        mapel: {
-            id_mapel: number;
-            nama_mapel: string;
+        jurusan: {
+            id_jurusan: number;
+            nama_jurusan: string;
         } [],
     } > ()
 
@@ -55,18 +55,18 @@
         user_id: '',
         nama: '',
         email: '',
-        id_kelas: '',
-        id_mapel: '',
+        id_kelas: '1',
+        id_jurusan: '1',
     })
 
-    // Isi form dengan data guru saat component dimount
+    // Isi form dengan data siswa X RPL saat component dimount
     onMounted(() => {
-        if (props.guru) {
-            form.user_id = props.guru.user_id?.toString() || '';
-            form.nama = props.guru.nama || '';
-            form.email = props.guru.email || '';
-            form.id_kelas = props.guru.id_kelas?.toString() || '';
-            form.id_mapel = props.guru.id_mapel?.toString() || '';
+        if (props.siswa) {
+            form.user_id = props.siswa.user_id?.toString() || '';
+            form.nama = props.siswa.nama || '';
+            form.email = props.siswa.email || '';
+            form.id_kelas = props.siswa.id_kelas?.toString() || '1';
+            form.id_jurusan = props.siswa.id_jurusan?.toString() || '1';
         }
     });
 
@@ -82,7 +82,7 @@
 
     // Function untuk submit form
     const submitForm = () => {
-        form.put(`/guru/update/${props.guru.id_guru}`, {
+        form.put(`/siswax/update/${props.siswa.id_siswa}`, {
             onSuccess: () => {
                 // Optional: tambahkan notifikasi sukses
                 console.log('Data berhasil diperbarui!');
@@ -96,14 +96,14 @@
 
 <template>
 
-    <Head title="Edit Data Guru" />
+    <Head title="Edit Data Siswa X RPL" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-6 p-6 overflow-x-auto">
             <div class="rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-lg max-w-2xl w-full mx-auto">
                 <!-- Header -->
                 <div class="flex items-center justify-between mb-6">
-                    <h1 class="text-xl font-semibold text-white">Form Edit Guru</h1>
+                    <h1 class="text-xl font-semibold text-white">Form Edit Siswa X RPL</h1>
                 </div>
 
                 <!-- Form -->
@@ -115,11 +115,11 @@
                             class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 focus:ring focus:ring-green-500 focus:outline-none">
                             <option value="">-- Pilih User --</option>
                             <option v-for="user in props.users" :key="user.id" :value="user.id">
-                                {{ user.name }}
+                                {{ user . name }}
                             </option>
                         </select>
                         <span v-if="form.errors.user_id"
-                            class="text-red-500 text-sm">{{ form.errors.user_id }}</span>
+                            class="text-red-500 text-sm">{{ form . errors . user_id }}</span>
                     </div>
 
                     <!-- Nama -->
@@ -128,7 +128,7 @@
                         <input v-model="form.nama" type="text"
                             class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 focus:ring focus:ring-green-500 focus:outline-none disabled:opacity-50"
                             placeholder="Masukkan nama guru" />
-                        <span v-if="form.errors.nama" class="text-red-500 text-sm">{{ form.errors.nama }}</span>
+                        <span v-if="form.errors.nama" class="text-red-500 text-sm">{{ form . errors . nama }}</span>
                     </div>
 
                     <!-- Email -->
@@ -137,46 +137,41 @@
                         <input v-model="form.email" type="email" :readonly="!!form.user_id"
                             class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 focus:ring focus:ring-green-500 focus:outline-none disabled:opacity-50"
                             placeholder="Masukkan email guru" />
-                        <span v-if="form.errors.email" class="text-red-500 text-sm">{{ form.errors.email }}</span>
+                        <span v-if="form.errors.email" class="text-red-500 text-sm">{{ form . errors . email }}</span>
                     </div>
-
                     <!-- Kelas -->
                     <div>
-                        <label class="block text-sm font-medium text-zinc-300 mb-1">Pilih Kelas</label>
-                        <select v-model="form.id_kelas"
-                            class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 focus:ring focus:ring-green-500 focus:outline-none">
-                            <option value="">-- Pilih Kelas --</option>
-                            <option v-for="kelas in props.kelas" :key="kelas.id_kelas" :value="kelas.id_kelas">
-                                {{ kelas.nama_kelas }}
-                            </option>
-                        </select>
+                        <label class="block text-sm font-medium text-zinc-300 mb-1">Kelas</label>
+                        <!-- hanya tampilan -->
+                        <input type="text" readonly
+                            class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 opacity-50"
+                            value="X RPL" />
+                        <!-- hidden untuk submit id -->
+                        <input type="hidden" v-model="form.id_kelas" />
                         <span v-if="form.errors.id_kelas"
-                            class="text-red-500 text-sm">{{ form.errors.id_kelas }}</span>
+                            class="text-red-500 text-sm">{{ form . errors . id_kelas }}</span>
                     </div>
-
-                    <!-- Mapel -->
+                    <!-- Jurusan -->
                     <div>
-                        <label class="block text-sm font-medium text-zinc-300 mb-1">Pilih Mata Pelajaran</label>
-                        <select v-model="form.id_mapel"
-                            class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 focus:ring focus:ring-green-500 focus:outline-none">
-                            <option value="">-- Pilih Mapel --</option>
-                            <option v-for="mapel in props.mapel" :key="mapel.id_mapel" :value="mapel.id_mapel">
-                                {{ mapel.nama_mapel }}
-                            </option>
-                        </select>
-                        <span v-if="form.errors.id_mapel"
-                            class="text-red-500 text-sm">{{ form.errors.id_mapel }}</span>
+                        <label class="block text-sm font-medium text-zinc-300 mb-1">Jurusan</label>
+                        <!-- hanya tampilan -->
+                        <input type="text" readonly
+                            class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 opacity-50"
+                            value="Rekayasa Perangkat Lunak" />
+                        <!-- hidden untuk submit id -->
+                        <input type="hidden" v-model="form.id_jurusan" />
+                        <span v-if="form.errors.id_jurusan"
+                            class="text-red-500 text-sm">{{ form . errors . id_jurusan }}</span>
                     </div>
-
                     <!-- Tombol -->
                     <div class="flex justify-end gap-3">
-                        <Link href="/guru"
+                        <Link href="/xrpl"
                             class="rounded-lg bg-zinc-700 px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-600">
                         Batal
                         </Link>
                         <button type="submit" :disabled="form.processing"
                             class="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50">
-                            {{ form.processing ? 'Menyimpan...' : 'Simpan' }}
+                            {{ form . processing ? 'Menyimpan...' : 'Simpan' }}
                         </button>
                     </div>
                 </form>

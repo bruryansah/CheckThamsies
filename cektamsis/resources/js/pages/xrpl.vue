@@ -38,10 +38,6 @@ import AppLayout from '@/layouts/AppLayout.vue';
         siswa: Siswa[]
     }>()
 
-    // Debug: Cek apakah data diterima
-    console.log('Props siswax:', props.siswa)
-    console.log('Jumlah data:', props.siswa ? props.siswa.length : 0)
-
     // State untuk modal konfirmasi
     const showConfirmModal = ref(false)
     const selectedSiswa = ref<Siswa | null>(null)
@@ -76,7 +72,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
                 <!-- Header -->
                 <div class="flex items-center justify-between mb-6">
                     <h1 class="text-xl font-semibold text-white">Data Siswa X RPL</h1>
-                    <TextLink :href="route('guru.tambah')"
+                    <TextLink :href="route('siswax.tambah')"
                         class="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 transition">
                         <Plus class="h-4 w-4" />
                         Tambah Siswa
@@ -105,7 +101,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
                                 <td class="px-6 py-4 text-center">{{ siswa.jurusan }}</td>
                                 <td class="px-6 py-4 text-center">
                                     <div class="flex justify-center gap-2">
-                                        <TextLink :href="route('guru.edit', siswa.id_siswa)"
+                                        <TextLink :href="route('siswax.edit', siswa.id_siswa)"
                                             class="rounded-lg bg-yellow-500 px-3 py-1 text-xs font-semibold text-white hover:bg-yellow-600">
                                             Edit
                                         </TextLink>
