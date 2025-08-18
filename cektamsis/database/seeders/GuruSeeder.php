@@ -2,24 +2,39 @@
 
 namespace Database\Seeders;
 
-use App\Enums\UserRole;
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
+use App\Models\Guru;
 
 class GuruSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        User::create([
-            "name" => "Saya Guru",
-            "email" => "guru@gmail.com",
-            "role" => UserRole::Guru,
-            "password" => Hash::make("guru123")
-        ]);
+        $data = [
+            [
+                'user_id'   => 4,
+                'nama'      => 'Ali Achamad',
+                'email'     => 'kiali@gmail.com',
+                'id_kelas'  => 1,
+                'id_mapel'  => 1,
+            ],
+            [
+                'user_id'   => 5,
+                'nama'      => 'Juli Mohammad',
+                'email'     => 'kijuli@gmail.com',
+                'id_kelas'  => 2,
+                'id_mapel'  => 2,
+            ],
+            [
+                'user_id'   => 6,
+                'nama'      => 'Dwi Yoga',
+                'email'     => 'kijalu@gmail.com',
+                'id_kelas'  => 3,
+                'id_mapel'  => 3,
+            ],
+        ];
+
+        foreach ($data as $guru) {
+            Guru::create($guru);
+        }
     }
 }

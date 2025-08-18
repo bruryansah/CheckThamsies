@@ -9,13 +9,13 @@ return new class extends Migration
     {
         Schema::create('jadwal', function (Blueprint $table) {
             $table->id('id_jadwal');
-            $table->unsignedBigInteger('id_gmk');
+            $table->unsignedBigInteger('id_guru');
             $table->date('hari');
             $table->time('jam_mulai');
             $table->time('jam_selesai');
             $table->timestamps();
 
-            $table->foreign('id_gmk')->references('id_gmk')->on('guru_mapel_kelas');
+            $table->foreign('id_guru')->references('id_guru')->on('guru');
         });
     }
 

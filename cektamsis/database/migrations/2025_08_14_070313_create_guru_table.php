@@ -13,12 +13,12 @@ return new class extends Migration
             $table->string('nama', 100);
             $table->string('email', 100);
             $table->unsignedBigInteger('id_kelas')->nullable();
-            $table->unsignedBigInteger('id_jurusan')->nullable();
+            $table->unsignedBigInteger('id_mapel')->nullable();
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users');
             $table->foreign('id_kelas')->references('id_kelas')->on('kelas');
-            $table->foreign('id_jurusan')->references('id_jurusan')->on('jurusan');
+            $table->foreign('id_mapel')->references('id_mapel')->on('mapel');
         });
     }
 
