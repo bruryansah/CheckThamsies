@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/vue3';
+import { Head, useForm } from '@inertiajs/vue3';
 import { Activity, Users, BookOpen, TrendingUp } from 'lucide-vue-next';
 import PlaceholderPattern from '../components/PlaceholderPattern.vue';
 
@@ -11,6 +11,13 @@ const breadcrumbs: BreadcrumbItem[] = [
     href: '/dashboard',
   },
 ];
+
+// form kosong buat logout
+const form = useForm({});
+
+const logout = () => {
+  form.post(route('logout'));
+};
 </script>
 
 <template>
@@ -18,6 +25,16 @@ const breadcrumbs: BreadcrumbItem[] = [
 
   <AppLayout :breadcrumbs="breadcrumbs">
     <div class="flex h-full flex-1 flex-col gap-6 p-6 overflow-x-auto">
+      <!-- Tombol Logout -->
+      <div class="flex justify-end mb-4">
+        <button
+          @click="logout"
+          class="rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+        >
+          Logout
+        </button>
+      </div>
+
       <!-- Statistik Cards -->
       <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <div
