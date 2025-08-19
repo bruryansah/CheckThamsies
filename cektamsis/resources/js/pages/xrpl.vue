@@ -58,7 +58,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
     const proceedDelete = () => {
         if (selectedSiswa.value) {
             // Redirect ke route hapus
-            window.location.href = route('guru.hapus', selectedSiswa.value.id_siswa)
+            window.location.href = route('siswax.hapus', selectedSiswa.value.id_siswa)
         }
     }
 </script>

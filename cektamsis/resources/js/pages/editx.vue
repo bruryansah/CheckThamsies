@@ -20,8 +20,8 @@
             href: '/dashboard'
         },
         {
-            title: 'Edit Data Guru',
-            href: '/guru'
+            title: 'Edit Data Siswa X RPL',
+            href: '/siswax'
         },
     ]
 
@@ -55,8 +55,8 @@
         user_id: '',
         nama: '',
         email: '',
-        id_kelas: '1',
-        id_jurusan: '1',
+        id_kelas: '',
+        id_jurusan: '',
     })
 
     // Isi form dengan data siswa X RPL saat component dimount
@@ -107,7 +107,7 @@
                 </div>
 
                 <!-- Form -->
-                <form @submit.prevent="submitForm" class="space-y-5">
+                <form @submit.prevent="form.put(`/siswax/update/${props.siswa.id_siswa}`)" class="space-y-5">
                     <!-- Id Users -->
                     <div>
                         <label class="block text-sm font-medium text-zinc-300 mb-1">Pilih User</label>
@@ -115,20 +115,20 @@
                             class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 focus:ring focus:ring-green-500 focus:outline-none">
                             <option value="">-- Pilih User --</option>
                             <option v-for="user in props.users" :key="user.id" :value="user.id">
-                                {{ user . name }}
+                                {{ user.name }}
                             </option>
                         </select>
                         <span v-if="form.errors.user_id"
-                            class="text-red-500 text-sm">{{ form . errors . user_id }}</span>
+                            class="text-red-500 text-sm">{{ form.errors.user_id }}</span>
                     </div>
 
                     <!-- Nama -->
                     <div>
-                        <label class="block text-sm font-medium text-zinc-300 mb-1">Nama Guru</label>
+                        <label class="block text-sm font-medium text-zinc-300 mb-1">Nama Siswa</label>
                         <input v-model="form.nama" type="text"
                             class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 focus:ring focus:ring-green-500 focus:outline-none disabled:opacity-50"
-                            placeholder="Masukkan nama guru" />
-                        <span v-if="form.errors.nama" class="text-red-500 text-sm">{{ form . errors . nama }}</span>
+                            placeholder="Masukkan nama siswa" />
+                        <span v-if="form.errors.nama" class="text-red-500 text-sm">{{ form.errors.nama }}</span>
                     </div>
 
                     <!-- Email -->
@@ -136,7 +136,7 @@
                         <label class="block text-sm font-medium text-zinc-300 mb-1">Email</label>
                         <input v-model="form.email" type="email" :readonly="!!form.user_id"
                             class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 focus:ring focus:ring-green-500 focus:outline-none disabled:opacity-50"
-                            placeholder="Masukkan email guru" />
+                            placeholder="Pilih nama user terlebih dahulu" />
                         <span v-if="form.errors.email" class="text-red-500 text-sm">{{ form . errors . email }}</span>
                     </div>
                     <!-- Kelas -->
@@ -149,7 +149,7 @@
                         <!-- hidden untuk submit id -->
                         <input type="hidden" v-model="form.id_kelas" />
                         <span v-if="form.errors.id_kelas"
-                            class="text-red-500 text-sm">{{ form . errors . id_kelas }}</span>
+                            class="text-red-500 text-sm">{{ form.errors.id_kelas }}</span>
                     </div>
                     <!-- Jurusan -->
                     <div>
@@ -161,7 +161,7 @@
                         <!-- hidden untuk submit id -->
                         <input type="hidden" v-model="form.id_jurusan" />
                         <span v-if="form.errors.id_jurusan"
-                            class="text-red-500 text-sm">{{ form . errors . id_jurusan }}</span>
+                            class="text-red-500 text-sm">{{ form.errors.id_jurusan }}</span>
                     </div>
                     <!-- Tombol -->
                     <div class="flex justify-end gap-3">

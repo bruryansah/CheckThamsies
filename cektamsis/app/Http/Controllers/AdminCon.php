@@ -151,7 +151,7 @@ class AdminCon extends Controller
     // Menampilkan Form Edit Siswa Kelas X RPL
         public function editx($id)
     {
-        $siswa = DB::table('siswa')->where('id_siswa', $id)->get(); // gunakan first()
+        $siswa = DB::table('siswa')->where('id_siswa', $id)->first(); // gunakan first()
         $users = \App\Models\User::where('role', 'user')->select('id', 'name', 'email')->get();
         $kelas = \App\Models\kelas::all(['id_kelas', 'nama_kelas']);
         $jurusan = \App\Models\Jurusan::all(['id_jurusan', 'nama_jurusan']);
@@ -197,7 +197,7 @@ class AdminCon extends Controller
     public function destroyx($id)
     {
         DB::table('siswa')->where('id_siswa', operator: $id)->delete();
-        return redirect('/xrpl');
+        return redirect('/siswax');
     }
 
 }
