@@ -75,10 +75,7 @@ const submit = () => {
                 Masuk
             </Button>
 
-            <p class="text-center text-sm text-gray-600 mt-4">
-                Belum punya akun?
-                <TextLink :href="route('register')" class="text-black-600 hover:underline">Daftar</TextLink>
-            </p>
+             
         </form>
     </AuthBase>
 </template>
