@@ -17,8 +17,6 @@ const form = useForm({});
 
 const logout = () => {
   form.post(route('logout'));
-
-    form.post(route('logout'));
 };
 </script>
 
@@ -48,33 +46,6 @@ const logout = () => {
           </div>
           <p class="mt-4 text-3xl font-bold text-white">1,245</p>
           <p class="text-xs text-green-400 mt-1">+12% from last month</p>
-
-    <AppLayout :breadcrumbs="breadcrumbs">
-        <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
-            <!-- Tombol Logout -->
-            <div class="flex justify-end mb-4">
-                <button
-                    @click="logout"
-                    class="rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700"
-                >
-                    Logout
-                </button>
-            </div>
-
-            <div class="grid auto-rows-min gap-4 md:grid-cols-3">
-                <div class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                    <PlaceholderPattern />
-                </div>
-                <div class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                    <PlaceholderPattern />
-                </div>
-                <div class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                    <PlaceholderPattern />
-                </div>
-            </div>
-            <div class="relative min-h-[100vh] flex-1 rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
-                <PlaceholderPattern />
-            </div>
         </div>
 
         <div
