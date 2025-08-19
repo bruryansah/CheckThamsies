@@ -32,6 +32,11 @@
             icon: LayoutGrid,
         },
         {
+            title: 'Manage User',
+            href: '/user',
+            icon: Users,
+        },
+        {
             title: 'Data Guru',
             href: '/guru',
             icon: Users,

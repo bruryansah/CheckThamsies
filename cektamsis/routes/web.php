@@ -32,12 +32,21 @@ Route::get('/xiirpl', function () {
 });
 // Guru Route Start
 use App\Http\Controllers\AdminCon;
+    Route::get('/user', [AdminCon::class, 'indexs'])->name('user');
+    Route::get('/user/tambah', [AdminCon::class, 'tambahs'])->name('user.tambah');
+    Route::post('/user/tambahstore', [AdminCon::class, 'stores']);
+    Route::get('/user/edit/{id}',  [AdminCon::class, 'edits'])->name('user.edit');
+    Route::put('/user/update/{id}', [AdminCon::class, 'updates']);
+    Route::get('/user/delete/{id}', [AdminCon::class, 'destroys'])->name('user.hapus');
+// Guru Route End
+
+// Guru Route Start
     Route::get('/guru', [AdminCon::class, 'index'])->name('guru');
     Route::get('/guru/tambah', [AdminCon::class, 'tambah'])->name('guru.tambah');
     Route::post('/guru/tambahstore', [AdminCon::class, 'store']);
     Route::get('/guru/edit/{id}',  [AdminCon::class, 'edit'])->name('guru.edit');
     Route::put('/guru/update/{id}', [AdminCon::class, 'update']);
-    Route::get('/uri: guru/delete/{id}', [AdminCon::class, 'destroy'])->name('guru.hapus');
+    Route::get('/guru/delete/{id}', [AdminCon::class, 'destroy'])->name('guru.hapus');
 // Guru Route End
 
 // Siswa X Route Start

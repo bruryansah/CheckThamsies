@@ -9,8 +9,88 @@ use Inertia\Response;
 
 class AdminCon extends Controller
 {
-    // Admin Section Start
+    // Users section Start
 
+    // Menampilkan Data Guru
+    public function indexs()
+    {
+        $user = DB::table('users')->select('id', 'name', 'email', 'role',)->get();
+        return Inertia::render('manageuser', ['users' => $user]);
+    }
+
+    // Menampilkan Form Tambah Guru
+    public function tambahs()
+    {
+        return inertia('tambahuser', [
+        ]);
+    }
+
+    // Menyimpan Data Guru Yang Dikirim dari Form Tambah Guru
+    public function stores(Request $request)
+    {
+        // Validasi
+        $validated = $request->validate([
+            'id' => 'required|id',
+            'nama' => 'required|string|max:255',
+            'email' => 'required|email',
+            'role' => 'required|role',
+        ]);
+
+        // Simpan ke tabel guru
+        DB::table('users')->insert($validated);
+
+        // Redirect balik ke halaman data guru
+        return redirect()->route('user')->with('success', 'Data user berhasil ditambahkan!');
+    }
+
+    // Menampilkan Form Edit Guru
+public function edits($id)
+{
+    $user = DB::table('users')->where('id', $id)->first();
+
+    // Hapus ini jika tidak diperlukan, atau ganti nama variable
+    // $users = \App\Models\User::select(['id', 'name', 'email', 'role'])->get();
+
+    return inertia('edituser', [
+        'user' => $user,  // single user untuk diedit
+        // 'users' => $users,  // hapus atau ganti nama jika diperlukan
+    ]);
+}
+
+    // Memperbarui Data Guru Yang Dikirim dari Form Edit Guru
+public function updates(Request $request, $id)
+{
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => 'required|email|unique:users,email,',  
+        'role' => 'required|in:Admin,guru,user',
+    ]);
+
+    $updated = DB::table('users')
+        ->where('id', $id)
+        ->update([
+            'name' => $request->name,
+            'email' => $request->email,
+            'role' => $request->role,
+        ]);
+
+    if ($updated) {
+        return redirect()->route('user')->with('success', 'Data user berhasil diperbarui!');
+    } else {
+        return redirect()->back()->with('error', 'Gagal memperbarui data!');
+    }
+}
+
+    // Menghapus Data users
+    public function destroys($id)
+    {
+        DB::table('users')->where('id', operator: $id)->delete();
+        return redirect('/user');
+    }
+    // Users Section End
+
+
+    // Admin Section Start
     // Menampilkan Data Guru
     public function index()
     {
