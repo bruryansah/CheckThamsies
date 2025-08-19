@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Livewire\Settings\Appearance;
 use App\Livewire\Settings\Password;
+use App\Http\Controllers\KontakController;
 use App\Livewire\Settings\Profile;
 
 Route::get('/', function () {
@@ -24,6 +25,9 @@ Route::get('/kontak', function () {
     return Inertia::render('Kontak');
 });
 
+Route::post('/kontak', [KontakController::class, 'store'])->name('kontak.store');
+
+
 Route::get('/xrpl', function () {
     return Inertia::render('xrpl');
 });
@@ -33,6 +37,8 @@ Route::get('/xirpl', function () {
 Route::get('/xiirpl', function () {
     return Inertia::render('xiirpl');
 });
+
+
 // Guru Route Start
 use App\Http\Controllers\AdminCon;
     Route::get('/guru', [AdminCon::class, 'index'])->name('guru');

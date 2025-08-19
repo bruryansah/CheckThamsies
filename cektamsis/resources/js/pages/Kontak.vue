@@ -1,48 +1,50 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Link, useForm } from '@inertiajs/vue3';
 import { onMounted, ref } from 'vue';
 
 const activeMenu = ref('kontak');
 const isOpen = ref(false);
-const formData = ref({
-    name: '',
+
+// Menggunakan useForm dari Inertia.js untuk form handling
+const form = useForm({
+    nama: '',
     email: '',
     subject: '',
-    message: '',
+    pesan: '',
 });
-const isSubmitting = ref(false);
+
 const submitMessage = ref('');
 
 function setActiveMenu(menu: string) {
     activeMenu.value = menu;
 }
 
-async function submitForm() {
-    if (!formData.value.name || !formData.value.email || !formData.value.message) {
+// Fungsi submit menggunakan Inertia.js
+function submitForm() {
+    // Validasi client-side sederhana
+    if (!form.nama || !form.email || !form.pesan) {
         submitMessage.value = 'Mohon lengkapi semua field yang wajib diisi.';
         return;
     }
 
-    isSubmitting.value = true;
+    // Clear previous messages
+    submitMessage.value = '';
 
-    // Simulasi pengiriman form
-    setTimeout(() => {
-        isSubmitting.value = false;
-        submitMessage.value = 'Pesan Anda berhasil dikirim! Kami akan merespons dalam 1-2 hari kerja.';
-
-        // Reset form
-        formData.value = {
-            name: '',
-            email: '',
-            subject: '',
-            message: '',
-        };
-
-        // Clear message after 5 seconds
-        setTimeout(() => {
-            submitMessage.value = '';
-        }, 5000);
-    }, 2000);
+    // Submit menggunakan Inertia.js
+    form.post(route('kontak.store'), {
+        onSuccess: () => {
+            form.reset();
+            submitMessage.value = 'Pesan Anda berhasil dikirim! Kami akan merespons dalam 1-2 hari kerja.';
+            
+            // Clear success message after 5 seconds
+            setTimeout(() => {
+                submitMessage.value = '';
+            }, 5000);
+        },
+        onError: () => {
+            submitMessage.value = 'Terjadi kesalahan saat mengirim pesan. Silakan coba lagi.';
+        }
+    });
 }
 
 // Animation on scroll
@@ -176,12 +178,26 @@ onMounted(() => {
                             <form @submit.prevent="submitForm" class="contact-form">
                                 <div class="form-row">
                                     <div class="form-group">
-                                        <label for="name">Nama Lengkap *</label>
-                                        <input type="text" id="name" v-model="formData.name" placeholder="Masukkan nama lengkap" required />
+                                        <label for="nama">Nama Lengkap *</label>
+                                        <input 
+                                            type="text" 
+                                            id="nama" 
+                                            v-model="form.nama" 
+                                            placeholder="Masukkan nama lengkap" 
+                                            required 
+                                        />
+                                        <div v-if="form.errors.nama" class="error-message">{{ form.errors.nama }}</div>
                                     </div>
                                     <div class="form-group">
                                         <label for="email">Email *</label>
-                                        <input type="email" id="email" v-model="formData.email" placeholder="nama@email.com" required />
+                                        <input 
+                                            type="email" 
+                                            id="email" 
+                                            v-model="form.email" 
+                                            placeholder="nama@email.com" 
+                                            required 
+                                        />
+                                        <div v-if="form.errors.email" class="error-message">{{ form.errors.email }}</div>
                                     </div>
                                 </div>
 
@@ -190,26 +206,27 @@ onMounted(() => {
                                     <input
                                         type="text"
                                         id="subject"
-                                        v-model="formData.subject"
+                                        v-model="form.subject"
                                         placeholder="Masukkan subjek pesan Anda"
-                                        required
                                         class="form-input"
                                     />
+                                    <div v-if="form.errors.subject" class="error-message">{{ form.errors.subject }}</div>
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="message">Pesan *</label>
+                                    <label for="pesan">Pesan *</label>
                                     <textarea
-                                        id="message"
-                                        v-model="formData.message"
+                                        id="pesan"
+                                        v-model="form.pesan"
                                         placeholder="Tuliskan pesan Anda di sini..."
                                         rows="6"
                                         required
                                     ></textarea>
+                                    <div v-if="form.errors.pesan" class="error-message">{{ form.errors.pesan }}</div>
                                 </div>
 
-                                <button type="submit" class="submit-btn" :disabled="isSubmitting">
-                                    <span v-if="!isSubmitting" class="btn-content">
+                                <button type="submit" class="submit-btn" :disabled="form.processing">
+                                    <span v-if="!form.processing" class="btn-content">
                                         <span class="btn-icon">📤</span>
                                         Kirim Pesan
                                     </span>
@@ -850,6 +867,14 @@ onMounted(() => {
 .form-group textarea {
     resize: vertical;
     min-height: 120px;
+}
+
+/* Error messages styling */
+.error-message {
+    color: #dc2626;
+    font-size: 12px;
+    margin-top: 4px;
+    font-weight: 500;
 }
 
 .submit-btn {

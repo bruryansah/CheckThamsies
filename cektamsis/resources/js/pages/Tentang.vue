@@ -250,10 +250,6 @@ const stats = ref([
                                 <span class="contact-icon">📞</span>
                                 Hubungi Kami
                             </Link>
-                            <Link href="/help" class="contact-btn secondary">
-                                <span class="contact-icon">❓</span>
-                                Pusat Bantuan
-                            </Link>
                         </div>
                     </div>
                 </div>
