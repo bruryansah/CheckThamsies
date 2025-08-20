@@ -1,5 +1,6 @@
 <script setup lang="ts">
-    import AppLayout from '@/layouts/AppLayout.vue';
+    import TextLink from '@/components/TextLink.vue';
+import AppLayout from '@/layouts/AppLayout.vue';
     import {
         type BreadcrumbItem
     } from '@/types';
@@ -9,139 +10,103 @@
     import {
         Plus
     } from 'lucide-vue-next';
+    import {
+        defineProps,
+        ref
+    } from 'vue'
 
     const breadcrumbs: BreadcrumbItem[] = [{
             title: 'Dashboard',
             href: '/dashboard',
         },
         {
-            title: 'XII RPL',
-            href: '/siswa',
+            title: 'Data Siswa XI RPL',
+            href: '/siswax',
         },
     ];
 
-    // contoh dummy data
-    const students = [{
-            id: 1,
-            name: 'Rina Aulia',
-            email: 'rina@example.com',
-            kelas: 'X IPA 1',
-            jurusan: 'IPA',
-            absen: 'Sakit',
-            Keterangan:'Hadir'
-        },
-        {
-            id: 2,
-            name: 'Agus Pratama',
-            email: 'agus@example.com',
-            kelas: 'XI IPS 2',
-            jurusan: 'IPS',
-            absen: 'Absen',
-            Keterangan:'Hadir'
-        },
-        {
-            id: 3,
-            name: 'Dewi Lestari',
-            email: 'dewi@example.com',
-            kelas: 'XII IPA 3',
-            jurusan: 'IPA',
-            absen: 'Alpa',
-            Keterangan:'Hadir'
-        },
-        {
-            id: 4,
-            name: 'Fajar Nugraha',
-            email: 'fajar@example.com',
-            kelas: 'XI IPA 1',
-            jurusan: 'IPA',
-            absen: 'Izin',
-            Keterangan:'Hadir'
-        },
-    ];
+    interface Siswa {
+        id_siswa: number
+        nama: string
+        email: string
+        kelas: string
+        jurusan: string
+    }
 
-    function getAbsenClass(status: string) {
-        switch (status) {
-            case 'Sakit':
-            case 'Izin':
-                return 'bg-yellow-500 text-black';
-            case 'Absen':
-                return 'bg-green-600 text-white';
-            case 'Alpa':
-                return 'bg-red-600 text-white';
-            case 'Hadir':
-                return 'bg-green-600 text-white';
-            case 'Tidak Hadir':
-                return 'bg-red-600 text-white';
-            default:
-                return 'bg-zinc-600 text-white';
+    // Props harus sesuai dengan yang dikirim dari controller
+    const props = defineProps<{
+        siswa: Siswa[]
+    }>()
+
+    // State untuk modal konfirmasi
+    const showConfirmModal = ref(false)
+    const selectedSiswa = ref<Siswa | null>(null)
+
+    // Function untuk menampilkan konfirmasi hapus
+    const confirmDelete = (siswa: Siswa) => {
+        selectedSiswa.value = siswa
+        showConfirmModal.value = true
+    }
+
+    // Function untuk membatalkan hapus
+    const cancelDelete = () => {
+        showConfirmModal.value = false
+        selectedSiswa.value = null
+    }
+
+    // Function untuk melanjutkan hapus
+    const proceedDelete = () => {
+        if (selectedSiswa.value) {
+            // Redirect ke route hapus
+            window.location.href = route('siswaxii.hapus', selectedSiswa.value.id_siswa)
         }
     }
 </script>
 
 <template>
-
-    <Head title="Data Siswa" />
+    <Head title="Data Siswa X RPL" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-6 p-6 overflow-x-auto">
             <div class="rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-lg">
                 <!-- Header -->
                 <div class="flex items-center justify-between mb-6">
-                    <h1 class="text-xl font-semibold text-white">Data Siswa XII RPL</h1>
-                    <button
+                    <h1 class="text-xl font-semibold text-white">Data Siswa XI RPL</h1>
+                    <TextLink :href="route('siswaxii.tambah')"
                         class="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 transition">
                         <Plus class="h-4 w-4" />
                         Tambah Siswa
-                    </button>
+                    </TextLink>
                 </div>
-
                 <!-- Table -->
                 <div class="overflow-hidden rounded-lg border border-zinc-800">
                     <table class="min-w-full divide-y divide-zinc-800">
                         <thead class="bg-zinc-800">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-zinc-300">Id</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-zinc-300">Nama</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-zinc-300">Email</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-zinc-300">Kelas</th>
-                                <th class="px-6 py-3 text-left text-xs font-semibold uppercase text-zinc-300">Jurusan
-                                </th>
-                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Absen
-                                </th>
-                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Keterangan
-                                </th>
-                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Aksi
-                                </th>
+                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Id Siswa</th>
+                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Nama</th>
+                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Email</th>
+                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Kelas</th>
+                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Jurusan</th>
+                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-zinc-800 bg-zinc-900 text-sm text-zinc-200">
-                            <tr v-for="student in students" :key="student.id"
+                            <tr v-for="siswa in props.siswa" :key="siswa.id_siswa"
                                 class="hover:bg-zinc-800/60 transition">
-                                <td class="px-6 py-4">{{ student . id }}</td>
-                                <td class="px-6 py-4">{{ student . name }}</td>
-                                <td class="px-6 py-4">{{ student . email }}</td>
-                                <td class="px-6 py-4">{{ student . kelas }}</td>
-                                <td class="px-6 py-4">{{ student . jurusan }}</td>
+                                <td class="px-6 py-4 text-center">{{ siswa.id_siswa }}</td>
+                                <td class="px-6 py-4 text-center">{{ siswa.nama }}</td>
+                                <td class="px-6 py-4 text-center">{{ siswa.email }}</td>
+                                <td class="px-6 py-4 text-center">{{ siswa.kelas }}</td>
+                                <td class="px-6 py-4 text-center">{{ siswa.jurusan }}</td>
                                 <td class="px-6 py-4 text-center">
-                                    <span class="px-3 py-1 rounded-lg text-xs font-semibold"
-                                        :class="getAbsenClass(student.absen)">
-                                        {{ student . absen }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 text-center">
-                                    <span class="px-3 py-1 rounded-lg text-xs font-semibold"
-                                        :class="getAbsenClass(student.Keterangan)">
-                                        {{ student . Keterangan }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4">
                                     <div class="flex justify-center gap-2">
-                                        <button
+                                        <TextLink :href="route('siswaxii.edit', siswa.id_siswa)"
                                             class="rounded-lg bg-yellow-500 px-3 py-1 text-xs font-semibold text-white hover:bg-yellow-600">
                                             Edit
-                                        </button>
-                                        <button
-                                            class="rounded-lg bg-red-600 px-3 py-1 text-xs font-semibold text-white hover:bg-red-700">
+                                        </TextLink>
+                                        <button @click="confirmDelete(siswa)"
+                                            class="rounded-lg bg-red-600 px-3 py-1 text-xs font-semibold text-white hover:bg-red-700 transition">
                                             Hapus
                                         </button>
                                     </div>
@@ -152,5 +117,44 @@
                 </div>
             </div>
         </div>
+
+        <!-- Modal Konfirmasi Hapus -->
+        <div v-if="showConfirmModal" class="fixed inset-0 z-50 flex items-center justify-center">
+            <!-- Backdrop -->
+            <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" @click="cancelDelete"></div>
+
+            <!-- Modal -->
+            <div class="relative bg-zinc-900 rounded-lg border border-zinc-800 shadow-xl max-w-md w-full mx-4">
+                <div class="p-6">
+                    <!-- Header -->
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-white">Konfirmasi Hapus</h3>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="mb-6">
+                        <p class="text-zinc-300">
+                            Apakah Anda yakin ingin menghapus data siswa <strong class="text-white">{{ selectedSiswa?.nama }}</strong>?
+                        </p>
+                        <p class="text-sm text-zinc-400 mt-2">
+                            Tindakan ini tidak dapat dibatalkan.
+                        </p>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex justify-end gap-3">
+                        <button @click="cancelDelete"
+                            class="px-4 py-2 text-sm font-medium text-zinc-300 bg-zinc-800 rounded-lg hover:bg-zinc-700 transition">
+                            Batal
+                        </button>
+                        <button @click="proceedDelete"
+                            class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition">
+                            Ya, Hapus
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </AppLayout>
 </template>
+ii
