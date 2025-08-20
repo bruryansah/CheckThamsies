@@ -1,17 +1,28 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class AdminCon extends Controller
 {
-    // Users section Start
+    public function dashboard(): Response
+    {
+        return Inertia::render('Dashboard', [
+        'totalUsers' => User::count(),
+        'totalSiswa' => User::where('role', 'user')->count(),
+        'totalGuru'  => User::where('role', 'guru')->count(),
+        'totalAdmin' => User::where('role', 'admin')->count(),
+        ]);
+    }
 
-    // Menampilkan Data Guru
+
+    // Users section Start
+    // Menampilkan Data User
     public function indexs()
     {
         $user = DB::table('users')->select('id', 'name', 'email', 'role',)->get();
@@ -26,22 +37,29 @@ class AdminCon extends Controller
     }
 
     // Menyimpan Data Guru Yang Dikirim dari Form Tambah Guru
-    public function stores(Request $request)
-    {
-        // Validasi
-        $validated = $request->validate([
-            'id' => 'required|id',
-            'nama' => 'required|string|max:255',
-            'email' => 'required|email',
-            'role' => 'required|role',
-        ]);
+   public function stores(Request $request)
+{
+    // Validasi
+    $validated = $request->validate([
+        'name'     => 'required|string|max:255',
+        'email'    => 'required|email|unique:users,email',
+        'role'     => 'required|string|in:admin,guru,user',
+        'password' => 'required|string|min:6',
+    ]);
 
-        // Simpan ke tabel guru
-        DB::table('users')->insert($validated);
+    // Simpan ke tabel users
+    DB::table('users')->insert([
+        'name'       => $validated['name'],
+        'email'      => $validated['email'],
+        'role'       => $validated['role'],
+        'password'   => Hash::make($validated['password']),
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
 
-        // Redirect balik ke halaman data guru
-        return redirect()->route('user')->with('success', 'Data user berhasil ditambahkan!');
-    }
+    // Redirect balik ke halaman data user
+    return redirect()->route('user')->with('success', 'Data user berhasil ditambahkan!');
+}
 
     // Menampilkan Form Edit Guru
 public function edits($id)
@@ -62,7 +80,7 @@ public function updates(Request $request, $id)
 {
     $validated = $request->validate([
         'name' => 'required|string|max:255',
-        'email' => 'required|email|unique:users,email,',  
+        'email' => 'required|email|unique:users,email,',
         'role' => 'required|in:Admin,guru,user',
     ]);
 

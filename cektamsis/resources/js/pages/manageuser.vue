@@ -71,7 +71,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
                 <!-- Header -->
                 <div class="flex items-center justify-between mb-6">
                     <h1 class="text-xl font-semibold text-white">Data User</h1>
-                    <TextLink :href="route('guru.tambah')"
+                    <TextLink :href="route('user.tambah')"
                         class="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 transition">
                         <Plus class="h-4 w-4" />
                         Tambah User

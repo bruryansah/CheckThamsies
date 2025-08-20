@@ -7,10 +7,6 @@ Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');
 
-Route::get('dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
 Route::get('/tentang', function () {
     return Inertia::render('Tentang');
 });
@@ -30,34 +26,36 @@ Route::get('/xirpl', function () {
 Route::get('/xiirpl', function () {
     return Inertia::render('xiirpl');
 });
-// Guru Route Start
 use App\Http\Controllers\AdminCon;
-    Route::get('/user', [AdminCon::class, 'indexs'])->name('user');
-    Route::get('/user/tambah', [AdminCon::class, 'tambahs'])->name('user.tambah');
-    Route::post('/user/tambahstore', [AdminCon::class, 'stores']);
-    Route::get('/user/edit/{id}',  [AdminCon::class, 'edits'])->name('user.edit');
-    Route::put('/user/update/{id}', [AdminCon::class, 'updates']);
-    Route::get('/user/delete/{id}', [AdminCon::class, 'destroys'])->name('user.hapus');
+Route::get('dashboard', [AdminCon::class, 'dashboard'])
+->middleware(['auth', 'verified'])
+->name('dashboard');
+// Guru Route Start
+Route::get('/user', [AdminCon::class, 'indexs'])->name('user');
+Route::get('/user/tambah', [AdminCon::class, 'tambahs'])->name('user.tambah');
+Route::post('/user/tambahstore', [AdminCon::class, 'stores']);
+Route::get('/user/edit/{id}', [AdminCon::class, 'edits'])->name('user.edit');
+Route::put('/user/update/{id}', [AdminCon::class, 'updates']);
+Route::get('/user/delete/{id}', [AdminCon::class, 'destroys'])->name('user.hapus');
 // Guru Route End
 
 // Guru Route Start
-    Route::get('/guru', [AdminCon::class, 'index'])->name('guru');
-    Route::get('/guru/tambah', [AdminCon::class, 'tambah'])->name('guru.tambah');
-    Route::post('/guru/tambahstore', [AdminCon::class, 'store']);
-    Route::get('/guru/edit/{id}',  [AdminCon::class, 'edit'])->name('guru.edit');
-    Route::put('/guru/update/{id}', [AdminCon::class, 'update']);
-    Route::get('/guru/delete/{id}', [AdminCon::class, 'destroy'])->name('guru.hapus');
+Route::get('/guru', [AdminCon::class, 'index'])->name('guru');
+Route::get('/guru/tambah', [AdminCon::class, 'tambah'])->name('guru.tambah');
+Route::post('/guru/tambahstore', [AdminCon::class, 'store']);
+Route::get('/guru/edit/{id}', [AdminCon::class, 'edit'])->name('guru.edit');
+Route::put('/guru/update/{id}', [AdminCon::class, 'update']);
+Route::get('/guru/delete/{id}', [AdminCon::class, 'destroy'])->name('guru.hapus');
 // Guru Route End
 
 // Siswa X Route Start
-    Route::get('/siswax', [AdminCon::class, 'siswax'])->name('siswax');
-    Route::get('/siswax/tambah', [AdminCon::class, 'tambahx'])->name('siswax.tambah');
-    Route::post('/siswax/tambahstore', [AdminCon::class, 'storex']);
-    Route::get('/siswax/edit/{id}',  [AdminCon::class, 'editx'])->name('siswax.edit');
-    Route::put('/siswax/update/{id}', [AdminCon::class, 'updatex']);
-    Route::get('/siswax/delete/{id}', [AdminCon::class, 'destroyx'])->name('siswax.hapus');
+Route::get('/siswax', [AdminCon::class, 'siswax'])->name('siswax');
+Route::get('/siswax/tambah', [AdminCon::class, 'tambahx'])->name('siswax.tambah');
+Route::post('/siswax/tambahstore', [AdminCon::class, 'storex']);
+Route::get('/siswax/edit/{id}', [AdminCon::class, 'editx'])->name('siswax.edit');
+Route::put('/siswax/update/{id}', [AdminCon::class, 'updatex']);
+Route::get('/siswax/delete/{id}', [AdminCon::class, 'destroyx'])->name('siswax.hapus');
 // Siswa X Route End
 
-
-require __DIR__.'/settings.php';
-require __DIR__.'/auth.php';
+require __DIR__ . '/settings.php';
+require __DIR__ . '/auth.php';

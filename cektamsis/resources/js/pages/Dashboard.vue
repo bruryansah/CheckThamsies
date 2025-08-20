@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/vue3';
-import { Activity, Users, BookOpen, TrendingUp } from 'lucide-vue-next';
+import { Head, usePage } from '@inertiajs/vue3';
+import { Users, User, GraduationCap, Shield } from 'lucide-vue-next';
 import PlaceholderPattern from '../components/PlaceholderPattern.vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -11,6 +11,15 @@ const breadcrumbs: BreadcrumbItem[] = [
     href: '/dashboard',
   },
 ];
+
+// Ambil props dari Laravel (Inertia)
+const { props } = usePage();
+const stats = props as {
+  totalUsers: number;
+  totalSiswa: number;
+  totalGuru: number;
+  totalAdmin: number;
+};
 </script>
 
 <template>
@@ -20,65 +29,53 @@ const breadcrumbs: BreadcrumbItem[] = [
     <div class="flex h-full flex-1 flex-col gap-6 p-6 overflow-x-auto">
       <!-- Statistik Cards -->
       <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <div
-          class="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 shadow-lg hover:shadow-xl transition"
-        >
+        <!-- Total Users -->
+        <div class="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 shadow-lg hover:shadow-xl transition">
           <div class="flex items-center justify-between">
             <h3 class="text-sm font-medium text-zinc-400">Total Users</h3>
             <Users class="h-5 w-5 text-indigo-400" />
           </div>
-          <p class="mt-4 text-3xl font-bold text-white">1,245</p>
-          <p class="text-xs text-green-400 mt-1">+12% from last month</p>
+          <p class="mt-4 text-3xl font-bold text-white">{{ stats.totalUsers }}</p>
         </div>
 
-        <div
-          class="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 shadow-lg hover:shadow-xl transition"
-        >
+        <!-- Total Siswa -->
+        <div class="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 shadow-lg hover:shadow-xl transition">
           <div class="flex items-center justify-between">
-            <h3 class="text-sm font-medium text-zinc-400">Active Sessions</h3>
-            <Activity class="h-5 w-5 text-teal-400" />
+            <h3 class="text-sm font-medium text-zinc-400">Total Siswa</h3>
+            <GraduationCap class="h-5 w-5 text-green-400" />
           </div>
-          <p class="mt-4 text-3xl font-bold text-white">342</p>
-          <p class="text-xs text-red-400 mt-1">-5% this week</p>
+          <p class="mt-4 text-3xl font-bold text-white">{{ stats.totalSiswa }}</p>
         </div>
 
-        <div
-          class="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 shadow-lg hover:shadow-xl transition"
-        >
+        <!-- Total Guru -->
+        <div class="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 shadow-lg hover:shadow-xl transition">
           <div class="flex items-center justify-between">
-            <h3 class="text-sm font-medium text-zinc-400">Courses</h3>
-            <BookOpen class="h-5 w-5 text-purple-400" />
+            <h3 class="text-sm font-medium text-zinc-400">Total Guru</h3>
+            <User class="h-5 w-5 text-purple-400" />
           </div>
-          <p class="mt-4 text-3xl font-bold text-white">58</p>
-          <p class="text-xs text-green-400 mt-1">+3 new courses</p>
+          <p class="mt-4 text-3xl font-bold text-white">{{ stats.totalGuru }}</p>
         </div>
 
-        <div
-          class="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 shadow-lg hover:shadow-xl transition"
-        >
+        <!-- Total Admin -->
+        <div class="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 shadow-lg hover:shadow-xl transition">
           <div class="flex items-center justify-between">
-            <h3 class="text-sm font-medium text-zinc-400">Revenue</h3>
-            <TrendingUp class="h-5 w-5 text-amber-400" />
+            <h3 class="text-sm font-medium text-zinc-400">Total Admin</h3>
+            <Shield class="h-5 w-5 text-amber-400" />
           </div>
-          <p class="mt-4 text-3xl font-bold text-white">$12,450</p>
-          <p class="text-xs text-green-400 mt-1">+8% this month</p>
+          <p class="mt-4 text-3xl font-bold text-white">{{ stats.totalAdmin }}</p>
         </div>
       </div>
 
       <!-- Chart + Activity -->
       <div class="grid gap-6 md:grid-cols-3">
         <!-- Chart Section -->
-        <div
-          class="relative col-span-2 min-h-[350px] rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 shadow-lg"
-        >
+        <div class="relative col-span-2 min-h-[350px] rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 shadow-lg">
           <h3 class="text-lg font-semibold text-white mb-4">User Growth</h3>
           <PlaceholderPattern />
         </div>
 
         <!-- Recent Activity -->
-        <div
-          class="relative min-h-[350px] rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 shadow-lg"
-        >
+        <div class="relative min-h-[350px] rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 shadow-lg">
           <h3 class="text-lg font-semibold text-white mb-4">Recent Activity</h3>
           <ul class="space-y-4 text-sm text-zinc-400">
             <li class="flex justify-between items-center">
