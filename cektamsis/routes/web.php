@@ -44,3 +44,4 @@ Route::get('/siswax/delete/{id}', [AdminCon::class, 'destroyx'])->name('siswax.h
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
+// lkjhgfd
