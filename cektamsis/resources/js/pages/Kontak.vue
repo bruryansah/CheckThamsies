@@ -35,7 +35,7 @@ function submitForm() {
         onSuccess: () => {
             form.reset();
             submitMessage.value = 'Pesan Anda berhasil dikirim! Kami akan merespons dalam 1-2 hari kerja.';
-            
+
             // Clear success message after 5 seconds
             setTimeout(() => {
                 submitMessage.value = '';
@@ -43,7 +43,7 @@ function submitForm() {
         },
         onError: () => {
             submitMessage.value = 'Terjadi kesalahan saat mengirim pesan. Silakan coba lagi.';
-        }
+        },
     });
 }
 
@@ -92,7 +92,6 @@ onMounted(() => {
                 />
                 <div class="brand">
                     <span class="brand-title">Sistem Absensi SMK Tamansiswa 2</span>
-                    <span class="brand-subtitle">"Digital Attendance System"</span>
                 </div>
             </div>
 
@@ -179,24 +178,12 @@ onMounted(() => {
                                 <div class="form-row">
                                     <div class="form-group">
                                         <label for="nama">Nama Lengkap *</label>
-                                        <input 
-                                            type="text" 
-                                            id="nama" 
-                                            v-model="form.nama" 
-                                            placeholder="Masukkan nama lengkap" 
-                                            required 
-                                        />
+                                        <input type="text" id="nama" v-model="form.nama" placeholder="Masukkan nama lengkap" required />
                                         <div v-if="form.errors.nama" class="error-message">{{ form.errors.nama }}</div>
                                     </div>
                                     <div class="form-group">
                                         <label for="email">Email *</label>
-                                        <input 
-                                            type="email" 
-                                            id="email" 
-                                            v-model="form.email" 
-                                            placeholder="nama@email.com" 
-                                            required 
-                                        />
+                                        <input type="email" id="email" v-model="form.email" placeholder="nama@email.com" required />
                                         <div v-if="form.errors.email" class="error-message">{{ form.errors.email }}</div>
                                     </div>
                                 </div>
@@ -330,9 +317,7 @@ onMounted(() => {
                         alt="Logo SMK Tamansiswa 2 Jakarta"
                         class="footer-logo"
                     />
-                    <span class="footer-text"
-                        >© 2024 SMK TAMANSISWA 2 JAKARTA | RPL</span
-                    >
+                    <span class="footer-text">© 2024 SMK TAMANSISWA 2 JAKARTA | RPL</span>
                 </div>
                 <div class="footer-right">
                     <a href="https://facebook.com/smktamansiswa2jakarta" class="social-link" target="_blank" title="Facebook">
