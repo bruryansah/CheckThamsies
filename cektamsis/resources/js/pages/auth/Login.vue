@@ -28,7 +28,7 @@ const submit = () => {
 </script>
 
 <template>
-    <AuthBase title="Login - Sistem Absensi Digital" description="SMK Tamansiswa 2 Jakarta">
+    <AuthBase title="Login - Sistem Absensi Digital" description="">
         <Head title="Login" />
 
         <form method="POST" @submit.prevent="submit" class="space-y-5">
