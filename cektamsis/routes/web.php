@@ -56,28 +56,3 @@ use App\Http\Controllers\AdminCon;
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
 
-
-Route::get('/redirect-dashboard', function () {
-    $user = auth()->user();
-
-    return match ($user->role) {
-        'admin' => redirect()->route('admin.dashboard'),
-        'guru'  => redirect()->route('guru.dashboard'),
-        default => redirect()->route('user.dashboard'),
-    };
-})->middleware('auth');
-
-Route::middleware(['auth', 'role:admin'])->group(function () {
-    Route::get('/admin/dashboard', fn () => inertia('Admin/Dashboard'))
-        ->name('admin.dashboard');
-});
-
-Route::middleware(['auth', 'role:guru'])->group(function () {
-    Route::get('/guru/dashboard', fn () => inertia('Guru/Dashboard'))
-        ->name('guru.dashboard');
-});
-
-Route::middleware(['auth', 'role:user'])->group(function () {
-    Route::get('dashboard', fn () => inertia('Dashboard'))
-        ->name('dashboard');
-});
