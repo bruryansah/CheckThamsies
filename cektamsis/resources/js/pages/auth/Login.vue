@@ -28,7 +28,7 @@ const submit = () => {
 </script>
 
 <template>
-    <AuthBase title="Login - Sistem Absensi Digital" description="SMK Tamansiswa 2 Jakarta">
+    <AuthBase title="Login - Sistem Absensi Digital" description="">
         <Head title="Login" />
 
         <form method="POST" @submit.prevent="submit" class="space-y-5">
@@ -75,10 +75,7 @@ const submit = () => {
                 Masuk
             </Button>
 
-            <p class="text-center text-sm text-gray-600 mt-4">
-                Belum punya akun?
-                <TextLink :href="route('register')" class="text-black-600 hover:underline">Daftar</TextLink>
-            </p>
+             
         </form>
     </AuthBase>
 </template>

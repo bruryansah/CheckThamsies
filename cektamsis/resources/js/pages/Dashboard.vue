@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, usePage } from '@inertiajs/vue3';
-import { Users, User, GraduationCap, Shield } from 'lucide-vue-next';
+import { Head } from '@inertiajs/vue3';
+import { Activity, Users, BookOpen, TrendingUp } from 'lucide-vue-next';
 import PlaceholderPattern from '../components/PlaceholderPattern.vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -11,15 +11,6 @@ const breadcrumbs: BreadcrumbItem[] = [
     href: '/dashboard',
   },
 ];
-
-// Ambil props dari Laravel (Inertia)
-const { props } = usePage();
-const stats = props as {
-  totalUsers: number;
-  totalSiswa: number;
-  totalGuru: number;
-  totalAdmin: number;
-};
 </script>
 
 <template>
@@ -29,17 +20,20 @@ const stats = props as {
     <div class="flex h-full flex-1 flex-col gap-6 p-6 overflow-x-auto">
       <!-- Statistik Cards -->
       <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <!-- Total Users -->
-        <div class="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 shadow-lg hover:shadow-xl transition">
+        <div
+          class="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 shadow-lg hover:shadow-xl transition"
+        >
           <div class="flex items-center justify-between">
             <h3 class="text-sm font-medium text-zinc-400">Total Users</h3>
             <Users class="h-5 w-5 text-indigo-400" />
           </div>
-          <p class="mt-4 text-3xl font-bold text-white">{{ stats.totalUsers }}</p>
+          <p class="mt-4 text-3xl font-bold text-white">1,245</p>
+          <p class="text-xs text-green-400 mt-1">+12% from last month</p>
         </div>
 
-        <!-- Total Siswa -->
-        <div class="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 shadow-lg hover:shadow-xl transition">
+        <div
+          class="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 shadow-lg hover:shadow-xl transition"
+        >
           <div class="flex items-center justify-between">
             <h3 class="text-sm font-medium text-zinc-400">Total Siswa</h3>
             <GraduationCap class="h-5 w-5 text-green-400" />
@@ -67,7 +61,7 @@ const stats = props as {
       </div>
 
       <!-- Chart + Activity -->
-      <div class="grid gap-6 md:grid-cols-3">
+      <div class="grid gap-6 md:grid-cols-3 mt-6">
         <!-- Chart Section -->
         <div class="relative col-span-2 min-h-[350px] rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 shadow-lg">
           <h3 class="text-lg font-semibold text-white mb-4">User Growth</h3>

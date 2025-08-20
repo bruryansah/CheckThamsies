@@ -1,11 +1,15 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Livewire\Settings\Profile;
+use App\Livewire\Settings\Password;
+use App\Livewire\Settings\Appearance;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\KontakController;
+use App\Http\Controllers\AdminCon; // ✅ pindah ke atas (wajib)
 
-Route::get('/', function () {
-    return Inertia::render('Welcome');
-})->name('home');
+// Halaman umum
+Route::get('/', fn () => Inertia::render('Welcome'))->name('home');
 
 Route::get('/tentang', function () {
     return Inertia::render('Tentang');
@@ -26,7 +30,7 @@ Route::get('/xirpl', function () {
 Route::get('/xiirpl', function () {
     return Inertia::render('xiirpl');
 });
-use App\Http\Controllers\AdminCon;
+
 Route::get('dashboard', [AdminCon::class, 'dashboard'])
 ->middleware(['auth', 'verified'])
 ->name('dashboard');
@@ -38,6 +42,12 @@ Route::get('/user/edit/{id}', [AdminCon::class, 'edits'])->name('user.edit');
 Route::put('/user/update/{id}', [AdminCon::class, 'updates']);
 Route::get('/user/delete/{id}', [AdminCon::class, 'destroys'])->name('user.hapus');
 // Guru Route End
+
+
+Route::get('/tentang', fn () => Inertia::render('Tentang'));
+Route::get('/fitur', fn () => Inertia::render('Fitur'));
+Route::get('/kontak', fn () => Inertia::render('Kontak'));
+Route::post('/kontak', [KontakController::class, 'store'])->name('kontak.store');
 
 // Guru Route Start
 Route::get('/guru', [AdminCon::class, 'index'])->name('guru');
@@ -57,5 +67,6 @@ Route::put('/siswax/update/{id}', [AdminCon::class, 'updatex']);
 Route::get('/siswax/delete/{id}', [AdminCon::class, 'destroyx'])->name('siswax.hapus');
 // Siswa X Route End
 
-require __DIR__ . '/settings.php';
-require __DIR__ . '/auth.php';
+require __DIR__.'/settings.php';
+require __DIR__.'/auth.php';
+// lkjhgfd
