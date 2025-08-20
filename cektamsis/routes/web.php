@@ -41,6 +41,7 @@ Route::get('/xiirpl', function () {
 
 // Guru Route Start
 use App\Http\Controllers\AdminCon;
+use Illuminate\Support\Facades\Auth;
     Route::get('/guru', [AdminCon::class, 'index'])->name('guru');
     Route::get('/guru/tambah', [AdminCon::class, 'tambah'])->name('guru.tambah');
     Route::post('/guru/tambahstore', [AdminCon::class, 'store']);
@@ -64,7 +65,7 @@ require __DIR__.'/auth.php';
 
 
 Route::get('/redirect-dashboard', function () {
-    $user = auth()->user();
+    $user = Auth::user();
 
     return match ($user->role) {
         'admin' => redirect()->route('admin.dashboard'),
