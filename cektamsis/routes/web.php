@@ -1,10 +1,11 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use App\Livewire\Settings\Appearance;
-use App\Livewire\Settings\Password;
 use App\Livewire\Settings\Profile;
+use App\Livewire\Settings\Password;
+use App\Livewire\Settings\Appearance;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\KontakController;
 use App\Http\Controllers\AdminCon; // ✅ pindah ke atas (wajib)
 
 // Halaman umum
@@ -17,6 +18,7 @@ Route::get('/dashboard', fn () => Inertia::render('Dashboard'))
 Route::get('/tentang', fn () => Inertia::render('Tentang'));
 Route::get('/fitur', fn () => Inertia::render('Fitur'));
 Route::get('/kontak', fn () => Inertia::render('Kontak'));
+Route::post('/kontak', [KontakController::class, 'store'])->name('kontak.store');
 
 Route::get('/xrpl', fn () => Inertia::render('xrpl'));
 Route::get('/xirpl', fn () => Inertia::render('xirpl'));
