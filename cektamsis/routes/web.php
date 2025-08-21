@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\KontakController;
 use App\Http\Controllers\AdminCon; // ✅ pindah ke atas (wajib)
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Auth\ForgotPasswordController;
+use App\Http\Controllers\Auth\ResetPasswordController;
 
 
 // Halaman umum
@@ -152,3 +154,28 @@ Route::middleware(['auth'])->group(function () {
     })->name('user.dashboard');
 });
 
+use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\NewPasswordController;
+
+// Halaman form lupa password
+Route::get('/forgot-password', fn () => Inertia::render('auth/ForgotPassword'))
+    ->middleware('guest')
+    ->name('password.request');
+
+// Kirim link reset ke email
+Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])
+    ->middleware('guest')
+    ->name('password.email');
+
+// Halaman form reset password
+Route::get('/reset-password/{token}', function (string $token) {
+    return Inertia::render('auth/ResetPassword', [
+        'token' => $token,
+        'email' => request('email'),
+    ]);
+})->middleware('guest')->name('password.reset');
+
+// Proses reset password
+Route::post('/reset-password', [NewPasswordController::class, 'store'])
+    ->middleware('guest')
+    ->name('password.store');
