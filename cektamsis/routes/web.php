@@ -34,10 +34,6 @@ Route::get('/xirpl', function () {
 Route::get('/xiirpl', function () {
     return Inertia::render('xiirpl');
 });
-
-Route::get('dashboard', [AdminCon::class, 'dashboard'])
-->middleware(['auth', 'verified'])
-->name('dashboard');
 // Users Route Start
 Route::get('/user', [AdminCon::class, 'indexs'])->name('user');
 Route::get('/user/tambah', [AdminCon::class, 'tambahs'])->name('user.tambah');
@@ -120,7 +116,7 @@ require __DIR__.'/auth.php';
 //
 
 
-// MULTI USERRRRRRRRRRRRRRRRRRRRR 
+// MULTI USERRRRRRRRRRRRRRRRRRRRR
 
 use App\Enums\UserRole;
 
@@ -141,9 +137,8 @@ Route::get('/dashboard', function () {
 
 // role: admin
 Route::middleware(['auth'])->group(function () {
-    Route::get('/admin/dashboard', function () {
-        return Inertia::render('Admin/Dashboard');
-    })->name('admin.dashboard');
+    Route::get('/admin/dashboard', [AdminCon::class, 'dashboard']
+    )->name('admin.dashboard');
 
     Route::get('/guru/dashboard', function () {
         return Inertia::render('Guru/Dashboard');
