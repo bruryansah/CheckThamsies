@@ -27,7 +27,10 @@ import AppLayout from '@/layouts/AppLayout.vue';
     interface kelas {
         id_kelas: number
         nama_kelas: string
+        tingkat_kelas: string
+        total_siswa: string
         jurusan: string
+        guru: string
     }
 
     // contoh dummy data
@@ -86,7 +89,13 @@ import AppLayout from '@/layouts/AppLayout.vue';
                                 </th>
                                 <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Nama Kelas
                                 </th>
+                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Tingkat Kelas
+                                </th>
+                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Total Siswa
+                                </th>
                                 <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Nama Jurusan
+                                </th>
+                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Wali Kelas
                                 </th>
                                 <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Aksi
                                 </th>
@@ -97,7 +106,10 @@ import AppLayout from '@/layouts/AppLayout.vue';
                                 class="hover:bg-zinc-800/60 transition">
                                 <td class="px-6 py-4 text-center">{{ kelas.id_kelas }}</td>
                                 <td class="px-6 py-4 text-center">{{ kelas.nama_kelas }}</td>
+                                <td class="px-6 py-4 text-center">{{ kelas.tingkat_kelas }}</td>
+                                <td class="px-6 py-4 text-center">{{ kelas.total_siswa }}</td>
                                 <td class="px-6 py-4 text-center">{{ kelas.jurusan }}</td>
+                                <td class="px-6 py-4 text-center">{{ kelas.guru }}</td>
                                 <td class="px-6 py-4 text-center">
                                     <div class="flex justify-center gap-2">
                                         <TextLink :href="route('kelas.edit', kelas.id_kelas)"
