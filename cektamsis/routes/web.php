@@ -7,6 +7,8 @@ use App\Livewire\Settings\Appearance;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\KontakController;
 use App\Http\Controllers\AdminCon; // ✅ pindah ke atas (wajib)
+use Illuminate\Support\Facades\Auth;
+
 
 // Halaman umum
 Route::get('/', fn () => Inertia::render('Welcome'))->name('home');
@@ -44,4 +46,39 @@ Route::get('/siswax/delete/{id}', [AdminCon::class, 'destroyx'])->name('siswax.h
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
-// lkjhgfd
+//
+
+
+// MULTI USERRRRRRRRRRRRRRRRRRRRR 
+
+use App\Enums\UserRole;
+
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+
+
+// dashboard router
+Route::get('/dashboard', function () {
+    $role = Auth::user()->role->value ?? null;
+
+    return match ($role) {
+        UserRole::ADMIN->value => redirect('/admin/dashboard'),
+        UserRole::GURU->value  => redirect('/guru/dashboard'),
+        UserRole::USER->value  => redirect('/user/dashboard'),
+        default => redirect('/login'),
+    };
+})->middleware(['auth'])->name('dashboard');
+
+// role: admin
+Route::middleware(['auth'])->group(function () {
+    Route::get('/admin/dashboard', function () {
+        return Inertia::render('Admin/Dashboard');
+    })->name('admin.dashboard');
+
+    Route::get('/guru/dashboard', function () {
+        return Inertia::render('Guru/Dashboard');
+    })->name('guru.dashboard');
+
+    Route::get('/user/dashboard', function () {
+        return Inertia::render('User/Dashboard');
+    })->name('user.dashboard');
+});
