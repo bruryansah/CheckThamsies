@@ -20,62 +20,60 @@ import AppLayout from '@/layouts/AppLayout.vue';
             href: '/dashboard',
         },
         {
-            title: 'Data Guru',
-            href: '/guru',
+            title: 'Data Kelaselas',
+            href: '/kelas',
         },
     ];
-    interface Guru {
-        id_guru: number
-        nama: string
-        email: string
-        kelas: string
-        mapel: string
+    interface kelas {
+        id_kelas: number
+        nama_kelas: string
+        jurusan: string
     }
 
     // contoh dummy data
     const props = defineProps < {
-        guru: Guru[]
+        kelas: kelas[]
     } > ()
 
     // State untuk modal konfirmasi
     const showConfirmModal = ref(false)
-    const selectedGuru = ref<Guru | null>(null)
+    const selectedkelas = ref<kelas | null>(null)
 
     // Function untuk menampilkan konfirmasi hapus
-    const confirmDelete = (guru: Guru) => {
-        selectedGuru.value = guru
+    const confirmDelete = (kelas: kelas) => {
+        selectedkelas.value = kelas
         showConfirmModal.value = true
     }
 
-    // Function untuk membatalkan hapus
+    // Function untuk membatalkan kelas
     const cancelDelete = () => {
         showConfirmModal.value = false
-        selectedGuru.value = null
+        selectedkelas.value = null
     }
 
     // Function untuk melanjutkan hapus
     const proceedDelete = () => {
-        if (selectedGuru.value) {
+        if (selectedkelas.value) {
             // Redirect ke route hapus
-            window.location.href = route('guru.hapus', selectedGuru.value.id_guru)
+            window.location.href = route('kelas.hapus', selectedkelas.value.id_kelas)
         }
     }
 </script>
 
 <template>
 
-    <Head title="Data Guru" />
+    <Head title="Data Mapel" />
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <div class="flex h-full flex-1 flex-col gap-6 p-6 overflow-x-auto">
             <div class="rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-lg">
                 <!-- Header -->
                 <div class="flex items-center justify-between mb-6">
-                    <h1 class="text-xl font-semibold text-white">Data Guru</h1>
-                    <TextLink :href="route('guru.tambah')"
+                    <h1 class="text-xl font-semibold text-white">Data Kelas</h1>
+                    <TextLink :href="route('kelas.tambah')"
                         class="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 transition">
                         <Plus class="h-4 w-4" />
-                        Tambah Guru
+                        Tambah Kelas
                     </TextLink>
                 </div>
 
@@ -84,35 +82,29 @@ import AppLayout from '@/layouts/AppLayout.vue';
                     <table class="min-w-full divide-y divide-zinc-800">
                         <thead class="bg-zinc-800">
                             <tr>
-                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Id Siswa
+                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Id Kelas
                                 </th>
-                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Nama
+                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Nama Kelas
                                 </th>
-                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Email
-                                </th>
-                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Kelas
-                                </th>
-                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Mapel
+                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Nama Jurusan
                                 </th>
                                 <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Aksi
                                 </th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-zinc-800 bg-zinc-900 text-sm text-zinc-200">
-                            <tr v-for="guru in props.guru" :key="guru.id_guru"
+                            <tr v-for="kelas in props.kelas" :key="kelas.id_kelas"
                                 class="hover:bg-zinc-800/60 transition">
-                                <td class="px-6 py-4 text-center">{{ guru.id_guru }}</td>
-                                <td class="px-6 py-4 text-center">{{ guru.nama }}</td>
-                                <td class="px-6 py-4 text-center">{{ guru.email }}</td>
-                                <td class="px-6 py-4 text-center">{{ guru.kelas }}</td>
-                                <td class="px-6 py-4 text-center">{{ guru.mapel }}</td>
+                                <td class="px-6 py-4 text-center">{{ kelas.id_kelas }}</td>
+                                <td class="px-6 py-4 text-center">{{ kelas.nama_kelas }}</td>
+                                <td class="px-6 py-4 text-center">{{ kelas.jurusan }}</td>
                                 <td class="px-6 py-4 text-center">
                                     <div class="flex justify-center gap-2">
-                                        <TextLink :href="route('guru.edit', guru.id_guru)"
+                                        <TextLink :href="route('kelas.edit', kelas.id_kelas)"
                                             class="rounded-lg bg-yellow-500 px-3 py-1 text-xs font-semibold text-white hover:bg-yellow-600">
                                             Edit
                                         </TextLink>
-                                        <button @click="confirmDelete(guru)"
+                                        <button @click="confirmDelete(kelas)"
                                             class="rounded-lg bg-red-600 px-3 py-1 text-xs font-semibold text-white hover:bg-red-700 transition">
                                             Hapus
                                         </button>
@@ -142,7 +134,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
                     <!-- Content -->
                     <div class="mb-6">
                         <p class="text-zinc-300">
-                            Apakah Anda yakin ingin menghapus data guru <strong class="text-white">{{ selectedGuru?.nama }}</strong>?
+                            Apakah Anda yakin ingin menghapus data Kelas <strong class="text-white">{{ selectedkelas?.nama_kelas }}</strong>?
                         </p>
                         <p class="text-sm text-zinc-400 mt-2">
                             Tindakan ini tidak dapat dibatalkan.
