@@ -145,7 +145,7 @@ onMounted(() => {
                         alt="Logo SMK Tamansiswa 2 Jakarta"
                         class="footer-logo"
                     />
-                    <span class="footer-text">© 2024 SMK TAMANSISWA 2 JAKARTA | RPL</span>
+                    <span class="footer-text">© 2025 SMK TAMANSISWA 2 JAKARTA | RPL</span>
                 </div>
                 <div class="footer-right">
                     <a href="https://facebook.com/smktamansiswa2jakarta" class="social-link" target="_blank" title="Facebook">
@@ -1018,7 +1018,6 @@ onMounted(() => {
     height: 40px;
     object-fit: contain;
     flex-shrink: 0;
-    filter: brightness(0) invert(1);
 }
 
 .footer-text {

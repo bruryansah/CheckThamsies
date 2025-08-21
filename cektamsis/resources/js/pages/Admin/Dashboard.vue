@@ -1,75 +1,3 @@
-<script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
-import { type BreadcrumbItem } from '@/types';
-import { Head, usePage } from '@inertiajs/vue3';
-import { Users, User, GraduationCap, Shield, RefreshCw, AlertTriangle, PieChart, Settings } from 'lucide-vue-next';
-import PlaceholderPattern from '../components/PlaceholderPattern.vue';
-import { ref } from 'vue';
-
-const breadcrumbs: BreadcrumbItem[] = [
-  {
-    title: 'Dashboard',
-    href: '/dashboard',
-  },
-];
-
-// Ambil props dari Laravel (Inertia)
-const { props } = usePage();
-const stats = props as {
-  totalUsers: number;
-  totalSiswa: number;
-  totalGuru: number;
-  totalAdmin: number;
-};
-
-// Dummy data untuk distribusi kehadiran per kelas
-const kelasData = ref([
-  { kelas: 'X RPL 1', hadir: 28, izin: 2, sakit: 1, alpha: 1, total: 32 },
-  { kelas: 'XI RPL 1', hadir: 27, izin: 3, sakit: 1, alpha: 1, total: 32 },
-  { kelas: 'XII RPL 1', hadir: 25, izin: 4, sakit: 2, alpha: 1, total: 32 },
-]);
-
-// Hitung persentase kehadiran
-const getPercentage = (hadir: number, total: number) => {
-  return Math.round((hadir / total) * 100);
-};
-
-// Warna berdasarkan persentase kehadiran
-const getStatusColor = (percentage: number) => {
-  if (percentage >= 90) return 'text-green-400';
-  if (percentage >= 80) return 'text-yellow-400';
-  if (percentage >= 70) return 'text-orange-400';
-  return 'text-red-400';
-};
-
-const getProgressColor = (percentage: number) => {
-  if (percentage >= 90) return 'bg-green-500';
-  if (percentage >= 80) return 'bg-yellow-500';
-  if (percentage >= 70) return 'bg-orange-500';
-  return 'bg-red-500';
-};
-</script>
- <style>
-              /* Webkit browsers (Chrome, Safari, Edge) */
-              .custom-scrollbar::-webkit-scrollbar {
-                width: 6px;
-              }
-
-              .custom-scrollbar::-webkit-scrollbar-track {
-                background: #27272a;
-                border-radius: 10px;
-              }
-
-              .custom-scrollbar::-webkit-scrollbar-thumb {
-                background: #52525b;
-                border-radius: 10px;
-                transition: background-color 0.2s ease;
-              }
-
-              .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-                background: #71717a;
-              }
-            </style>
 <template>
   <Head title="Dashboard" />
 
@@ -220,8 +148,8 @@ const getProgressColor = (percentage: number) => {
               <div class="flex items-start gap-3">
                 <AlertTriangle class="h-4 w-4 text-yellow-400 mt-1 flex-shrink-0" />
                 <div class="flex-1">
-                  <h4 class="text-yellow-400 font-medium text-sm">Siswa Belum Absen</h4>
-                  <p class="text-zinc-400 text-xs mt-1">3 Siswa belum melakukan absen masuk</p>
+                  <h4 class="text-yellow-400 font-medium text-sm">Guru Belum Absen</h4>
+                  <p class="text-zinc-400 text-xs mt-1">3 guru belum melakukan absen masuk</p>
                   <button class="text-yellow-400 text-xs underline mt-2">Kirim Reminder</button>
                 </div>
               </div>
@@ -382,3 +310,11 @@ const getProgressColor = (percentage: number) => {
     </div>
   </AppLayout>
 </template>
+
+<script setup>
+import { router } from '@inertiajs/vue3'
+
+const logout = () => {
+  router.post(route('logout'))
+}
+</script>

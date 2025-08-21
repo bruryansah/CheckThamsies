@@ -1,6 +1,7 @@
 <template>
   <div class="p-6">
-    <h1 class="text-2xl font-bold mb-4">Dashboard Guru</h1>
+    <h1 class="text-2xl font-bold mb-4">    pindahin semua Dashboard ke sini (buat user biasa)
+</h1>
 
     <!-- Tombol logout -->
     <button
