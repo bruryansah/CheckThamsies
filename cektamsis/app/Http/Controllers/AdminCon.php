@@ -15,7 +15,7 @@ class AdminCon extends Controller
 {
     public function dashboard(): Response
     {
-        return Inertia::render('Dashboard', [
+        return Inertia::render('Admin/Dashboard', [
             'totalUsers' => User::count(),
             'totalSiswa' => User::where('role', 'user')->count(),
             'totalGuru' => User::where('role', 'guru')->count(),
@@ -28,13 +28,13 @@ class AdminCon extends Controller
     public function indexs()
     {
         $user = DB::table('users')->select('id', 'name', 'email', 'role')->get();
-        return Inertia::render('manageuser', ['users' => $user]);
+        return Inertia::render('Admin/manageuser', ['users' => $user]);
     }
 
     // Menampilkan Form Tambah Guru
     public function tambahs()
     {
-        return inertia('tambahuser', []);
+        return inertia('Admin/tambahuser', []);
     }
 
     // Menyimpan Data Guru Yang Dikirim dari Form Tambah Guru
@@ -70,7 +70,7 @@ class AdminCon extends Controller
         // Hapus ini jika tidak diperlukan, atau ganti nama variable
         // $users = \App\Models\User::select(['id', 'name', 'email', 'role'])->get();
 
-        return inertia('edituser', [
+        return inertia('Admin/edituser', [
             'user' => $user, // single user untuk diedit
             // 'users' => $users,  // hapus atau ganti nama jika diperlukan
         ]);
@@ -113,7 +113,7 @@ class AdminCon extends Controller
     public function index()
     {
         $guru = DB::table('guru')->join('kelas', 'guru.id_kelas', '=', 'kelas.id_kelas')->join('mapel', 'guru.id_mapel', '=', 'mapel.id_mapel')->select('guru.id_guru', 'guru.nama', 'guru.email', 'kelas.nama_kelas as kelas', 'mapel.nama_mapel as mapel')->get();
-        return Inertia::render('guru', ['guru' => $guru]);
+        return Inertia::render('Admin/guru', ['guru' => $guru]);
     }
 
     // Menampilkan Form Tambah Guru
@@ -122,7 +122,7 @@ class AdminCon extends Controller
         $users = \App\Models\User::where('role', 'guru')->select('id', 'name', 'email')->get();
         $kelas = \App\Models\kelas::all(['id_kelas', 'nama_kelas']); // ambil user yang ada
         $mapel = \App\Models\Mapel::all(['id_mapel', 'nama_mapel']); // ambil user yang ada
-        return inertia('tambahguru', [
+        return inertia('Admin/tambahguru', [
             'users' => $users,
             'kelas' => $kelas,
             'mapel' => $mapel,
@@ -156,7 +156,7 @@ class AdminCon extends Controller
         $kelas = \App\Models\kelas::all(['id_kelas', 'nama_kelas']);
         $mapel = \App\Models\Mapel::all(['id_mapel', 'nama_mapel']);
 
-        return inertia('editguru', [
+        return inertia('Admin/editguru', [
             'guru' => $guru,
             'users' => $users,
             'kelas' => $kelas,
@@ -212,7 +212,7 @@ class AdminCon extends Controller
             ->where('kelas.nama_kelas', '=', 'X RPL') // Filter hanya kelas X RPL
             ->get();
 
-        return Inertia::render('xrpl', ['siswa' => $siswax]);
+        return Inertia::render('Admin/xrpl', ['siswa' => $siswax]);
     }
 
     // Menampilkan Form Tambah Siswa Kelas X RPL
@@ -221,7 +221,7 @@ class AdminCon extends Controller
         $users = \App\Models\User::where('role', 'user')->select('id', 'name', 'email')->get();
         $kelas = \App\Models\kelas::all(['id_kelas', 'nama_kelas']);
         $jurusan = \App\Models\Jurusan::all(['id_jurusan', 'nama_jurusan']);
-        return inertia('tambahx', [
+        return inertia('Admin/tambahx', [
             'users' => $users,
             'kelas' => $kelas,
             'jurusan' => $jurusan,
@@ -254,7 +254,7 @@ class AdminCon extends Controller
         $kelas = \App\Models\kelas::all(['id_kelas', 'nama_kelas']);
         $jurusan = \App\Models\Jurusan::all(['id_jurusan', 'nama_jurusan']);
 
-        return inertia('editx', [
+        return inertia('Admin/editx', [
             'siswa' => $siswa,
             'users' => $users,
             'kelas' => $kelas,
@@ -310,7 +310,7 @@ class AdminCon extends Controller
             ->where('kelas.nama_kelas', '=', 'XI RPL') // Filter hanya kelas X RPL
             ->get();
 
-        return Inertia::render('xirpl', ['siswa' => $siswa]);
+        return Inertia::render('Admin/xirpl', ['siswa' => $siswa]);
     }
 
     // Menampilkan Form Tambah Siswa Kelas X RPL
@@ -319,7 +319,7 @@ class AdminCon extends Controller
         $users = \App\Models\User::where('role', 'user')->select('id', 'name', 'email')->get();
         $kelas = \App\Models\kelas::all(['id_kelas', 'nama_kelas']);
         $jurusan = \App\Models\Jurusan::all(['id_jurusan', 'nama_jurusan']);
-        return inertia('tambahxi', [
+        return inertia('Admin/tambahxi', [
             'users' => $users,
             'kelas' => $kelas,
             'jurusan' => $jurusan,
@@ -352,7 +352,7 @@ class AdminCon extends Controller
         $kelas = \App\Models\kelas::all(['id_kelas', 'nama_kelas']);
         $jurusan = \App\Models\Jurusan::all(['id_jurusan', 'nama_jurusan']);
 
-        return inertia('editxi', [
+        return inertia('Admin/editxi', [
             'siswa' => $siswa,
             'users' => $users,
             'kelas' => $kelas,
@@ -408,7 +408,7 @@ class AdminCon extends Controller
             ->where('kelas.nama_kelas', '=', 'XII RPL') // Filter hanya kelas X RPL
             ->get();
 
-        return Inertia::render('xiirpl', ['siswa' => $siswa]);
+        return Inertia::render('Admin/xiirpl', ['siswa' => $siswa]);
     }
 
     // Menampilkan Form Tambah Siswa Kelas X RPL
@@ -417,7 +417,7 @@ class AdminCon extends Controller
         $users = \App\Models\User::where('role', 'user')->select('id', 'name', 'email')->get();
         $kelas = \App\Models\kelas::all(['id_kelas', 'nama_kelas']);
         $jurusan = \App\Models\Jurusan::all(['id_jurusan', 'nama_jurusan']);
-        return inertia('tambahxii', [
+        return inertia('Admin/tambahxii', [
             'users' => $users,
             'kelas' => $kelas,
             'jurusan' => $jurusan,
@@ -450,7 +450,7 @@ class AdminCon extends Controller
         $kelas = \App\Models\kelas::all(['id_kelas', 'nama_kelas']);
         $jurusan = \App\Models\Jurusan::all(['id_jurusan', 'nama_jurusan']);
 
-        return inertia('editxii', [
+        return inertia('Admin/editxii', [
             'siswa' => $siswa,
             'users' => $users,
             'kelas' => $kelas,
@@ -500,13 +500,13 @@ class AdminCon extends Controller
     public function indexm()
     {
         $mapel = DB::table('mapel')->select('id_mapel', 'nama_mapel')->get();
-        return Inertia::render('mapel', ['mapel' => $mapel]);
+        return Inertia::render('Admin/mapel', ['mapel' => $mapel]);
     }
 
     // Menampilkan Form Tambah Mapel
     public function tambahm()
     {
-        return inertia('tambahmapel', []);
+        return inertia('Admin/tambahmapel', []);
     }
 
     // Menyimpan Data Mapel Yang Dikirim dari Form Tambah Mapel
@@ -531,7 +531,7 @@ class AdminCon extends Controller
     {
         $mapel = DB::table('mapel')->where('id_mapel', $id)->first();
 
-        return inertia('editmapel', [
+        return inertia('Admin/editmapel', [
             'mapel' => $mapel,
         ]);
     }
@@ -569,7 +569,7 @@ class AdminCon extends Controller
     public function indexk()
     {
         $kelas = DB::table('kelas')->join('jurusan', 'kelas.id_jurusan', '=', 'jurusan.id_jurusan')->select('kelas.id_kelas', 'kelas.nama_kelas', 'jurusan.nama_jurusan as jurusan')->get();
-        return Inertia::render('kelas', ['kelas' => $kelas]);
+        return Inertia::render('Admin/kelas', ['kelas' => $kelas]);
     }
 
     // Menampilkan Form Tambah Kelas
@@ -577,7 +577,7 @@ class AdminCon extends Controller
     {
         $kelas = \App\Models\kelas::all(['id_kelas', 'nama_kelas']); // ambil user yang ada
         $jurusan = \App\Models\Jurusan::all(['id_jurusan', 'nama_jurusan']); // ambil user yang ada
-        return inertia('tambahkelas', [
+        return inertia('Admin/tambahkelas', [
             'kelas' => $kelas,
             'jurusan' => $jurusan,
         ]);
@@ -607,7 +607,7 @@ class AdminCon extends Controller
     {
         $kelas = DB::table('kelas')->where('id_kelas', $id)->first(); // gunakan first()
         $jurusan = \App\Models\Jurusan::all(['id_jurusan', 'nama_jurusan']); // ambil user yang ada
-        return inertia('editkelas', [
+        return inertia('Admin/editkelas', [
             'kelas' => $kelas,
             'jurusan' => $jurusan,
         ]);
@@ -648,13 +648,13 @@ class AdminCon extends Controller
     public function indexj()
     {
         $jurusan = DB::table('jurusan')->select('id_jurusan', 'nama_jurusan')->get();
-        return Inertia::render('jurusan', ['jurusan' => $jurusan]);
+        return Inertia::render('Admin/jurusan', ['jurusan' => $jurusan]);
     }
 
     // Menampilkan Form Tambah Jurusan
     public function tambahj()
     {
-        return inertia('tambahjurusan', []);
+        return inertia('Admin/tambahjurusan', []);
     }
 
     // Menyimpan Data Jurusan Yang Dikirim dari Form Tambah Jurusan
@@ -679,7 +679,7 @@ class AdminCon extends Controller
     {
         $jurusan = DB::table('jurusan')->where('id_jurusan', $id)->first();
 
-        return inertia('editjurusan', [
+        return inertia('Admin/editjurusan', [
             'jurusan' => $jurusan,
         ]);
     }

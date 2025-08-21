@@ -2,8 +2,9 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, usePage } from '@inertiajs/vue3';
-import { Users, User, GraduationCap, Shield } from 'lucide-vue-next';
+import { Users, User, GraduationCap, Shield, RefreshCw, AlertTriangle, PieChart, Settings } from 'lucide-vue-next';
 import PlaceholderPattern from '../components/PlaceholderPattern.vue';
+import { ref } from 'vue';
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -20,8 +21,55 @@ const stats = props as {
   totalGuru: number;
   totalAdmin: number;
 };
-</script>
 
+// Dummy data untuk distribusi kehadiran per kelas
+const kelasData = ref([
+  { kelas: 'X RPL 1', hadir: 28, izin: 2, sakit: 1, alpha: 1, total: 32 },
+  { kelas: 'XI RPL 1', hadir: 27, izin: 3, sakit: 1, alpha: 1, total: 32 },
+  { kelas: 'XII RPL 1', hadir: 25, izin: 4, sakit: 2, alpha: 1, total: 32 },
+]);
+
+// Hitung persentase kehadiran
+const getPercentage = (hadir: number, total: number) => {
+  return Math.round((hadir / total) * 100);
+};
+
+// Warna berdasarkan persentase kehadiran
+const getStatusColor = (percentage: number) => {
+  if (percentage >= 90) return 'text-green-400';
+  if (percentage >= 80) return 'text-yellow-400';
+  if (percentage >= 70) return 'text-orange-400';
+  return 'text-red-400';
+};
+
+const getProgressColor = (percentage: number) => {
+  if (percentage >= 90) return 'bg-green-500';
+  if (percentage >= 80) return 'bg-yellow-500';
+  if (percentage >= 70) return 'bg-orange-500';
+  return 'bg-red-500';
+};
+</script>
+ <style>
+              /* Webkit browsers (Chrome, Safari, Edge) */
+              .custom-scrollbar::-webkit-scrollbar {
+                width: 6px;
+              }
+
+              .custom-scrollbar::-webkit-scrollbar-track {
+                background: #27272a;
+                border-radius: 10px;
+              }
+
+              .custom-scrollbar::-webkit-scrollbar-thumb {
+                background: #52525b;
+                border-radius: 10px;
+                transition: background-color 0.2s ease;
+              }
+
+              .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                background: #71717a;
+              }
+            </style>
 <template>
   <Head title="Dashboard" />
 
@@ -66,35 +114,269 @@ const stats = props as {
         </div>
       </div>
 
-      <!-- Chart + Activity -->
-      <div class="grid gap-6 md:grid-cols-3">
-        <!-- Chart Section -->
-        <div class="relative col-span-2 min-h-[350px] rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 shadow-lg">
-          <h3 class="text-lg font-semibold text-white mb-4">User Growth</h3>
-          <PlaceholderPattern />
+      <!-- Monitor & Alerts Section -->
+      <div class="grid gap-6 lg:grid-cols-3">
+        <!-- Monitor Kehadiran Real-time Container -->
+        <div class="lg:col-span-2 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 shadow-lg">
+          <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center gap-3">
+              <div class="p-2 bg-blue-500/20 rounded-lg">
+                <RefreshCw class="h-5 w-5 text-blue-400" />
+              </div>
+              <h3 class="text-lg font-semibold text-white">Monitor Kehadiran Real-time</h3>
+            </div>
+            <div class="flex items-center gap-2">
+              <RefreshCw class="h-4 w-4 text-blue-400" />
+              <select class="bg-zinc-800 text-white text-sm rounded-lg px-3 py-1 border border-zinc-700">
+                <option>Hari Ini</option>
+                <option>Kemarin</option>
+                <option>Minggu Ini</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Grid 2 Cards dalam satu container -->
+          <div class="grid md:grid-cols-2 gap-6">
+            <!-- Card Absen Kehadiran -->
+            <div class="rounded-xl border border-zinc-700/50 bg-zinc-800/40 p-5">
+              <h4 class="text-sm font-medium text-zinc-300 mb-4">Absen Masuk Hari Ini</h4>
+              <div class="space-y-3">
+                <div class="flex justify-between items-center py-2 px-3 bg-zinc-700/30 rounded-lg">
+                  <span class="text-zinc-300">07:00 - 07:30</span>
+                  <span class="text-green-400 font-semibold">856 siswa</span>
+                </div>
+                <div class="flex justify-between items-center py-2 px-3 bg-zinc-700/30 rounded-lg">
+                  <span class="text-zinc-300">07:30 - 08:00</span>
+                  <span class="text-yellow-400 font-semibold">289 siswa</span>
+                </div>
+                <div class="flex justify-between items-center py-2 px-3 bg-zinc-700/30 rounded-lg">
+                  <span class="text-zinc-300">Terlambat</span>
+                  <span class="text-red-400 font-semibold">42 siswa</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card Status Kehadiran -->
+            <div class="rounded-xl border border-zinc-700/50 bg-zinc-800/40 p-5">
+              <h4 class="text-sm font-medium text-zinc-300 mb-4">Status Kehadiran</h4>
+              <div class="space-y-3">
+                <div class="flex justify-between items-center py-2 px-3 bg-zinc-700/30 rounded-lg">
+                  <div class="flex items-center gap-3">
+                    <div class="w-4 h-4 rounded-full bg-green-500"></div>
+                    <span class="text-zinc-300">Hadir</span>
+                  </div>
+                  <span class="text-white font-semibold">1,147</span>
+                </div>
+                <div class="flex justify-between items-center py-2 px-3 bg-zinc-700/30 rounded-lg">
+                  <div class="flex items-center gap-3">
+                    <div class="w-4 h-4 rounded-full bg-blue-500"></div>
+                    <span class="text-zinc-300">Izin</span>
+                  </div>
+                  <span class="text-white font-semibold">32</span>
+                </div>
+                <div class="flex justify-between items-center py-2 px-3 bg-zinc-700/30 rounded-lg">
+                  <div class="flex items-center gap-3">
+                    <div class="w-4 h-4 rounded-full bg-yellow-500"></div>
+                    <span class="text-zinc-300">Sakit</span>
+                  </div>
+                  <span class="text-white font-semibold">28</span>
+                </div>
+                <div class="flex justify-between items-center py-2 px-3 bg-zinc-700/30 rounded-lg">
+                  <div class="flex items-center gap-3">
+                    <div class="w-4 h-4 rounded-full bg-red-500"></div>
+                    <span class="text-zinc-300">Alpha</span>
+                  </div>
+                  <span class="text-white font-semibold">38</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <!-- Recent Activity -->
-        <div class="relative min-h-[350px] rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 shadow-lg">
-          <h3 class="text-lg font-semibold text-white mb-4">Recent Activity</h3>
-          <ul class="space-y-4 text-sm text-zinc-400">
-            <li class="flex justify-between items-center">
-              <span>User John registered</span>
-              <span class="text-xs text-zinc-500">2m ago</span>
-            </li>
-            <li class="flex justify-between items-center">
-              <span>New course added</span>
-              <span class="text-xs text-zinc-500">15m ago</span>
-            </li>
-            <li class="flex justify-between items-center">
-              <span>Revenue updated</span>
-              <span class="text-xs text-zinc-500">1h ago</span>
-            </li>
-            <li class="flex justify-between items-center">
-              <span>5 new students enrolled</span>
-              <span class="text-xs text-zinc-500">3h ago</span>
-            </li>
-          </ul>
+        <!-- Alert & Peringatan -->
+        <div class="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 shadow-lg">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="p-2 bg-red-500/20 rounded-lg">
+              <AlertTriangle class="h-5 w-5 text-red-400" />
+            </div>
+            <h3 class="text-lg font-semibold text-white">Alert & Peringatan</h3>
+          </div>
+
+          <div class="space-y-4">
+            <!-- Alert tingkat ketidakhadiran tinggi -->
+            <div class="p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
+              <div class="flex items-start gap-3">
+                <AlertTriangle class="h-4 w-4 text-red-400 mt-1 flex-shrink-0" />
+                <div class="flex-1">
+                  <h4 class="text-red-400 font-medium text-sm">Tingkat Ketidakhadiran Tinggi</h4>
+                  <p class="text-zinc-400 text-xs mt-1">Kelas XII IPS 2: 15% siswa tidak hadir</p>
+                  <button class="text-red-400 text-xs underline mt-2">Lihat Detail</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Alert guru belum absen -->
+            <div class="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+              <div class="flex items-start gap-3">
+                <AlertTriangle class="h-4 w-4 text-yellow-400 mt-1 flex-shrink-0" />
+                <div class="flex-1">
+                  <h4 class="text-yellow-400 font-medium text-sm">Guru Belum Absen</h4>
+                  <p class="text-zinc-400 text-xs mt-1">3 guru belum melakukan absen masuk</p>
+                  <button class="text-yellow-400 text-xs underline mt-2">Kirim Reminder</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Alert backup otomatis -->
+            <div class="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+              <div class="flex items-start gap-3">
+                <RefreshCw class="h-4 w-4 text-blue-400 mt-1 flex-shrink-0" />
+                <div class="flex-1">
+                  <h4 class="text-blue-400 font-medium text-sm">Backup Otomatis</h4>
+                  <p class="text-zinc-400 text-xs mt-1">Backup data berhasil: 03:00 WIB</p>
+                  <button class="text-blue-400 text-xs underline mt-2">Lihat Log</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Section -->
+      <div class="grid gap-6 lg:grid-cols-2">
+        <!-- Distribusi Kehadiran per Kelas -->
+        <div class="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 shadow-lg">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="p-2 bg-green-500/20 rounded-lg">
+              <PieChart class="h-5 w-5 text-green-400" />
+            </div>
+            <h3 class="text-lg font-semibold text-white">Distribusi Kehadiran per Kelas</h3>
+          </div>
+
+          <!-- Data Kehadiran per Kelas -->
+          <div class="space-y-4 max-h-80 overflow-y-auto" style="scrollbar-width: thin; scrollbar-color: #52525b #27272a;">
+            <div v-for="kelas in kelasData" :key="kelas.kelas"
+                 class="p-4 bg-zinc-800/40 rounded-lg hover:bg-zinc-800/60 transition-all duration-200">
+              <div class="flex items-center justify-between mb-3">
+                <h4 class="text-sm font-medium text-white">{{ kelas.kelas }}</h4>
+                <span :class="getStatusColor(getPercentage(kelas.hadir, kelas.total))"
+                      class="text-sm font-semibold">
+                  {{ getPercentage(kelas.hadir, kelas.total) }}%
+                </span>
+              </div>
+
+              <!-- Progress Bar -->
+              <div class="w-full bg-zinc-700/50 rounded-full h-2 mb-3">
+                <div :class="getProgressColor(getPercentage(kelas.hadir, kelas.total))"
+                     class="h-2 rounded-full transition-all duration-300"
+                     :style="{ width: getPercentage(kelas.hadir, kelas.total) + '%' }">
+                </div>
+              </div>
+
+              <!-- Detail Status -->
+              <div class="grid grid-cols-4 gap-2 text-xs">
+                <div class="text-center">
+                  <div class="flex items-center justify-center gap-1">
+                    <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                    <span class="text-zinc-400">Hadir</span>
+                  </div>
+                  <div class="text-white font-medium mt-1">{{ kelas.hadir }}</div>
+                </div>
+                <div class="text-center">
+                  <div class="flex items-center justify-center gap-1">
+                    <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                    <span class="text-zinc-400">Izin</span>
+                  </div>
+                  <div class="text-white font-medium mt-1">{{ kelas.izin }}</div>
+                </div>
+                <div class="text-center">
+                  <div class="flex items-center justify-center gap-1">
+                    <div class="w-2 h-2 rounded-full bg-yellow-500"></div>
+                    <span class="text-zinc-400">Sakit</span>
+                  </div>
+                  <div class="text-white font-medium mt-1">{{ kelas.sakit }}</div>
+                </div>
+                <div class="text-center">
+                  <div class="flex items-center justify-center gap-1">
+                    <div class="w-2 h-2 rounded-full bg-red-500"></div>
+                    <span class="text-zinc-400">Alpha</span>
+                  </div>
+                  <div class="text-white font-medium mt-1">{{ kelas.alpha }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Summary -->
+          <div class="mt-6 pt-4 border-t border-zinc-700">
+            <div class="grid grid-cols-2 gap-4 text-sm">
+              <div class="text-center p-3 bg-zinc-800/40 rounded-lg">
+                <div class="text-zinc-400">Rata-rata Kehadiran</div>
+                <div class="text-xl font-bold text-green-400 mt-1">
+                  {{ Math.round(kelasData.reduce((acc, k) => acc + getPercentage(k.hadir, k.total), 0) / kelasData.length) }}%
+                </div>
+              </div>
+              <div class="text-center p-3 bg-zinc-800/40 rounded-lg">
+                <div class="text-zinc-400">Total Siswa</div>
+                <div class="text-xl font-bold text-blue-400 mt-1">
+                  {{ kelasData.reduce((acc, k) => acc + k.total, 0) }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Manajemen Pengguna -->
+        <div class="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 shadow-lg relative">
+          <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center gap-3">
+              <div class="p-2 bg-purple-500/20 rounded-lg">
+                <Settings class="h-5 w-5 text-purple-400" />
+              </div>
+              <h3 class="text-lg font-semibold text-white">Manajemen Pengguna</h3>
+            </div>
+            <button class="p-2 hover:bg-zinc-800 rounded-lg transition">
+              <svg class="h-4 w-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V6a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2M16 4h2a2 2 0 012 2v2M16 20h2a2 2 0 002-2v-2"></path>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Quick actions atau user management content -->
+          <div class="space-y-4">
+            <div class="flex justify-between items-center py-3 border-b border-zinc-800">
+              <span class="text-zinc-300">Tambah Pengguna Baru</span>
+              <button class="text-blue-400 hover:text-blue-300 transition">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+              </button>
+            </div>
+            <div class="flex justify-between items-center py-3 border-b border-zinc-800">
+              <span class="text-zinc-300">Kelola Role & Permission</span>
+              <button class="text-blue-400 hover:text-blue-300 transition">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </button>
+            </div>
+            <div class="flex justify-between items-center py-3 border-b border-zinc-800">
+              <span class="text-zinc-300">Import Data Siswa</span>
+              <button class="text-blue-400 hover:text-blue-300 transition">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                </svg>
+              </button>
+            </div>
+            <div class="flex justify-between items-center py-3">
+              <span class="text-zinc-300">Backup & Restore</span>
+              <button class="text-blue-400 hover:text-blue-300 transition">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
