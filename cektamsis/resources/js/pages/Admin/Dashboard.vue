@@ -220,8 +220,8 @@ const getProgressColor = (percentage: number) => {
               <div class="flex items-start gap-3">
                 <AlertTriangle class="h-4 w-4 text-yellow-400 mt-1 flex-shrink-0" />
                 <div class="flex-1">
-                  <h4 class="text-yellow-400 font-medium text-sm">Guru Belum Absen</h4>
-                  <p class="text-zinc-400 text-xs mt-1">3 guru belum melakukan absen masuk</p>
+                  <h4 class="text-yellow-400 font-medium text-sm">Siswa Belum Absen</h4>
+                  <p class="text-zinc-400 text-xs mt-1">3 Siswa belum melakukan absen masuk</p>
                   <button class="text-yellow-400 text-xs underline mt-2">Kirim Reminder</button>
                 </div>
               </div>

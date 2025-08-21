@@ -26,9 +26,9 @@ import AppLayout from '@/layouts/AppLayout.vue';
     ];
     interface Guru {
         id_guru: number
+        nip: number
         nama: string
         email: string
-        kelas: string
         mapel: string
     }
 
@@ -84,13 +84,13 @@ import AppLayout from '@/layouts/AppLayout.vue';
                     <table class="min-w-full divide-y divide-zinc-800">
                         <thead class="bg-zinc-800">
                             <tr>
-                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Id Siswa
+                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Id Guru
                                 </th>
                                 <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Nama
                                 </th>
-                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Email
+                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">NIP
                                 </th>
-                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Kelas
+                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Email
                                 </th>
                                 <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Mapel
                                 </th>
@@ -103,8 +103,8 @@ import AppLayout from '@/layouts/AppLayout.vue';
                                 class="hover:bg-zinc-800/60 transition">
                                 <td class="px-6 py-4 text-center">{{ guru.id_guru }}</td>
                                 <td class="px-6 py-4 text-center">{{ guru.nama }}</td>
+                                <td class="px-6 py-4 text-center">{{ guru.nip }}</td>
                                 <td class="px-6 py-4 text-center">{{ guru.email }}</td>
-                                <td class="px-6 py-4 text-center">{{ guru.kelas }}</td>
                                 <td class="px-6 py-4 text-center">{{ guru.mapel }}</td>
                                 <td class="px-6 py-4 text-center">
                                     <div class="flex justify-center gap-2">

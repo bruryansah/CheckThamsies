@@ -31,18 +31,14 @@
             id_guru: number; // Pastikan menggunakan id_guru sesuai database
             user_id: number;
             nama: string;
+            nip: number;
             email: string;
-            id_kelas: number;
             id_mapel: number;
         },
         users: {
             id: number;
             name: string;
             email: string;
-        } [],
-        kelas: {
-            id_kelas: number;
-            nama_kelas: string;
         } [],
         mapel: {
             id_mapel: number;
@@ -54,6 +50,7 @@
     const form = useForm({
         user_id: '',
         nama: '',
+        nip: '',
         email: '',
         id_kelas: '',
         id_mapel: '',
@@ -64,8 +61,8 @@
         if (props.guru) {
             form.user_id = props.guru.user_id?.toString() || '';
             form.nama = props.guru.nama || '';
+            form.nip = props.guru.nip?.toString() || '';
             form.email = props.guru.email || '';
-            form.id_kelas = props.guru.id_kelas?.toString() || '';
             form.id_mapel = props.guru.id_mapel?.toString() || '';
         }
     });
@@ -131,6 +128,15 @@
                         <span v-if="form.errors.nama" class="text-red-500 text-sm">{{ form.errors.nama }}</span>
                     </div>
 
+                    <!-- NIP -->
+                    <div>
+                        <label class="block text-sm font-medium text-zinc-300 mb-1">NIP</label>
+                        <input v-model="form.nip" type="text"
+                            class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 focus:ring focus:ring-green-500 focus:outline-none disabled:opacity-50"
+                            placeholder="Masukkan NIP guru" />
+                        <span v-if="form.errors.nip" class="text-red-500 text-sm">{{ form.errors.nip }}</span>
+                    </div>
+
                     <!-- Email -->
                     <div>
                         <label class="block text-sm font-medium text-zinc-300 mb-1">Email</label>
@@ -138,20 +144,6 @@
                             class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 focus:ring focus:ring-green-500 focus:outline-none disabled:opacity-50"
                             placeholder="Masukkan email guru" />
                         <span v-if="form.errors.email" class="text-red-500 text-sm">{{ form.errors.email }}</span>
-                    </div>
-
-                    <!-- Kelas -->
-                    <div>
-                        <label class="block text-sm font-medium text-zinc-300 mb-1">Pilih Kelas</label>
-                        <select v-model="form.id_kelas"
-                            class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 focus:ring focus:ring-green-500 focus:outline-none">
-                            <option value="">-- Pilih Kelas --</option>
-                            <option v-for="kelas in props.kelas" :key="kelas.id_kelas" :value="kelas.id_kelas">
-                                {{ kelas.nama_kelas }}
-                            </option>
-                        </select>
-                        <span v-if="form.errors.id_kelas"
-                            class="text-red-500 text-sm">{{ form.errors.id_kelas }}</span>
                     </div>
 
                     <!-- Mapel -->
