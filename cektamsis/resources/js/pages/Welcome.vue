@@ -54,7 +54,6 @@ onMounted(() => {
                 />
                 <div class="brand">
                     <span class="brand-title">Sistem Absensi SMK Tamansiswa 2</span>
-                    <span class="brand-subtitle">"Digital Attendance System"</span>
                 </div>
             </div>
 

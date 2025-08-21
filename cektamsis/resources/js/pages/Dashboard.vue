@@ -24,7 +24,7 @@ const logout = () => {
   <Head title="Dashboard" />
 
   <AppLayout :breadcrumbs="breadcrumbs">
-    <div class="flex h-full flex-1 flex-col gap-6 p-6 overflow-x-auto">
+    <div class="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
       <!-- Tombol Logout -->
       <div class="flex justify-end mb-4">
         <button
@@ -35,19 +35,34 @@ const logout = () => {
         </button>
       </div>
 
-      <!-- Statistik Cards -->
-      <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <!-- 3 Placeholder atas -->
+      <div class="grid auto-rows-min gap-4 md:grid-cols-3">
         <div
-          class="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 shadow-lg hover:shadow-xl transition"
+          class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"
         >
-          <div class="flex items-center justify-between">
-            <h3 class="text-sm font-medium text-zinc-400">Total Users</h3>
-            <Users class="h-5 w-5 text-indigo-400" />
-          </div>
-          <p class="mt-4 text-3xl font-bold text-white">1,245</p>
-          <p class="text-xs text-green-400 mt-1">+12% from last month</p>
+          <PlaceholderPattern />
         </div>
+        <div
+          class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"
+        >
+          <PlaceholderPattern />
+        </div>
+        <div
+          class="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border"
+        >
+          <PlaceholderPattern />
+        </div>
+      </div>
 
+      <!-- Placeholder bawah -->
+      <div
+        class="relative min-h-[100vh] flex-1 rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border"
+      >
+        <PlaceholderPattern />
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="grid gap-6 md:grid-cols-3 mt-6">
         <div
           class="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 shadow-lg hover:shadow-xl transition"
         >
@@ -83,7 +98,7 @@ const logout = () => {
       </div>
 
       <!-- Chart + Activity -->
-      <div class="grid gap-6 md:grid-cols-3">
+      <div class="grid gap-6 md:grid-cols-3 mt-6">
         <!-- Chart Section -->
         <div
           class="relative col-span-2 min-h-[350px] rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 shadow-lg"
