@@ -29,8 +29,6 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Alias middleware custom
         $middleware->alias([
-            'admin' => \App\Http\Middleware\AdminMiddleware::class,
-            'guru' => \App\Http\Middleware\GuruMiddleware::class,
             'role' => \App\Http\Middleware\RoleMiddleware::class,
         ]);
 
