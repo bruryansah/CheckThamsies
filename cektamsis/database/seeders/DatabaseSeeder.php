@@ -15,13 +15,15 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-        User::create([
+        //Role Admin
+            User::create([
             'name' => 'Ragil',
             'email' => 'ragil@gmail.com',
             'role' => UserRole::ADMIN,
             'password' => Hash::make('1234578'),
         ]);
+
+        // Role Guru
         User::create([
             'name' => 'Ki Ali',
             'email' => 'kiali@gmail.com',
@@ -46,6 +48,9 @@ class DatabaseSeeder extends Seeder
             'role' => UserRole::GURU,
             'password' => Hash::make('1234578'),
         ]);
+
+        
+        // Role Siswa atau User
         User::create([
             'name' => 'tubagus',
             'email' => 'agus@gmail.com',

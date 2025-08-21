@@ -92,7 +92,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
                                 </th>
                                 <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Kelas
                                 </th>
-                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Jurusan
+                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Mapel
                                 </th>
                                 <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Aksi
                                 </th>
