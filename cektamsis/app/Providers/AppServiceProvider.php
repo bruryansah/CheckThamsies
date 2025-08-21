@@ -4,19 +4,15 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 
-class AppServiceProvider extends ServiceProvider
+class RouteServiceProvider extends ServiceProvider
 {
     /**
-     * Register any application services.
+     * The path to the "home" route for your application.
+     *
+     * @var string
      */
-    public function register(): void
-    {
-        //
-    }
+    public const HOME = '/dashboard'; // setelah login, laravel akan redirect ke sini
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
         //
