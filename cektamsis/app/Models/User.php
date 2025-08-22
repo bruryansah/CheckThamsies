@@ -49,4 +49,10 @@ class User extends Authenticatable
             'role' => UserRole::class
         ];
     }
+
+    // app/Models/User.php
+    public function guru()
+    {
+        return $this->hasOne(Guru::class);
+    }
 }

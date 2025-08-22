@@ -32,4 +32,9 @@ class Kelas extends Model
     {
         return $this->belongsTo(Guru::class, 'id_wali_kelas', 'id_guru');
     }
+
+    public function siswa()
+    {
+        return $this->hasMany(\App\Models\Siswa::class, 'id_kelas', 'id_kelas');
+    }
 }
