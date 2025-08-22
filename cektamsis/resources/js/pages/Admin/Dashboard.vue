@@ -1,26 +1,46 @@
 <script setup lang="ts">
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, usePage } from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3';
 import { Users, User, GraduationCap, Shield, RefreshCw, AlertTriangle, PieChart, Settings } from 'lucide-vue-next';
-import PlaceholderPattern from '../components/PlaceholderPattern.vue';
-import { ref } from 'vue';
+import PlaceholderPattern from '@/components/PlaceholderPattern.vue';
+import { ref, computed } from 'vue';
 
-const breadcrumbs: BreadcrumbItem[] = [
-  {
-    title: 'Dashboards',
-    href: '/dashboard',
-  },
-];
-
-// Ambil props dari Laravel (Inertia)
-const { props } = usePage();
-const stats = props as {
+// Define interface untuk type safety
+interface DashboardStats {
   totalUsers: number;
   totalSiswa: number;
   totalGuru: number;
   totalAdmin: number;
-};
+}
+
+const breadcrumbs: BreadcrumbItem[] = [
+  {
+    title: 'Dashboard',
+    href: '/dashboard',
+  },
+];
+
+// Define props yang diterima dari Laravel
+interface Props {
+  totalUsers: number;
+  totalSiswa: number;
+  totalGuru: number;
+  totalAdmin: number;
+}
+
+// Definisikan props yang diterima
+const props = defineProps<Props>();
+
+// Reactive stats langsung dari props
+const stats = computed((): DashboardStats => {
+  return {
+    totalUsers: props.totalUsers || 0,
+    totalSiswa: props.totalSiswa || 0,
+    totalGuru: props.totalGuru || 0,
+    totalAdmin: props.totalAdmin || 0,
+  };
+});
 
 // Dummy data untuk distribusi kehadiran per kelas
 const kelasData = ref([
@@ -49,27 +69,29 @@ const getProgressColor = (percentage: number) => {
   return 'bg-red-500';
 };
 </script>
- <style>
-              /* Webkit browsers (Chrome, Safari, Edge) */
-              .custom-scrollbar::-webkit-scrollbar {
-                width: 6px;
-              }
 
-              .custom-scrollbar::-webkit-scrollbar-track {
-                background: #27272a;
-                border-radius: 10px;
-              }
+<style>
+/* Webkit browsers (Chrome, Safari, Edge) */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
 
-              .custom-scrollbar::-webkit-scrollbar-thumb {
-                background: #52525b;
-                border-radius: 10px;
-                transition: background-color 0.2s ease;
-              }
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #27272a;
+  border-radius: 10px;
+}
 
-              .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-                background: #71717a;
-              }
-            </style>
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #52525b;
+  border-radius: 10px;
+  transition: background-color 0.2s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #71717a;
+}
+</style>
+
 <template>
   <Head title="Dashboard" />
 
@@ -220,8 +242,8 @@ const getProgressColor = (percentage: number) => {
               <div class="flex items-start gap-3">
                 <AlertTriangle class="h-4 w-4 text-yellow-400 mt-1 flex-shrink-0" />
                 <div class="flex-1">
-                  <h4 class="text-yellow-400 font-medium text-sm">Guru Belum Absen</h4>
-                  <p class="text-zinc-400 text-xs mt-1">3 guru belum melakukan absen masuk</p>
+                  <h4 class="text-yellow-400 font-medium text-sm">Siswa Belum Absen</h4>
+                  <p class="text-zinc-400 text-xs mt-1">3 Siswa belum melakukan absen masuk</p>
                   <button class="text-yellow-400 text-xs underline mt-2">Kirim Reminder</button>
                 </div>
               </div>

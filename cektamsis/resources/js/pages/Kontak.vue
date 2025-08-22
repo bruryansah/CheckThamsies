@@ -117,7 +117,6 @@ onMounted(() => {
 
             <div class="auth-buttons">
                 <Link href="/login" class="btn-login"> <span class="auth-icon">🔑</span> Login </Link>
-                <Link href="/register" class="btn-register"> <span class="auth-icon">📋</span> Register </Link>
             </div>
 
             <!-- Mobile menu toggle -->
@@ -312,12 +311,12 @@ onMounted(() => {
         <footer class="footer">
             <div class="footer-content">
                 <div class="footer-left">
-                    <img
-                        src="https://smktamansiswa2jakarta.sch.id/wp-content/uploads/2022/03/LOGO-TAMSIS-MATERIAL-DESIGN.png"
-                        alt="Logo SMK Tamansiswa 2 Jakarta"
+                   <img 
+                        src="/favicon.png" 
+                        alt="Logo SMK Tamansiswa 2 Jakarta" 
                         class="footer-logo"
                     />
-                    <span class="footer-text">© 2024 SMK TAMANSISWA 2 JAKARTA | RPL</span>
+                    <span class="footer-text">© 2025 SMK TAMANSISWA 2 JAKARTA | RPL</span>
                 </div>
                 <div class="footer-right">
                     <a href="https://facebook.com/smktamansiswa2jakarta" class="social-link" target="_blank" title="Facebook">
@@ -1260,7 +1259,6 @@ onMounted(() => {
     height: 40px;
     object-fit: contain;
     flex-shrink: 0;
-    filter: brightness(0) invert(1);
 }
 
 .footer-text {
