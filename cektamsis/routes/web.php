@@ -182,3 +182,8 @@ Route::post('/reset-password', [NewPasswordController::class, 'store'])
 
 
 
+use App\Http\Controllers\AbsensiController;
+
+Route::post('/absen/masuk', [AbsensiController::class, 'checkIn'])->name('absen.masuk');
+Route::post('/absen/pulang', [AbsensiController::class, 'checkOut'])->name('absen.pulang');
+

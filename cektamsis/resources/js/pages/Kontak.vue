@@ -312,9 +312,9 @@ onMounted(() => {
         <footer class="footer">
             <div class="footer-content">
                 <div class="footer-left">
-                   <img 
-                        src="/favicon.png" 
-                        alt="Logo SMK Tamansiswa 2 Jakarta" 
+                    <img
+                        src="https://smktamansiswa2jakarta.sch.id/wp-content/uploads/2022/03/LOGO-TAMSIS-MATERIAL-DESIGN.png"
+                        alt="Logo SMK Tamansiswa 2 Jakarta"
                         class="footer-logo"
                     />
                     <span class="footer-text">© 2025 SMK TAMANSISWA 2 JAKARTA | RPL</span>

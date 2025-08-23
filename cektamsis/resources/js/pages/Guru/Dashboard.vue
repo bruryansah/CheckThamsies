@@ -422,6 +422,10 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </button>
+
+                    <button @click="exportToPDF" class="rounded-lg bg-red-500 px-4 py-2 text-white shadow transition hover:bg-red-600">
+                        Export PDF
+                    </button>
                 </div>
 
                 <!-- Filter for Modal -->
@@ -498,6 +502,8 @@
 <script setup>
 import { router, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 // Reactive data
 const { props } = usePage();
@@ -515,15 +521,49 @@ const attendanceFilter = ref({
     subject: '',
 });
 
-// Months array
+const exportToPDF = () => {
+  const doc = new jsPDF();
+
+  // Judul
+  doc.setFontSize(14);
+  doc.text("Laporan Absensi Siswa", 14, 15);
+  doc.setFontSize(10);
+  doc.text(`Kelas: ${selectedClass.value || "Semua"}`, 14, 22);
+  doc.text(`Tanggal: ${selectedDate.value || "Semua"}`, 14, 28);
+
+  // Ambil data tabel (pakai data langsung biar aman)
+  const tableData = (filteredAttendanceData.value || []).map((a, index) => [
+    index + 1,
+    a.name || "-",
+    a.class || "-",
+    a.subject || "-",
+    a.date || "-",
+    a.status || "-",
+  ]);
+
+  // Kalau kosong
+  if (tableData.length === 0) {
+    doc.text("Tidak ada data absensi untuk filter ini.", 14, 40);
+  } else {
+    autoTable(doc, {
+      startY: 35,
+      head: [["No", "Nama Siswa", "Kelas", "Mata Pelajaran", "Tanggal", "Status"]],
+      body: tableData,
+      theme: "grid",
+      styles: { fontSize: 9, cellPadding: 3 },
+      headStyles: { fillColor: [41, 128, 185] },
+    });
+  }
+
+  // Simpan file
+  doc.save(`Absensi_${selectedClass.value || "Semua"}_${Date.now()}.pdf`);
+};
+
+
 const months = ref(['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']);
 
-// Dummy Database - Tabel Kelas
 const kelasData = ref(props.kelasData ?? []);
 
-// Dummy Database - Tabel Jadwal
-
-// Stats data
 const stats = ref([
     {
         label: 'Total Siswa',
@@ -559,7 +599,6 @@ const stats = ref([
     },
 ]);
 
-// Recent attendance data
 const recentAttendance = ref([
     { name: 'Ahmad Rizki', time: '07:05', status: 'Hadir' },
     { name: 'Siti Nurhaliza', time: '07:03', status: 'Hadir' },
@@ -568,14 +607,12 @@ const recentAttendance = ref([
     { name: 'Eko Prasetyo', time: '07:08', status: 'Hadir' },
 ]);
 
-// Top late students
 const topLateStudents = ref([
     { id: 1, name: 'Budi Setiawan', lateCount: 5 },
     { id: 2, name: 'Andi Pratama', lateCount: 4 },
     { id: 3, name: 'Rini Kartika', lateCount: 3 },
 ]);
 
-// All attendance data for modal
 const allAttendanceData = ref([
     { name: 'Ahmad Rizki', class: 'XII IPA 1', subject: 'Matematika', date: '2025-08-22', time: '07:05', status: 'Hadir' },
     { name: 'Siti Nurhaliza', class: 'XII IPA 1', subject: 'Matematika', date: '2025-08-22', time: '07:03', status: 'Hadir' },
@@ -593,7 +630,6 @@ const allAttendanceData = ref([
 
 const filteredAttendanceData = ref([...allAttendanceData.value]);
 
-// Computed properties
 const availableSubjects = computed(() => {
     if (!jadwalData.value) return [];
     return [...new Set(jadwalData.value.map((item) => item.mata_pelajaran))];
@@ -609,7 +645,6 @@ const availableYears = computed(() => {
     return [...new Set(jadwalData.value.map((item) => new Date(item.tanggal).getFullYear()))].sort();
 });
 
-// ⬅️ filter jadwal berdasarkan class / tanggal / bulan / tahun
 const filteredSchedule = computed(() => {
     let filtered = jadwalData.value ?? [];
 
@@ -639,7 +674,6 @@ const filteredSchedule = computed(() => {
     });
 });
 
-// Functions
 const logout = () => {
     router.post(route('logout'));
 };
@@ -648,9 +682,8 @@ const generateQRCode = () => {
     if (!selectedSubject.value) return;
 
     const currentTime = new Date();
-    const validUntil = new Date(currentTime.getTime() + 30 * 60000); // Valid for 30 minutes
+    const validUntil = new Date(currentTime.getTime() + 30 * 60000);
 
-    // Find the class for selected subject
     const subjectSchedule = jadwalData.value.find((schedule) => schedule.mata_pelajaran === selectedSubject.value);
 
     qrCodeData.value = {
@@ -662,7 +695,6 @@ const generateQRCode = () => {
         sessionId: `QR_${selectedSubject.value}_${Date.now()}`,
     };
 
-    // Simulate QR Code generation
     setTimeout(() => {
         const qrElement = document.getElementById('qrcode');
         if (qrElement) {
@@ -709,12 +741,10 @@ const refreshQRCode = () => {
 };
 
 const filterSchedule = () => {
-    // Trigger reactivity for computed property
     console.log('Filtering schedule...');
 };
 
 const filterScheduleByClass = () => {
-    // Trigger reactivity for computed property
     console.log('Filtering by class:', selectedClass.value);
 };
 
@@ -757,11 +787,9 @@ const formatScheduleDate = (dateString) => {
     }
 };
 
-// Auto-refresh QR code every 5 minutes
 let qrInterval = null;
 
 onMounted(() => {
-    // Add entrance animations
     const cards = document.querySelectorAll('.group');
     cards.forEach((card, index) => {
         card.style.opacity = '0';
@@ -774,7 +802,6 @@ onMounted(() => {
         }, index * 100);
     });
 
-    // Start QR auto-refresh
     qrInterval = setInterval(
         () => {
             if (qrCodeData.value) {
@@ -787,7 +814,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Custom animations */
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -832,18 +858,15 @@ onMounted(() => {
     animation-delay: 0.2s;
 }
 
-/* Hover effects */
 .group:hover {
     transform: translateY(-4px) scale(1.02);
 }
 
-/* Glass effect */
 .backdrop-blur-md {
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
 }
 
-/* Progress bars animation */
 .bg-green-500,
 .bg-blue-500,
 .bg-purple-500,
@@ -853,7 +876,6 @@ onMounted(() => {
     transition: width 1s ease-in-out;
 }
 
-/* QR Code animation */
 #qrcode {
     transition: all 0.3s ease-in-out;
 }
@@ -862,7 +884,6 @@ onMounted(() => {
     transform: scale(1.05);
 }
 
-/* Modal animation */
 @keyframes modalSlideIn {
     from {
         opacity: 0;
@@ -878,7 +899,6 @@ onMounted(() => {
     animation: modalSlideIn 0.3s ease-out;
 }
 
-/* Filter animations */
 select {
     transition: all 0.3s ease;
     color: #000;
@@ -888,7 +908,6 @@ select:focus {
     transform: scale(1.02);
 }
 
-/* Responsive improvements */
 @media (max-width: 640px) {
     .grid-cols-1.sm\\:grid-cols-2 {
         gap: 3rem;
@@ -917,7 +936,6 @@ select:focus {
     }
 }
 
-/* Loading animation for QR */
 @keyframes spin {
     to {
         transform: rotate(360deg);
@@ -928,7 +946,6 @@ select:focus {
     animation: spin 1s linear infinite;
 }
 
-/* Gradient animations */
 @keyframes gradientShift {
     0%,
     100% {
@@ -943,13 +960,13 @@ select:focus {
     background-size: 200% 200%;
     animation: gradientShift 4s ease infinite;
 }
-
-/* Table hover effects */
+td {
+    color: #000;
+}
 tbody tr:hover {
     transform: translateX(4px);
 }
 
-/* Statistics animation */
 .space-y-4 > div {
     transition: all 0.3s ease;
 }
@@ -961,13 +978,11 @@ tbody tr:hover {
     padding: 0.5rem;
 }
 
-/* Filter button hover effects */
 select:hover {
     border-color: #6366f1;
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
-/* Custom scrollbar */
 .overflow-y-auto::-webkit-scrollbar {
     width: 6px;
 }
