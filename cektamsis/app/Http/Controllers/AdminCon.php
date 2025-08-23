@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Kelas;
 use App\Models\Mapel;
 use App\Models\Jurusan;
@@ -112,7 +113,7 @@ class AdminCon extends Controller
     // Menampilkan Data Guru
     public function index()
     {
-        $guru = DB::table('guru')->join('mapel', 'guru.id_mapel', '=', 'mapel.id_mapel')->select('guru.id_guru', 'guru.nama','guru.nip', 'guru.email', 'mapel.nama_mapel as mapel')->get();
+        $guru = DB::table('guru')->join('mapel', 'guru.id_mapel', '=', 'mapel.id_mapel')->select('guru.id_guru', 'guru.nama', 'guru.nip', 'guru.email', 'mapel.nama_mapel as mapel')->get();
         return Inertia::render('Admin/guru', ['guru' => $guru]);
     }
 
@@ -565,16 +566,16 @@ class AdminCon extends Controller
     public function indexk()
     {
         $kelas = DB::table('kelas')
-        ->join('jurusan', 'kelas.id_jurusan', '=', 'jurusan.id_jurusan')
-        ->join('guru', 'kelas.id_wali_kelas', '=', 'guru.id_guru')
-        ->select('kelas.id_kelas','kelas.tingkat_kelas','kelas.total_siswa', 'kelas.nama_kelas', 'jurusan.nama_jurusan as jurusan', 'guru.nama as guru')->get();
+            ->join('jurusan', 'kelas.id_jurusan', '=', 'jurusan.id_jurusan')
+            ->join('guru', 'kelas.id_wali_kelas', '=', 'guru.id_guru')
+            ->select('kelas.id_kelas', 'kelas.tingkat_kelas', 'kelas.total_siswa', 'kelas.nama_kelas', 'jurusan.nama_jurusan as jurusan', 'guru.nama as guru')->get();
         return Inertia::render('Admin/kelas', ['kelas' => $kelas]);
     }
 
     // Menampilkan Form Tambah Kelas
     public function tambahk()
     {
-        $kelas = \App\Models\kelas::all(['id_kelas', 'nama_kelas','tingkat_kelas','total_siswa']); // ambil user yang ada
+        $kelas = \App\Models\kelas::all(['id_kelas', 'nama_kelas', 'tingkat_kelas', 'total_siswa']); // ambil user yang ada
         $guru = \App\Models\guru::all(['id_guru', 'nama']); // ambil user yang ada
         $jurusan = \App\Models\jurusan::all(['id_jurusan', 'nama_jurusan']); // ambil user yang ada
         return inertia('Admin/tambahkelas', [
