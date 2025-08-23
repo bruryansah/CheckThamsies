@@ -25,9 +25,9 @@ class Guru extends Model
     // Kolom yang bisa diisi (mass assignment)
     protected $fillable = [
         'user_id',
+        'nip',
         'nama',
         'email',
-        'id_kelas',
         'id_mapel',
     ];
 
@@ -37,15 +37,14 @@ class Guru extends Model
         return $this->belongsTo(Kelas::class, 'id_kelas', 'id_kelas');
     }
 
-    // Relasi ke tabel mapel
-    public function mapel()
-    {
-        return $this->belongsTo(Mapel::class, 'id_mapel', 'id_mapel');
-    }
-
     // Relasi ke tabel users
     public function user()
     {
         return $this->belongsTo(User::class, 'user_id', 'id');
+    }
+
+    public function mapel()
+    {
+        return $this->belongsTo(Mapel::class, 'id_mapel', 'id_mapel');
     }
 }

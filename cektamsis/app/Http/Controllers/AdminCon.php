@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Kelas;
 use App\Models\Mapel;
 use App\Models\Jurusan;
@@ -81,7 +82,7 @@ class AdminCon extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,',
+            'email' => 'required|email|max:255',
             'role' => 'required|in:Admin,guru,user',
         ]);
 
@@ -108,11 +109,11 @@ class AdminCon extends Controller
     }
     // Users Section End
 
-    // Admin Section Start
+    // Guru Section Start
     // Menampilkan Data Guru
     public function index()
     {
-        $guru = DB::table('guru')->join('kelas', 'guru.id_kelas', '=', 'kelas.id_kelas')->join('mapel', 'guru.id_mapel', '=', 'mapel.id_mapel')->select('guru.id_guru', 'guru.nama', 'guru.email', 'kelas.nama_kelas as kelas', 'mapel.nama_mapel as mapel')->get();
+        $guru = DB::table('guru')->join('mapel', 'guru.id_mapel', '=', 'mapel.id_mapel')->select('guru.id_guru', 'guru.nama', 'guru.nip', 'guru.email', 'mapel.nama_mapel as mapel')->get();
         return Inertia::render('Admin/guru', ['guru' => $guru]);
     }
 
@@ -120,11 +121,9 @@ class AdminCon extends Controller
     public function tambah()
     {
         $users = \App\Models\User::where('role', 'guru')->select('id', 'name', 'email')->get();
-        $kelas = \App\Models\kelas::all(['id_kelas', 'nama_kelas']); // ambil user yang ada
         $mapel = \App\Models\Mapel::all(['id_mapel', 'nama_mapel']); // ambil user yang ada
         return inertia('Admin/tambahguru', [
             'users' => $users,
-            'kelas' => $kelas,
             'mapel' => $mapel,
         ]);
     }
@@ -136,8 +135,8 @@ class AdminCon extends Controller
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id', // id harus ada di tabel users
             'nama' => 'required|string|max:255',
+            'nip' => 'required|string|unique:guru,nip',
             'email' => 'required|email',
-            'id_kelas' => 'required|exists:kelas,id_kelas',
             'id_mapel' => 'required|exists:mapel,id_mapel',
         ]);
 
@@ -152,14 +151,12 @@ class AdminCon extends Controller
     public function edit($id)
     {
         $guru = DB::table('guru')->where('id_guru', $id)->first(); // gunakan first()
-        $users = \App\Models\User::all(['id', 'name', 'email']);
-        $kelas = \App\Models\kelas::all(['id_kelas', 'nama_kelas']);
+        $users = \App\Models\User::where('role', 'guru')->select('id', 'name', 'email')->get();
         $mapel = \App\Models\Mapel::all(['id_mapel', 'nama_mapel']);
 
         return inertia('Admin/editguru', [
             'guru' => $guru,
             'users' => $users,
-            'kelas' => $kelas,
             'mapel' => $mapel,
         ]);
     }
@@ -171,8 +168,8 @@ class AdminCon extends Controller
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
             'nama' => 'required|string|max:255',
+            'nip' => 'required|string|max:20',
             'email' => 'required|email',
-            'id_kelas' => 'required|exists:kelas,id_kelas',
             'id_mapel' => 'required|exists:mapel,id_mapel',
         ]);
 
@@ -181,8 +178,8 @@ class AdminCon extends Controller
             ->update([
                 'user_id' => $request->user_id,
                 'nama' => $request->nama,
+                'nip' => $request->nip,
                 'email' => $request->email,
-                'id_kelas' => $request->id_kelas,
                 'id_mapel' => $request->id_mapel,
             ]);
 
@@ -299,7 +296,7 @@ class AdminCon extends Controller
     }
     // Siswa X Section End
 
-     // Siswa XI Section Start
+    // Siswa XI Section Start
     // Menampilkan Data Siswa Kelas X RPL
     public function siswaxi()
     {
@@ -397,7 +394,7 @@ class AdminCon extends Controller
     }
     // Siswa XI Section End
 
-     // Siswa XII Section Start
+    // Siswa XII Section Start
     // Menampilkan Data Siswa Kelas X RPL
     public function siswaxii()
     {
@@ -568,17 +565,22 @@ class AdminCon extends Controller
     // Menampilkan Data Kelas
     public function indexk()
     {
-        $kelas = DB::table('kelas')->join('jurusan', 'kelas.id_jurusan', '=', 'jurusan.id_jurusan')->select('kelas.id_kelas', 'kelas.nama_kelas', 'jurusan.nama_jurusan as jurusan')->get();
+        $kelas = DB::table('kelas')
+            ->join('jurusan', 'kelas.id_jurusan', '=', 'jurusan.id_jurusan')
+            ->join('guru', 'kelas.id_wali_kelas', '=', 'guru.id_guru')
+            ->select('kelas.id_kelas', 'kelas.tingkat_kelas', 'kelas.total_siswa', 'kelas.nama_kelas', 'jurusan.nama_jurusan as jurusan', 'guru.nama as guru')->get();
         return Inertia::render('Admin/kelas', ['kelas' => $kelas]);
     }
 
     // Menampilkan Form Tambah Kelas
     public function tambahk()
     {
-        $kelas = \App\Models\kelas::all(['id_kelas', 'nama_kelas']); // ambil user yang ada
-        $jurusan = \App\Models\Jurusan::all(['id_jurusan', 'nama_jurusan']); // ambil user yang ada
+        $kelas = \App\Models\kelas::all(['id_kelas', 'nama_kelas', 'tingkat_kelas', 'total_siswa']); // ambil user yang ada
+        $guru = \App\Models\guru::all(['id_guru', 'nama']); // ambil user yang ada
+        $jurusan = \App\Models\jurusan::all(['id_jurusan', 'nama_jurusan']); // ambil user yang ada
         return inertia('Admin/tambahkelas', [
             'kelas' => $kelas,
+            'guru' => $guru,
             'jurusan' => $jurusan,
         ]);
     }
@@ -589,12 +591,18 @@ class AdminCon extends Controller
         // Validasi
         $validated = $request->validate([
             'nama_kelas' => 'required|string|max:255',
+            'tingkat_kelas' => 'required|string|max:255',
+            'total_siswa' => 'required|string|max:255',
+            'id_guru' => 'required|exists:guru,id_guru',
             'id_jurusan' => 'required|exists:jurusan,id_jurusan',
         ]);
 
         // Simpan ke tabel Kelas
         DB::table('kelas')->insert([
             'nama_kelas' => $validated['nama_kelas'],
+            'tingkat_kelas' => $validated['tingkat_kelas'],
+            'total_siswa' => $validated['total_siswa'],
+            'id_wali_kelas' => $validated['id_guru'],
             'id_jurusan' => $validated['id_jurusan'],
         ]);
 
@@ -606,9 +614,11 @@ class AdminCon extends Controller
     public function editk($id)
     {
         $kelas = DB::table('kelas')->where('id_kelas', $id)->first(); // gunakan first()
+        $guru = \App\Models\guru::all(['id_guru', 'nama']); // ambil user yang ada
         $jurusan = \App\Models\Jurusan::all(['id_jurusan', 'nama_jurusan']); // ambil user yang ada
         return inertia('Admin/editkelas', [
             'kelas' => $kelas,
+            'guru' => $guru,
             'jurusan' => $jurusan,
         ]);
     }
@@ -618,6 +628,9 @@ class AdminCon extends Controller
     {
         $validated = $request->validate([
             'nama_kelas' => 'required|string|max:255',
+            'tingkat_kelas' => 'required|string|max:255',
+            'total_siswa' => 'required|string|max:255',
+            'id_guru' => 'required|exists:guru,id_guru',
             'id_jurusan' => 'required|exists:jurusan,id_jurusan',
         ]);
 
@@ -625,6 +638,9 @@ class AdminCon extends Controller
             ->where('id_kelas', $id)
             ->update([
                 'nama_kelas' => $request->nama_kelas,
+                'tingkat_kelas' => $request->tingkat_kelas,
+                'total_siswa' => $request->total_siswa,
+                'id_wali_kelas' => $request->id_guru,
                 'id_jurusan' => $request->id_jurusan,
             ]);
 

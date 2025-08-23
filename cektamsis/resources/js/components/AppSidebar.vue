@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref } from "vue";
-import { Link, usePage } from "@inertiajs/vue3";
+import { ref, computed, onMounted, onUnmounted, watch } from "vue";
+import { Link, usePage, router } from "@inertiajs/vue3";
 import AppLogo from "./AppLogo.vue";
 import NavUser from "@/components/NavUser.vue";
 import {
@@ -25,9 +25,88 @@ const page = usePage();
 const currentUrl = page.url; // URL aktif
 
 const openedDropdown = ref<string | null>(null);
+const sidebarContentRef = ref<HTMLElement | null>(null);
+
+// Computed property untuk menentukan dropdown mana yang harus terbuka berdasarkan URL aktif
+const activeDropdown = computed(() => {
+  // Cek apakah URL saat ini ada dalam menu Data Siswa
+  const siswaRoutes = ['/siswax', '/siswaxi', '/siswaxii'];
+  const isInSiswaRoute = siswaRoutes.some(route =>
+    currentUrl === route || currentUrl.startsWith(route + '/')
+  );
+
+  if (isInSiswaRoute) {
+    return 'Data Siswa';
+  }
+
+  return openedDropdown.value;
+});
+
 function toggleDropdown(title: string) {
   openedDropdown.value = openedDropdown.value === title ? null : title;
 }
+
+// Fungsi untuk menyimpan posisi scroll ke sessionStorage
+function saveScrollPosition() {
+  if (sidebarContentRef.value) {
+    const scrollTop = sidebarContentRef.value.scrollTop;
+    sessionStorage.setItem('sidebar-scroll-position', scrollTop.toString());
+  }
+}
+
+// Fungsi untuk memulihkan posisi scroll dari sessionStorage
+function restoreScrollPosition() {
+  const savedPosition = sessionStorage.getItem('sidebar-scroll-position');
+  if (savedPosition && sidebarContentRef.value) {
+    sidebarContentRef.value.scrollTop = parseInt(savedPosition, 10);
+  }
+}
+
+// Custom navigation function yang mempertahankan scroll
+function navigateWithScrollPreservation(href: string) {
+  saveScrollPosition();
+  router.visit(href, {
+    preserveScroll: true,
+    preserveState: true,
+  });
+}
+
+// Event handler untuk scroll
+function handleScroll() {
+  saveScrollPosition();
+}
+
+// Watch untuk perubahan URL dan restore scroll position
+watch(() => page.url, () => {
+  setTimeout(() => {
+    restoreScrollPosition();
+  }, 50);
+});
+
+onMounted(() => {
+  // Set reference ke sidebar content
+  sidebarContentRef.value = document.getElementById('sidebar-content') as HTMLElement;
+
+  if (sidebarContentRef.value) {
+    // Add scroll event listener
+    sidebarContentRef.value.addEventListener('scroll', handleScroll);
+
+    // Restore scroll position setelah mount
+    setTimeout(() => {
+      restoreScrollPosition();
+    }, 100);
+  }
+
+  // Save scroll position before page unload
+  window.addEventListener('beforeunload', saveScrollPosition);
+});
+
+onUnmounted(() => {
+  if (sidebarContentRef.value) {
+    sidebarContentRef.value.removeEventListener('scroll', handleScroll);
+  }
+  window.removeEventListener('beforeunload', saveScrollPosition);
+});
 
 const mainNavItems = [
   { title: "Dashboard", href: "/dashboard", icon: LayoutGrid },
@@ -55,17 +134,20 @@ const mainNavItems = [
       <SidebarMenu>
         <SidebarMenuItem>
           <SidebarMenuButton as-child class="gap-3 text-lg font-semibold">
-            <Link :href="route('dashboard')" class="flex items-center">
+            <button
+              @click="navigateWithScrollPreservation('/dashboard')"
+              class="flex items-center w-full text-left"
+            >
               <AppLogo class="w-9 h-9" />
               <span class="ml-2">My Dashboard</span>
-            </Link>
+            </button>
           </SidebarMenuButton>
         </SidebarMenuItem>
       </SidebarMenu>
     </SidebarHeader>
 
     <!-- Menu Utama -->
-    <SidebarContent class="px-2 py-4 overflow-y-auto custom-scroll">
+    <SidebarContent class="px-2 py-4 overflow-y-auto custom-scroll" id="sidebar-content">
       <nav class="space-y-2">
         <div v-for="item in mainNavItems" :key="item.title">
           <!-- Jika ada children (dropdown) -->
@@ -78,17 +160,17 @@ const mainNavItems = [
                 <component :is="item.icon" class="w-5 h-5" />
                 <span>{{ item.title }}</span>
               </div>
-              <span>{{ openedDropdown === item.title ? "▾" : "▸" }}</span>
+              <span>{{ activeDropdown === item.title ? "▾" : "▸" }}</span>
             </button>
             <div
-              v-if="openedDropdown === item.title"
+              v-if="activeDropdown === item.title"
               class="ml-6 pl-2 border-l border-gray-700 space-y-1"
             >
-              <Link
+              <button
                 v-for="child in item.children"
                 :key="child.title"
-                :href="child.href"
-                class="block px-4 py-2 rounded-md text-sm transition text-gray-400 hover:bg-white hover:text-black"
+                @click="navigateWithScrollPreservation(child.href)"
+                class="block w-full text-left px-4 py-2 rounded-md text-sm transition text-gray-400 hover:bg-white hover:text-black"
                 :class="{
                   'bg-white text-black font-semibold':
                     currentUrl === child.href ||
@@ -96,15 +178,15 @@ const mainNavItems = [
                 }"
               >
                 {{ child.title }}
-              </Link>
+              </button>
             </div>
           </div>
 
           <!-- Jika tidak ada children -->
-          <Link
+          <button
             v-else
-            :href="item.href"
-            class="flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition text-gray-300 hover:bg-white hover:text-black"
+            @click="navigateWithScrollPreservation(item.href)"
+            class="w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition text-gray-300 hover:bg-white hover:text-black"
             :class="{
               'bg-white text-black font-semibold':
                 currentUrl === item.href ||
@@ -113,7 +195,7 @@ const mainNavItems = [
           >
             <component :is="item.icon" class="w-5 h-5" />
             <span>{{ item.title }}</span>
-          </Link>
+          </button>
         </div>
       </nav>
     </SidebarContent>

@@ -13,7 +13,7 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 
 
 // Halaman umum
-Route::get('/', fn () => Inertia::render('Welcome'))->name('home');
+Route::get('/', fn() => Inertia::render('Welcome'))->name('home');
 
 Route::get('/tentang', function () {
     return Inertia::render('Tentang');
@@ -34,10 +34,6 @@ Route::get('/xirpl', function () {
 Route::get('/xiirpl', function () {
     return Inertia::render('xiirpl');
 });
-
-Route::get('dashboard', [AdminCon::class, 'dashboard'])
-->middleware(['auth', 'verified'])
-->name('dashboard');
 // Users Route Start
 Route::get('/user', [AdminCon::class, 'indexs'])->name('user');
 Route::get('/user/tambah', [AdminCon::class, 'tambahs'])->name('user.tambah');
@@ -47,9 +43,9 @@ Route::put('/user/update/{id}', [AdminCon::class, 'updates']);
 Route::get('/user/delete/{id}', [AdminCon::class, 'destroys'])->name('user.hapus');
 // Users Route End
 
-Route::get('/tentang', fn () => Inertia::render('Tentang'));
-Route::get('/fitur', fn () => Inertia::render('Fitur'));
-Route::get('/kontak', fn () => Inertia::render('Kontak'));
+Route::get('/tentang', fn() => Inertia::render('Tentang'));
+Route::get('/fitur', fn() => Inertia::render('Fitur'));
+Route::get('/kontak', fn() => Inertia::render('Kontak'));
 Route::post('/kontak', [KontakController::class, 'store'])->name('kontak.store');
 
 // Guru Route Start
@@ -115,17 +111,17 @@ Route::put('/siswaxii/update/{id}', [AdminCon::class, 'updatexii']);
 Route::get('/siswaxii/delete/{id}', [AdminCon::class, 'destroyxii'])->name('siswaxii.hapus');
 // Siswa XII Route End
 
-require __DIR__.'/settings.php';
-require __DIR__.'/auth.php';
+require __DIR__ . '/settings.php';
+require __DIR__ . '/auth.php';
 //
 
 
-// MULTI USERRRRRRRRRRRRRRRRRRRRR 
+// MULTI USERRRRRRRRRRRRRRRRRRRRR
 
 use App\Enums\UserRole;
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
-
+use App\Http\Controllers\JadwalController;
 
 // dashboard router
 Route::get('/dashboard', function () {
@@ -141,24 +137,28 @@ Route::get('/dashboard', function () {
 
 // role: admin
 Route::middleware(['auth'])->group(function () {
-    Route::get('/admin/dashboard', function () {
-        return Inertia::render('Admin/Dashboard');
-    })->name('admin.dashboard');
+    Route::get(
+        '/admin/dashboard',
+        [AdminCon::class, 'dashboard']
+    )->name('admin.dashboard');
 
-    Route::get('/guru/dashboard', function () {
-        return Inertia::render('Guru/Dashboard');
-    })->name('guru.dashboard');
+    Route::get(
+        '/guru/dashboard',
+        [JadwalController::class, 'index']
+    )->name('guru.dashboard');
+
 
     Route::get('/user/dashboard', function () {
         return Inertia::render('User/Dashboard');
     })->name('user.dashboard');
 });
 
+
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\NewPasswordController;
 
 // Halaman form lupa password
-Route::get('/forgot-password', fn () => Inertia::render('auth/ForgotPassword'))
+Route::get('/forgot-password', fn() => Inertia::render('auth/ForgotPassword'))
     ->middleware('guest')
     ->name('password.request');
 

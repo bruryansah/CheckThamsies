@@ -24,14 +24,15 @@
     ]
 
     const props = defineProps < {
+        guru: {
+            id_guru:number;
+            nama:string;
+            nip:number;
+        }
         users: {
             id: number;
-            name: string;
+            name:string;
             email: string;
-        } []
-        kelas: {
-            id_kelas: number;
-            nama_kelas: string;
         } []
         mapel: {
             id_mapel: number;
@@ -41,7 +42,9 @@
 
     const form = useForm({
         user_id: '',
+        id_guru:'',
         nama: '',
+        nip:'',
         email: '',
         id_kelas: '',
         id_mapel: '',
@@ -91,13 +94,21 @@
                             class="text-red-500 text-sm">{{ form.errors.user_id }}</span>
                     </div>
 
-                    <!-- Nama (Manual Input) -->
+                    <!-- Nama -->
                     <div>
                         <label class="block text-sm font-medium text-zinc-300 mb-1">Nama Guru</label>
                         <input v-model="form.nama" type="text"
                             class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 focus:ring focus:ring-green-500 focus:outline-none"
                             placeholder="Masukkan nama guru secara manual" />
                         <span v-if="form.errors.nama" class="text-red-500 text-sm">{{ form.errors.nama }}</span>
+                    </div>
+                    <!-- NIP -->
+                    <div>
+                        <label class="block text-sm font-medium text-zinc-300 mb-1">NIP</label>
+                        <input v-model="form.nip" type="text"
+                            class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 focus:ring focus:ring-green-500 focus:outline-none"
+                            placeholder="Masukkan nama guru secara manual" />
+                        <span v-if="form.errors.nip" class="text-red-500 text-sm">{{ form.errors.nip }}</span>
                     </div>
 
                     <!-- Email (Otomatis dari User) -->
@@ -107,20 +118,6 @@
                             class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 focus:ring focus:ring-green-500 focus:outline-none disabled:opacity-50"
                             :placeholder="form.user_id ? 'Email otomatis dari user yang dipilih' : 'Pilih user terlebih dahulu'" />
                         <span v-if="form.errors.email" class="text-red-500 text-sm">{{ form.errors.email }}</span>
-                    </div>
-
-                    <!-- Kelas -->
-                    <div>
-                        <label class="block text-sm font-medium text-zinc-300 mb-1">Pilih Kelas</label>
-                        <select v-model="form.id_kelas"
-                            class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 focus:ring focus:ring-green-500 focus:outline-none">
-                            <option value="">-- Pilih Kelas --</option>
-                            <option v-for="kelas in props.kelas" :key="kelas.id_kelas" :value="kelas.id_kelas">
-                                {{ kelas.nama_kelas }}
-                            </option>
-                        </select>
-                        <span v-if="form.errors.id_kelas"
-                            class="text-red-500 text-sm">{{ form.errors.id_kelas }}</span>
                     </div>
 
                     <!-- Mapel -->
