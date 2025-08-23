@@ -534,10 +534,10 @@ const exportToPDF = () => {
   // Ambil data tabel (pakai data langsung biar aman)
   const tableData = (filteredAttendanceData.value || []).map((a, index) => [
     index + 1,
-    a.nama_siswa || "-",
-    a.kelas || "-",
-    a.mapel || "-",
-    a.tanggal || "-",
+    a.name || "-",
+    a.class || "-",
+    a.subject || "-",
+    a.date || "-",
     a.status || "-",
   ]);
 
