@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { usePage, Link, router } from '@inertiajs/vue3'
 import { QrcodeStream } from 'vue-qrcode-reader'
-import { LogOut } from 'lucide-vue-next'
+import { LogOut, Users, CheckCircle, BookOpen, Calendar, QrCode, Eye } from 'lucide-vue-next'
 
 // Ambil user dari Inertia props
 const page = usePage()
@@ -30,6 +30,24 @@ const toastMessage = ref("")
 const toastType = ref<"success" | "error">("success")
 const showToast = ref(false)
 
+// Statistik dashboard
+const stats = ref({
+  totalKehadiran: 85,
+  persentaseHadir: 94,
+  totalKelas: 6,
+  kelasAktif: 4,
+  absenHariIni: "Hadir",
+  waktuAbsen: "07:30"
+})
+
+// Data absensi terbaru
+const recentAttendance = ref([
+  { name: "Matematika", time: "07:30", status: "Hadir", color: "bg-green-500" },
+  { name: "Bahasa Indonesia", time: "08:15", status: "Hadir", color: "bg-green-500" },
+  { name: "Fisika", time: "09:00", status: "Terlambat", color: "bg-yellow-500" },
+  { name: "Kimia", time: "10:30", status: "Hadir", color: "bg-green-500" },
+])
+
 const showNotification = (msg: string, type: "success" | "error" = "success") => {
   toastMessage.value = msg
   toastType.value = type
@@ -50,6 +68,7 @@ const checkIn = () => {
     }, {
       onSuccess: () => {
         checkinStatus.value = "Sudah Absen (" + selectedStatus.value + ")"
+        stats.value.absenHariIni = selectedStatus.value
         showNotification("✅ Absen " + selectedStatus.value + " berhasil!", "success")
       },
       onError: () => {
@@ -135,126 +154,213 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 p-6">
+  <div class="min-h-screen bg-gray-50 p-6">
     <!-- Header -->
     <div class="flex items-center justify-between mb-8">
-      <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">
-        📊 Dashboard
-      </h1>
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center">
+          <BookOpen class="w-6 h-6 text-white" />
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900">Dashboard Siswa</h1>
+          <p class="text-gray-500">Selamat datang, {{ studentName }}</p>
+        </div>
+      </div>
       <Link
         as="button"
         method="post"
         :href="route('logout')"
-        class="flex items-center gap-2 bg-gradient-to-r from-red-500 to-red-600 hover:scale-105 transition-transform text-white px-5 py-2.5 rounded-full font-medium shadow-lg"
+        class="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
       >
-        <LogOut class="w-5 h-5" />
-        Keluar
+        <LogOut class="w-4 h-4" />
+        Logout
       </Link>
     </div>
 
-    <!-- Welcome -->
-    <div
-      class="backdrop-blur-xl bg-white/60 rounded-3xl shadow-2xl p-6 mb-10 border border-white/40 transition hover:shadow-3xl"
-    >
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h2 class="text-2xl font-bold text-gray-800">
-            👋 Halo, <span class="text-indigo-600">{{ studentName }}</span>
-          </h2>
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <!-- Total Kehadiran -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center justify-between">
+          <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+            <Users class="w-6 h-6 text-blue-600" />
+          </div>
+          <span class="text-sm font-medium text-green-600">+12%</span>
         </div>
-        <div class="text-right">
-          <p class="text-sm text-gray-500">Hari ini</p>
-          <p class="text-lg font-semibold text-purple-600">{{ currentDate }}</p>
+        <div class="mt-4">
+          <p class="text-3xl font-bold text-gray-900">{{ stats.totalKehadiran }}</p>
+          <p class="text-gray-600 text-sm">Total Kehadiran</p>
+        </div>
+      </div>
+
+      <!-- Persentase Hadir -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center justify-between">
+          <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+            <CheckCircle class="w-6 h-6 text-green-600" />
+          </div>
+          <span class="text-sm font-medium text-green-600">+8%</span>
+        </div>
+        <div class="mt-4">
+          <p class="text-3xl font-bold text-gray-900">{{ stats.persentaseHadir }}%</p>
+          <p class="text-gray-600 text-sm">Persentase Hadir</p>
+        </div>
+      </div>
+
+      <!-- Total Kelas -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center justify-between">
+          <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+            <BookOpen class="w-6 h-6 text-purple-600" />
+          </div>
+          <span class="text-sm font-medium text-blue-600">Aktif</span>
+        </div>
+        <div class="mt-4">
+          <p class="text-3xl font-bold text-gray-900">{{ stats.totalKelas }}</p>
+          <p class="text-gray-600 text-sm">Total Kelas</p>
+        </div>
+      </div>
+
+      <!-- Mata Pelajaran -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center justify-between">
+          <div class="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+            <Calendar class="w-6 h-6 text-orange-600" />
+          </div>
+          <span class="text-sm font-medium text-green-600">Aktif</span>
+        </div>
+        <div class="mt-4">
+          <p class="text-3xl font-bold text-gray-900">{{ stats.kelasAktif }}</p>
+          <p class="text-gray-600 text-sm">Mata Pelajaran</p>
         </div>
       </div>
     </div>
 
-    <!-- Grid Buttons -->
-    <div class="grid gap-6 md:grid-cols-3">
-      <!-- Absen Masuk -->
-      <div class="backdrop-blur-xl bg-gradient-to-br from-green-100/80 to-green-50/80 rounded-2xl shadow-xl p-6 border border-green-200/40 hover:shadow-2xl transition">
-        <h3 class="text-xl font-semibold mb-4 text-green-700">⏰ Absen Masuk</h3>
+    <!-- Action Cards and Recent Attendance -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- Aksi Cepat -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+            <CheckCircle class="w-5 h-5 text-blue-600" />
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900">Aksi Cepat</h3>
+        </div>
 
-        <label class="block mb-2 text-sm font-medium text-gray-700">Pilih Status</label>
-        <select
-          v-model="selectedStatus"
-          class="w-full p-2.5 border rounded-lg text-gray-800 bg-white shadow-sm focus:ring-2 focus:ring-green-400"
-        >
-          <option value="Hadir">Hadir</option>
-          <option value="Izin">Izin</option>
-          <option value="Sakit">Sakit</option>
-        </select>
+        <div class="space-y-4">
+          <!-- Absen Masuk -->
+          <div class="border border-gray-200 rounded-lg p-4">
+            <h4 class="font-medium text-gray-900 mb-3">Absen Masuk</h4>
+<select
+  v-model="selectedStatus"
+  class="w-full p-2 border border-black-300 rounded-lg text-sm mb-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-medium text-gray-900 mb-3"
+>
+  <option value="Hadir"  class="font-medium text-gray-900 mb-3">Hadir</option>
+  <option value="Izin"  class="font-medium text-gray-900 mb-3">Izin</option>
+  <option value="Sakit" class="font-medium text-gray-900 mb-3">Sakit</option>
+</select>
+            <p class="text-sm font-medium text-gray-900 mb-3">
+              Status: 
+              <span :class="checkinStatus.includes('Sudah') ? 'text-green-600 font-medium' : 'text-red-500'">
+                {{ checkinStatus }}
+              </span>
+            </p>
+            <button
+              @click="checkIn"
+              :disabled="checkinStatus.includes('Sudah') || processingIn"
+              class="w-full py-2 px-4 rounded-lg text-sm font-medium transition-all"
+              :class="checkinStatus.includes('Sudah') ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'"
+            >
+              <span v-if="processingIn">Memproses...</span>
+              <span v-else>Absen Masuk</span>
+            </button>
+          </div>
 
-        <p class="text-sm mt-3 mb-3">
-          Status:
-          <span
-            :class="checkinStatus.includes('Sudah') ? 'text-green-600 font-semibold' : 'text-red-500'"
-          >
-            {{ checkinStatus }}
-          </span>
-        </p>
-        <button
-          @click="checkIn"
-          :disabled="checkinStatus.includes('Sudah') || processingIn"
-          class="w-full py-3 rounded-full font-medium shadow-md flex justify-center items-center transition-all"
-          :class="checkinStatus.includes('Sudah') ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-green-500 to-green-600 hover:scale-105 text-white'"
-        >
-          <span v-if="processingIn">⏳ Proses...</span>
-          <span v-else>🚀 Absen Masuk</span>
-        </button>
-      </div>
+          <!-- Absen Pulang -->
+          <div class="border border-gray-200 rounded-lg p-4">
+            <h4 class="font-medium text-gray-900 mb-3">Absen Pulang</h4>
+            <p class="text-sm font-medium text-gray-900 mb-3">
+              Status: 
+              <span :class="checkoutStatus === 'Sudah Pulang' ? 'text-green-600 font-medium' : 'text-gray-600'">
+                {{ checkoutStatus }}
+              </span>
+            </p>
+            <button
+              @click="checkOut"
+              :disabled="!canCheckout || checkoutStatus === 'Sudah Pulang' || processingOut"
+              class="w-full py-2 px-4 rounded-lg text-sm font-medium transition-all"
+              :class="(!canCheckout || checkoutStatus === 'Sudah Pulang') ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 text-white'"
+            >
+              <span v-if="processingOut">Memproses...</span>
+              <span v-else>Absen Pulang</span>
+            </button>
+          </div>
+        </div>
 
-      <!-- Absen Pulang -->
-      <div class="backdrop-blur-xl bg-gradient-to-br from-blue-100/80 to-blue-50/80 rounded-2xl shadow-xl p-6 border border-blue-200/40 hover:shadow-2xl transition">
-        <h3 class="text-xl font-semibold mb-4 text-blue-700">🏠 Absen Pulang</h3>
-        <p class="text-sm mb-3">
-          Status:
-          <span
-            :class="checkoutStatus === 'Sudah Pulang' ? 'text-blue-600 font-semibold' : 'text-gray-600'"
-          >
-            {{ checkoutStatus }}
-          </span>
-        </p>
-        <button
-          @click="checkOut"
-          :disabled="!canCheckout || checkoutStatus === 'Sudah Pulang' || processingOut"
-          class="w-full py-3 rounded-full font-medium shadow-md flex justify-center items-center transition-all"
-          :class="(!canCheckout || checkoutStatus === 'Sudah Pulang') ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:scale-105 text-white'"
-        >
-          <span v-if="processingOut">⏳ Proses...</span>
-          <span v-else>🔓 Absen Pulang</span>
-        </button>
-      </div>
-
-      <!-- QR Absen -->
-      <div class="backdrop-blur-xl bg-gradient-to-br from-purple-100/80 to-pink-50/80 rounded-2xl shadow-xl p-6 border border-purple-200/40 hover:shadow-2xl transition">
-        <h3 class="text-xl font-semibold mb-4 text-purple-700">📷 Absen Pelajaran</h3>
-        <p class="text-sm mb-3 text-gray-600">
-          Scan QR Code yang ditampilkan guru untuk absen pelajaran
-        </p>
         <button
           @click="openQRScanner"
-          class="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:scale-105 text-white py-3 rounded-full font-medium shadow-md transition-all"
+          class="w-full mt-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-all"
         >
-          🎯 Buka Scanner QR
+          <QrCode class="w-5 h-5" />
+          Scan QR Absen
         </button>
+
+        <button
+          class="w-full mt-3 bg-green-600 hover:bg-green-700 text-white py-3 px-4 rounded-lg font-medium flex items-center justify-center gap-2 transition-all"
+        >
+          <Eye class="w-5 h-5" />
+          Lihat Absensi
+        </button>
+      </div>
+
+      <!-- Absensi Terbaru -->
+      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+            <CheckCircle class="w-5 h-5 text-green-600" />
+          </div>
+          <h3 class="text-lg font-semibold text-gray-900">Absensi Terbaru</h3>
+        </div>
+
+        <div class="space-y-4">
+          <div v-for="(item, index) in recentAttendance" :key="index" class="flex items-center gap-4">
+            <div class="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100">
+              <span class="text-sm font-medium text-blue-600">{{ item.name.charAt(0) }}</span>
+            </div>
+            <div class="flex-1">
+              <h4 class="font-medium text-gray-900">{{ item.name }}</h4>
+              <p class="text-sm text-gray-500">{{ item.time }}</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <div :class="`w-2 h-2 rounded-full ${item.color}`"></div>
+              <span class="text-sm font-medium" 
+                    :class="item.status === 'Hadir' ? 'text-green-600' : item.status === 'Terlambat' ? 'text-yellow-600' : 'text-red-600'">
+                {{ item.status }}
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Modal Scanner -->
     <div
       v-if="scannerOpen"
-      class="fixed inset-0 backdrop-blur-md bg-black/60 flex items-center justify-center z-50"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
     >
-      <div class="bg-white rounded-2xl shadow-xl p-6 w-[90%] md:w-[420px] animate-fadeIn">
-        <h2 class="text-lg font-bold mb-4 text-gray-800">🔍 Scan QR Code</h2>
-        <qrcode-stream @decode="onDecode" @init="onInit"></qrcode-stream>
-        <button
-          @click="scannerOpen = false"
-          class="mt-6 w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-full shadow-md transition"
-        >
-          ❌ Tutup
-        </button>
+      <div class="bg-white rounded-xl shadow-xl w-full max-w-md">
+        <div class="p-6">
+          <h2 class="text-lg font-semibold mb-4 text-gray-900">Scan QR Code</h2>
+          <div class="mb-4">
+            <qrcode-stream @decode="onDecode" @init="onInit" class="rounded-lg overflow-hidden"></qrcode-stream>
+          </div>
+          <button
+            @click="scannerOpen = false"
+            class="w-full bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors"
+          >
+            Tutup
+          </button>
+        </div>
       </div>
     </div>
 
@@ -262,27 +368,20 @@ onMounted(() => {
     <transition name="fade">
       <div
         v-if="showToast"
-        class="fixed top-6 right-6 z-50 px-5 py-3 rounded-xl shadow-lg flex items-center gap-3 text-white"
+        class="fixed top-6 right-6 z-50 px-4 py-3 rounded-lg shadow-lg text-white max-w-sm"
         :class="toastType === 'success' ? 'bg-green-500' : 'bg-red-500'"
       >
-        <span class="text-lg">{{ toastMessage }}</span>
+        <p class="font-medium">{{ toastMessage }}</p>
       </div>
     </transition>
   </div>
 </template>
 
-<style>
+<style scoped>
 .fade-enter-active, .fade-leave-active {
-  transition: opacity 0.4s;
+  transition: opacity 0.3s;
 }
 .fade-enter-from, .fade-leave-to {
   opacity: 0;
 }
-.animate-fadeIn {
-  animation: fadeIn 0.3s ease-out;
-}
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
-}
-</style>
+</style>  
