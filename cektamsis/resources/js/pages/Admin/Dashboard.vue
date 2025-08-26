@@ -3,71 +3,55 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import { Users, User, GraduationCap, Shield, RefreshCw, AlertTriangle, PieChart, Settings } from 'lucide-vue-next';
-import PlaceholderPattern from '@/components/PlaceholderPattern.vue';
 import { ref, computed } from 'vue';
 
-// Define interface untuk type safety
-interface DashboardStats {
-  totalUsers: number;
-  totalSiswa: number;
-  totalGuru: number;
-  totalAdmin: number;
-}
+// 🔹 Import komponen dropdown user
+import UserInfo from '@/components/UserInfo.vue';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { LogOut, Settings as SettingsIcon } from 'lucide-vue-next';
+import { Link, router } from '@inertiajs/vue3';
+import type { User as UserType } from '@/types';
 
-const breadcrumbs: BreadcrumbItem[] = [
-  {
-    title: 'Dashboard',
-    href: '/dashboard',
-  },
-];
-
-// Define props yang diterima dari Laravel
+// Props dari Laravel
 interface Props {
   totalUsers: number;
   totalSiswa: number;
   totalGuru: number;
   totalAdmin: number;
+  auth: {
+    user: UserType;
+  };
 }
 
-// Definisikan props yang diterima
 const props = defineProps<Props>();
 
-// Reactive stats langsung dari props
-const stats = computed((): DashboardStats => {
-  return {
-    totalUsers: props.totalUsers || 0,
-    totalSiswa: props.totalSiswa || 0,
-    totalGuru: props.totalGuru || 0,
-    totalAdmin: props.totalAdmin || 0,
-  };
-});
+// Logout handler
+const handleLogout = () => {
+  router.flushAll();
+};
 
-// Dummy data untuk distribusi kehadiran per kelas
+const breadcrumbs: BreadcrumbItem[] = [
+  { title: 'Dashboard', href: '/dashboard' },
+];
+
+// Stats
+const stats = computed(() => ({
+  totalUsers: props.totalUsers || 0,
+  totalSiswa: props.totalSiswa || 0,
+  totalGuru: props.totalGuru || 0,
+  totalAdmin: props.totalAdmin || 0,
+}));
+
+// Dummy data kelas
 const kelasData = ref([
   { kelas: 'X RPL 1', hadir: 28, izin: 2, sakit: 1, alpha: 1, total: 32 },
   { kelas: 'XI RPL 1', hadir: 27, izin: 3, sakit: 1, alpha: 1, total: 32 },
   { kelas: 'XII RPL 1', hadir: 25, izin: 4, sakit: 2, alpha: 1, total: 32 },
 ]);
 
-// Hitung persentase kehadiran
-const getPercentage = (hadir: number, total: number) => {
-  return Math.round((hadir / total) * 100);
-};
-
-// Warna berdasarkan persentase kehadiran
-const getStatusColor = (percentage: number) => {
-  if (percentage >= 90) return 'text-green-400';
-  if (percentage >= 80) return 'text-yellow-400';
-  if (percentage >= 70) return 'text-orange-400';
-  return 'text-red-400';
-};
-
-const getProgressColor = (percentage: number) => {
-  if (percentage >= 90) return 'bg-green-500';
-  if (percentage >= 80) return 'bg-yellow-500';
-  if (percentage >= 70) return 'bg-orange-500';
-  return 'bg-red-500';
-};
+const getPercentage = (hadir: number, total: number) => Math.round((hadir / total) * 100);
+const getStatusColor = (p: number) => p >= 90 ? 'text-green-400' : p >= 80 ? 'text-yellow-400' : p >= 70 ? 'text-orange-400' : 'text-red-400';
+const getProgressColor = (p: number) => p >= 90 ? 'bg-green-500' : p >= 80 ? 'bg-yellow-500' : p >= 70 ? 'bg-orange-500' : 'bg-red-500';
 </script>
 
 <style>
