@@ -37,6 +37,11 @@ class Guru extends Model
         return $this->belongsTo(Kelas::class, 'id_kelas', 'id_kelas');
     }
 
+        public function mapel()
+    {
+        return $this->belongsTo(Mapel::class, 'foreignKey: id_mapel', 'id_mapel');
+    }
+
     // Relasi ke tabel users
     public function user()
     {

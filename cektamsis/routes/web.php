@@ -110,6 +110,14 @@ Route::get('/siswaxii/edit/{id}', [AdminCon::class, 'editxii'])->name('siswaxii.
 Route::put('/siswaxii/update/{id}', [AdminCon::class, 'updatexii']);
 Route::get('/siswaxii/delete/{id}', [AdminCon::class, 'destroyxii'])->name('siswaxii.hapus');
 // Siswa XII Route End
+// Jadwal Route Start
+Route::get('/jadwal', [AdminCon::class, 'jadwal'])->name('jadwal');
+Route::get('/jadwal/tambah', [AdminCon::class, 'tambahd'])->name('jadwal.tambah');
+Route::post('/jadwal/tambahstore', [AdminCon::class, 'stored']);
+Route::get('/jadwal/edit/{id}', [AdminCon::class, 'editd'])->name('jadwal.edit');
+Route::put('/jadwal/update/{id}', [AdminCon::class, 'updated']);
+Route::get('/jadwal/delete/{id}', [AdminCon::class, 'destroyd'])->name('jadwal.hapus');
+// Jadwal Route End
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
@@ -180,4 +188,3 @@ Route::post('/reset-password', [NewPasswordController::class, 'store'])
     ->middleware('guest')
     ->name('password.store');
 
-    
