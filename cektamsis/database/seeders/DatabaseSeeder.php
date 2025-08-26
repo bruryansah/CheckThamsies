@@ -16,7 +16,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         //Role Admin
-            User::create([
+        User::create([
             'name' => 'Zilch',
             'email' => 'zilch@zilch.com',
             'role' => UserRole::ADMIN,
@@ -24,7 +24,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         //Role Admin
-            User::create([
+        User::create([
             'name' => 'Ragil',
             'email' => 'ragil@gmail.com',
             'role' => UserRole::ADMIN,
@@ -57,8 +57,32 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('1234578'),
         ]);
         User::create([
-            'name' => 'Ki Angga',
-            'email' => 'kiangga@gmail.com',
+            'name' => 'Ki Fatahullah NR',
+            'email' => 'fatahullah@gmail.com',
+            'role' => UserRole::GURU,
+            'password' => Hash::make('1234578'),
+        ]);
+        User::create([
+            'name' => 'Ki Gatot Sukoco',
+            'email' => 'gatot@gmail.com',
+            'role' => UserRole::GURU,
+            'password' => Hash::make('1234578'),
+        ]);
+        User::create([
+            'name' => 'Ki Tri Kurnianto',
+            'email' => 'tri.kurnianto@gmail.com',
+            'role' => UserRole::GURU,
+            'password' => Hash::make('1234578'),
+        ]);
+        User::create([
+            'name' => 'Nyi Rimay Kwartiyanti',
+            'email' => 'rimay.kwartiyanti@gmail.com',
+            'role' => UserRole::GURU,
+            'password' => Hash::make('1234578'),
+        ]);
+        User::create([
+            'name' => 'Ki Supriono',
+            'email' => 'supriono@gmail.com',
             'role' => UserRole::GURU,
             'password' => Hash::make('1234578'),
         ]);
@@ -89,12 +113,13 @@ class DatabaseSeeder extends Seeder
             'password' => Hash::make('1234578'),
         ]);
 
-       $this->call([
+        $this->call([
             JurusanSeeder::class,
             MapelSeeder::class,
             GuruSeeder::class,   // guru harus ada dulu
             KelasSeeder::class,  // baru kelas
             SiswaSeeder::class,
+            JurusanSeeder::class,
         ]);
     }
 }

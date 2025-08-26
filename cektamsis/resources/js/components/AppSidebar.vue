@@ -112,6 +112,7 @@ const mainNavItems = [
   { title: "Dashboard", href: "/dashboard", icon: LayoutGrid },
   { title: "Manage User", href: "/user", icon: Users },
   { title: "Data Guru", href: "/guru", icon: Users },
+  { title: "Data Jadwal", href: "/jadwal", icon: Users },
   { title: "Data Mapel", href: "/mapel", icon: BookOpen },
   { title: "Data Kelas", href: "/kelas", icon: School },
   { title: "Data Jurusan", href: "/jurusan", icon: Group },

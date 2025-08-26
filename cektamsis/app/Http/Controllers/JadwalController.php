@@ -47,7 +47,7 @@ class JadwalController extends Controller
         ];
     });
 
-    
+
 
      $kelasList = \App\Models\Kelas::select('id_kelas as id', 'nama_kelas')->get();
 
@@ -60,7 +60,7 @@ class JadwalController extends Controller
             'kelas' => $guru->kelas->nama_kelas ?? null,
         ],
         'jadwalData' => $jadwalFormatted,
-        'kelasData'   => $kelasList   
+        'kelasData'   => $kelasList
     ]);
 }
 }
