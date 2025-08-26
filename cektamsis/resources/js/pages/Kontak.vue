@@ -117,7 +117,6 @@ onMounted(() => {
 
             <div class="auth-buttons">
                 <Link href="/login" class="btn-login"> <span class="auth-icon">🔑</span> Login </Link>
-                <Link href="/register" class="btn-register"> <span class="auth-icon">📋</span> Register </Link>
             </div>
 
             <!-- Mobile menu toggle -->

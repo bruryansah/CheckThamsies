@@ -155,11 +155,6 @@ Route::middleware(['auth'])->group(function () {
         [JadwalController::class, 'index']
     )->name('guru.dashboard');
 
-    Route::get(
-        '/user/dashboard',
-        [AbsenController::class, 'index']
-    )->name('user.dashboard');
-
 
     Route::get('/user/dashboard', function () {
         return Inertia::render('User/Dashboard');
@@ -193,4 +188,3 @@ Route::post('/reset-password', [NewPasswordController::class, 'store'])
     ->middleware('guest')
     ->name('password.store');
 
-    
