@@ -12,46 +12,53 @@ class GuruSeeder extends Seeder
         $data = [
             // Ketua Kompetensi Keahlian
             [
-                'user_id'   => 1,
+                'user_id'   => 7,
                 'nip'       => 801112001,
                 'nama'      => 'Ki Fatahullah NR',
                 'email'     => 'fatahullah@gmail.com',
                 'id_mapel'  => 1, // TITL
             ],
             [
-                'user_id'   => 2,
+                'user_id'   => 8,
                 'nip'       => 801112002,
                 'nama'      => 'Ki Gatot Sukoco',
                 'email'     => 'gatot@gmail.com',
                 'id_mapel'  => 2, // TKR
             ],
             [
-                'user_id'   => 3,
+                'user_id'   => 9,
                 'nip'       => 801112003,
                 'nama'      => 'Ki Tri Kurnianto',
                 'email'     => 'tri.kurnianto@gmail.com',
                 'id_mapel'  => 3, // TP
             ],
             [
-                'user_id'   => 4,
+                'user_id'   => 10,
                 'nip'       => 801112004,
                 'nama'      => 'Nyi Rimay Kwartiyanti',
                 'email'     => 'rimay.kwartiyanti@gmail.com',
                 'id_mapel'  => 4, // TKJ
             ],
             [
-                'user_id'   => 5,
+                'user_id'   => 3,
                 'nip'       => 801112005,
                 'nama'      => 'Ki A. Ircham Ali',
                 'email'     => 'ircham.ali@gmail.com',
                 'id_mapel'  => 5, // RPL
             ],
             [
-                'user_id'   => 6,
+                'user_id'   => 11,
                 'nip'       => 801112006,
                 'nama'      => 'Ki Supriono',
                 'email'     => 'supriono@gmail.com',
                 'id_mapel'  => 6, // TBSM
+            ],
+            [
+                'user_id'   => 5,
+                'nip'       => 801112007,
+                'nama'      => 'Ki Jalu',
+                'email'     => 'kijalu@gmail.com',
+                'id_mapel'  => 14, // RPL
             ],
         ];
 
