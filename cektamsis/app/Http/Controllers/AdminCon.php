@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Kelas;
 use App\Models\Mapel;
 use App\Models\Jurusan;
@@ -649,7 +650,10 @@ class AdminCon extends Controller
     // Menampilkan Data Kelas
     public function indexk()
     {
-        $kelas = DB::table('kelas')->join('jurusan', 'kelas.id_jurusan', '=', 'jurusan.id_jurusan')->join('guru', 'kelas.id_wali_kelas', '=', 'guru.id_guru')->select('kelas.id_kelas', 'kelas.tingkat_kelas', 'kelas.total_siswa', 'kelas.nama_kelas', 'jurusan.nama_jurusan as jurusan', 'guru.nama as guru')->get();
+        $kelas = DB::table('kelas')
+        ->join('jurusan', 'kelas.id_jurusan', '=', 'jurusan.id_jurusan')
+        ->join('guru', 'kelas.id_wali_kelas', '=', 'guru.id_guru')
+        ->select('kelas.id_kelas','kelas.tingkat_kelas','kelas.total_siswa', 'kelas.nama_kelas', 'jurusan.nama_jurusan as jurusan', 'guru.nama as guru')->get();
         return Inertia::render('Admin/kelas', ['kelas' => $kelas]);
     }
 

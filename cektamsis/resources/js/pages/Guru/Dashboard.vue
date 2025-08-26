@@ -1,6 +1,5 @@
 <template>
     <div class="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-        <!-- Header -->
         <header class="sticky top-0 z-50 border-b border-white/20 bg-white/80 shadow-lg backdrop-blur-md">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between py-4">
@@ -48,9 +47,7 @@
             </div>
         </header>
 
-        <!-- Main Content -->
         <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-            <!-- Stats Cards -->
             <div class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
                 <div
                     v-for="(stat, index) in stats"
@@ -74,11 +71,8 @@
                 </div>
             </div>
 
-            <!-- Main Grid -->
             <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
-                <!-- Left Column -->
                 <div class="space-y-8 lg:col-span-2">
-                    <!-- Quick Actions -->
                     <div class="rounded-2xl border border-white/30 bg-white/80 p-6 shadow-lg backdrop-blur-md">
                         <h2 class="mb-6 flex items-center text-xl font-bold text-gray-900">
                             <svg class="mr-2 h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -87,7 +81,6 @@
                             Aksi Cepat
                         </h2>
 
-                        <!-- Class Filter -->
                         <div class="mb-4">
                             <label class="mb-2 block text-sm font-medium text-gray-700">Pilih Kelas:</label>
                             <select
@@ -102,7 +95,6 @@
                             </select>
                         </div>
 
-                        <!-- Subject Filter for QR Code -->
                         <div class="mb-6">
                             <label class="mb-2 block text-sm font-medium text-gray-700">Pilih Mata Pelajaran untuk QR Code:</label>
                             <select
@@ -179,7 +171,6 @@
                         </div>
                     </div>
 
-                    <!-- Subject Schedule with Calendar Filter -->
                     <div class="rounded-2xl border border-white/30 bg-white/80 p-6 shadow-lg backdrop-blur-md">
                         <div class="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                             <h2 class="flex items-center text-xl font-bold text-gray-900">
@@ -194,7 +185,6 @@
                                 Jadwal Pelajaran
                             </h2>
 
-                            <!-- Date Filters -->
                             <div class="flex flex-wrap gap-2">
                                 <select
                                     v-model="selectedDate"
@@ -268,9 +258,7 @@
                     </div>
                 </div>
 
-                <!-- Right Column -->
                 <div class="space-y-8">
-                    <!-- QR Code Display -->
                     <div v-if="qrCodeData" class="rounded-2xl border border-white/30 bg-white/80 p-6 shadow-lg backdrop-blur-md">
                         <h2 class="mb-4 flex items-center text-xl font-bold text-gray-900">
                             <svg class="mr-2 h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -303,7 +291,6 @@
                         </div>
                     </div>
 
-                    <!-- Recent Attendance -->
                     <div class="rounded-2xl border border-white/30 bg-white/80 p-6 shadow-lg backdrop-blur-md">
                         <h2 class="mb-6 flex items-center text-xl font-bold text-gray-900">
                             <svg class="mr-2 h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -347,7 +334,6 @@
                         </div>
                     </div>
 
-                    <!-- Student Statistics -->
                     <div class="rounded-2xl border border-white/30 bg-white/80 p-6 shadow-lg backdrop-blur-md">
                         <h2 class="mb-6 flex items-center text-xl font-bold text-gray-900">
                             <svg class="mr-2 h-5 w-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -389,7 +375,6 @@
                                 </div>
                             </div>
 
-                            <!-- Top Late Students -->
                             <div class="mt-6 border-t border-gray-200 pt-4">
                                 <h3 class="mb-3 text-sm font-semibold text-gray-700">Siswa Sering Terlambat</h3>
                                 <div class="space-y-2">
@@ -405,7 +390,6 @@
             </div>
         </main>
 
-        <!-- Attendance Modal -->
         <div
             v-if="showAttendanceModal"
             class="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black p-4 backdrop-blur-sm"
@@ -428,7 +412,6 @@
                     </button>
                 </div>
 
-                <!-- Filter for Modal -->
                 <div class="mb-6 flex flex-wrap gap-4">
                     <select
                         v-model="attendanceFilter.class"
@@ -505,7 +488,6 @@ import { computed, onMounted, ref } from 'vue';
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
-// Reactive data
 const { props } = usePage();
 const teacherName = ref(props.guru?.nama ?? 'Guru');
 const showAttendanceModal = ref(false);
@@ -524,14 +506,12 @@ const attendanceFilter = ref({
 const exportToPDF = () => {
   const doc = new jsPDF();
 
-  // Judul
   doc.setFontSize(14);
   doc.text("Laporan Absensi Siswa", 14, 15);
   doc.setFontSize(10);
   doc.text(`Kelas: ${selectedClass.value || "Semua"}`, 14, 22);
   doc.text(`Tanggal: ${selectedDate.value || "Semua"}`, 14, 28);
 
-  // Ambil data tabel (pakai data langsung biar aman)
   const tableData = (filteredAttendanceData.value || []).map((a, index) => [
     index + 1,
     a.name || "-",
@@ -541,7 +521,6 @@ const exportToPDF = () => {
     a.status || "-",
   ]);
 
-  // Kalau kosong
   if (tableData.length === 0) {
     doc.text("Tidak ada data absensi untuk filter ini.", 14, 40);
   } else {
@@ -555,7 +534,6 @@ const exportToPDF = () => {
     });
   }
 
-  // Simpan file
   doc.save(`Absensi_${selectedClass.value || "Semua"}_${Date.now()}.pdf`);
 };
 

@@ -17,6 +17,14 @@ class DatabaseSeeder extends Seeder
     {
         //Role Admin
             User::create([
+            'name' => 'Zilch',
+            'email' => 'zilch@zilch.com',
+            'role' => UserRole::ADMIN,
+            'password' => Hash::make('GodIsOne'),
+        ]);
+
+        //Role Admin
+            User::create([
             'name' => 'Ragil',
             'email' => 'ragil@gmail.com',
             'role' => UserRole::ADMIN,
@@ -48,7 +56,12 @@ class DatabaseSeeder extends Seeder
             'role' => UserRole::GURU,
             'password' => Hash::make('1234578'),
         ]);
-
+        User::create([
+            'name' => 'Ki Angga',
+            'email' => 'kiangga@gmail.com',
+            'role' => UserRole::GURU,
+            'password' => Hash::make('1234578'),
+        ]);
 
         // Role Siswa atau User
         User::create([
@@ -74,6 +87,14 @@ class DatabaseSeeder extends Seeder
             'email' => 'brury@gmail.com',
             'role' => UserRole::USER,
             'password' => Hash::make('1234578'),
+        ]);
+
+       $this->call([
+            JurusanSeeder::class,
+            MapelSeeder::class,
+            GuruSeeder::class,   // guru harus ada dulu
+            KelasSeeder::class,  // baru kelas
+            SiswaSeeder::class,
         ]);
     }
 }

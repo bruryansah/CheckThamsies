@@ -43,8 +43,8 @@
         user_id: '',
         nama: '',
         email: '',
-        id_kelas: '2', // Default ke ID kelas X RPL
-        id_jurusan: '1', // Default ke ID jurusan RPL
+        id_kelas: '', // Default ke ID kelas X RPL
+        id_jurusan: '', // Default ke ID jurusan RPL
     })
 
     // 🔹 Hanya pantau perubahan email berdasarkan user yang dipilih
