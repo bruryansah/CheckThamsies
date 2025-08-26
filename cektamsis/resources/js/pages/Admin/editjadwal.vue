@@ -15,7 +15,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 // Props dari controller
 const props = defineProps<{
   jadwal: {
-    id: number
+    id_jadwal: number
     id_guru: number
     id_kelas: number
     id_mapel: number
@@ -61,7 +61,7 @@ onMounted(() => {
 
 // Function untuk submit form
 const submitForm = () => {
-  form.put(`/jadwal/update/${props.jadwal.id}`, {
+  form.put(`/jadwal/update/${props.jadwal.id_jadwal}`, {
     onSuccess: () => {
       console.log('Jadwal berhasil diperbarui!')
     },
