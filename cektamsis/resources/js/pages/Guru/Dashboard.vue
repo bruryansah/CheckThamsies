@@ -484,15 +484,15 @@
 
 <script setup>
 import { router, usePage } from '@inertiajs/vue3';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import QRCode from 'qrcode';
 import { computed, onMounted, ref } from 'vue';
-import jsPDF from "jspdf";
-import axios from "axios";
-import QRCode from "qrcode";
-import autoTable from "jspdf-autotable";
-
 
 // Reactive data
 const { props } = usePage();
+const allAttendanceData = ref(props.absensiData ?? []);
+const filteredAttendanceData = ref([...allAttendanceData.value]);
 const teacherName = ref(props.guru?.nama ?? 'Guru');
 const showAttendanceModal = ref(false);
 const jadwalData = ref(props.jadwalData ?? []);
@@ -507,99 +507,92 @@ const attendanceFilter = ref({
 });
 
 const refreshQRCode = async () => {
-  if (!qrCodeData.value) {
-    alert("Belum ada QR Code untuk direfresh. Silakan generate dulu.");
-    return;
-  }
+    if (!qrCodeData.value) {
+        alert('Belum ada QR Code untuk direfresh. Silakan generate dulu.');
+        return;
+    }
 
-  const confirmRefresh = confirm("Apakah anda yakin untuk merefresh QR Code?");
-  if (!confirmRefresh) return;
+    const confirmRefresh = confirm('Apakah anda yakin untuk merefresh QR Code?');
+    if (!confirmRefresh) return;
 
-  await generateQRCode(); // panggil ulang generator
+    await generateQRCode(); // panggil ulang generator
 };
-
 
 const generateQRCode = async () => {
-  if (!selectedSubject.value || !selectedClass.value) {
-    alert("Pilih kelas dan mata pelajaran dulu!");
-    return;
-  }
+    if (!selectedSubject.value || !selectedClass.value) {
+        alert('Pilih kelas dan mata pelajaran dulu!');
+        return;
+    }
 
-  const currentTime = new Date();
-  const validUntil = new Date(currentTime.getTime() + 10 * 60000); // 10 menit
+    const currentTime = new Date();
+    const validUntil = new Date(currentTime.getTime() + 10 * 60000); // 10 menit
 
-  const subjectSchedule = jadwalData.value.find(
-    (schedule) => schedule.mata_pelajaran === selectedSubject.value
-  );
+    const subjectSchedule = jadwalData.value.find((schedule) => schedule.mata_pelajaran === selectedSubject.value);
 
-  qrCodeData.value = {
-    subject: selectedSubject.value,
-    class: subjectSchedule ? subjectSchedule.nama_kelas : selectedClass.value,
-    timestamp: currentTime.getTime(),
-    validUntil: validUntil.toLocaleTimeString("id-ID", {
-      hour: "2-digit",
-      minute: "2-digit",
-    }),
-    teacherId: props.guru?.id ?? "GURU001",
-    sessionId: `QR_${selectedSubject.value}_${Date.now()}`,
-  };
+    qrCodeData.value = {
+        subject: selectedSubject.value,
+        class: subjectSchedule ? subjectSchedule.nama_kelas : selectedClass.value,
+        timestamp: currentTime.getTime(),
+        validUntil: validUntil.toLocaleTimeString('id-ID', {
+            hour: '2-digit',
+            minute: '2-digit',
+        }),
+        teacherId: props.guru?.id ?? 'GURU001',
+        sessionId: `QR_${selectedSubject.value}_${Date.now()}`,
+    };
 
-  // Generate QR beneran
-  qrImage.value = await QRCode.toDataURL(qrCodeData.value.sessionId, {
-    width: 200,
-    margin: 2,
-    color: { dark: "#000000", light: "#ffffff" },
-  });
+    // Generate QR beneran
+    qrImage.value = await QRCode.toDataURL(qrCodeData.value.sessionId, {
+        width: 200,
+        margin: 2,
+        color: { dark: '#000000', light: '#ffffff' },
+    });
 
-  const qrDiv = document.getElementById("qrcode");
-  qrDiv.innerHTML = "";
-  const img = document.createElement("img");
-  img.src = qrImage.value;
-  img.className = "h-48 w-48";
-  qrDiv.appendChild(img);
+    const qrDiv = document.getElementById('qrcode');
+    qrDiv.innerHTML = '';
+    const img = document.createElement('img');
+    img.src = qrImage.value;
+    img.className = 'h-48 w-48';
+    qrDiv.appendChild(img);
 };
-
 
 const qrCodeData = ref(null);
 const qrImage = ref(null);
 const selectedJadwal = ref(null);
 
-
-
 const exportToPDF = () => {
-  const doc = new jsPDF();
+    const doc = new jsPDF();
 
-  doc.setFontSize(14);
-  doc.text("Laporan Absensi Siswa", 14, 15);
-  doc.setFontSize(10);
-  doc.text(`Kelas: ${selectedClass.value || "Semua"}`, 14, 22);
-  doc.text(`Tanggal: ${selectedDate.value || "Semua"}`, 14, 28);
+    doc.setFontSize(14);
+    doc.text('Laporan Absensi Siswa', 14, 15);
+    doc.setFontSize(10);
+    doc.text(`Kelas: ${selectedClass.value || 'Semua'}`, 14, 22);
+    doc.text(`Tanggal: ${selectedDate.value || 'Semua'}`, 14, 28);
 
-  const tableData = (filteredAttendanceData.value || []).map((a, index) => [
-    index + 1,
-    a.name || "-",
-    a.class || "-",
-    a.subject || "-",
-    a.date || "-",
-    a.status || "-",
-  ]);
+    const tableData = (filteredAttendanceData.value || []).map((a, index) => [
+        index + 1,
+        a.name || '-',
+        a.class || '-',
+        a.subject || '-',
+        a.date || '-',
+        a.status || '-',
+    ]);
 
-  if (tableData.length === 0) {
-    doc.text("Tidak ada data absensi untuk filter ini.", 14, 40);
-  } else {
-    autoTable(doc, {
-      startY: 35,
-      head: [["No", "Nama Siswa", "Kelas", "Mata Pelajaran", "Tanggal", "Status"]],
-      body: tableData,
-      theme: "grid",
-      styles: { fontSize: 9, cellPadding: 3 },
-      headStyles: { fillColor: [41, 128, 185] },
-    });
-  }
+    if (tableData.length === 0) {
+        doc.text('Tidak ada data absensi untuk filter ini.', 14, 40);
+    } else {
+        autoTable(doc, {
+            startY: 35,
+            head: [['No', 'Nama Siswa', 'Kelas', 'Mata Pelajaran', 'Tanggal', 'Status']],
+            body: tableData,
+            theme: 'grid',
+            styles: { fontSize: 9, cellPadding: 3 },
+            headStyles: { fillColor: [41, 128, 185] },
+        });
+    }
 
-  doc.save(`Absensi_${selectedClass.value || "Semua"}_${Date.now()}.pdf`);
+    doc.save(`Absensi_${selectedClass.value || 'Semua'}_${Date.now()}.pdf`);
 };
-
 
 const months = ref(['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']);
 
@@ -654,23 +647,6 @@ const topLateStudents = ref([
     { id: 3, name: 'Rini Kartika', lateCount: 3 },
 ]);
 
-const allAttendanceData = ref([
-    { name: 'Ahmad Rizki', class: 'XII IPA 1', subject: 'Matematika', date: '2025-08-22', time: '07:05', status: 'Hadir' },
-    { name: 'Siti Nurhaliza', class: 'XII IPA 1', subject: 'Matematika', date: '2025-08-22', time: '07:03', status: 'Hadir' },
-    { name: 'Budi Setiawan', class: 'XII IPA 1', subject: 'Matematika', date: '2025-08-22', time: '07:15', status: 'Terlambat' },
-    { name: 'Dewi Kartika', class: 'XII IPA 2', subject: 'Fisika', date: '2025-08-22', time: '08:32', status: 'Hadir' },
-    { name: 'Eko Prasetyo', class: 'XII IPA 2', subject: 'Fisika', date: '2025-08-22', time: '08:30', status: 'Hadir' },
-    { name: 'Fitri Handayani', class: 'XI IPA 1', subject: 'Matematika', date: '2025-08-22', time: '10:17', status: 'Hadir' },
-    { name: 'Gilang Ramadhan', class: 'XI IPA 1', subject: 'Matematika', date: '2025-08-22', time: '10:20', status: 'Terlambat' },
-    { name: 'Hani Pratiwi', class: 'XI IPA 2', subject: 'Fisika', date: '2025-08-22', time: '13:02', status: 'Hadir' },
-    { name: 'Indra Gunawan', class: 'XI IPA 2', subject: 'Fisika', date: '2025-08-22', time: 'Belum Absen', status: 'Tidak Hadir' },
-    { name: 'Joko Susilo', class: 'XII IPA 1', subject: 'Matematika', date: '2025-08-23', time: '07:01', status: 'Hadir' },
-    { name: 'Kartika Sari', class: 'X IPA 1', subject: 'Kimia', date: '2025-08-23', time: '08:35', status: 'Terlambat' },
-    { name: 'Lina Permata', class: 'X IPA 2', subject: 'Fisika', date: '2025-08-24', time: '07:05', status: 'Hadir' },
-]);
-
-const filteredAttendanceData = ref([...allAttendanceData.value]);
-
 const availableSubjects = computed(() => {
     if (!jadwalData.value) return [];
     return [...new Set(jadwalData.value.map((item) => item.mata_pelajaran))];
@@ -718,7 +694,6 @@ const filteredSchedule = computed(() => {
 const logout = () => {
     router.post(route('logout'));
 };
-
 
 const filterSchedule = () => {
     console.log('Filtering schedule...');
