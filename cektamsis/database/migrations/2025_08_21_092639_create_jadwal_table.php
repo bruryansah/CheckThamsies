@@ -16,6 +16,7 @@ return new class extends Migration
             $table->id('id_jadwal');
             $table->unsignedBigInteger('id_guru');
             $table->unsignedBigInteger('id_mapel');
+            $table->unsignedBigInteger('id_kelas');
             $table->date('hari');
             $table->time('jam_mulai');
             $table->time('jam_selesai');
@@ -23,6 +24,7 @@ return new class extends Migration
 
             $table->foreign('id_guru')->references('id_guru')->on('guru');
             $table->foreign('id_mapel')->references('id_mapel')->on('mapel');
+            $table->foreign('id_kelas')->references('id_kelas')->on('kelas');
         });
     }
 
