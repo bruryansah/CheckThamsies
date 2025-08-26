@@ -144,23 +144,19 @@ Route::get('/dashboard', function () {
 })->middleware(['auth'])->name('dashboard');
 
 // role: admin
-Route::middleware(['auth'])->group(function () {
-    Route::get(
-        '/admin/dashboard',
-        [AdminCon::class, 'dashboard']
-    )->name('admin.dashboard');
-
-    Route::get(
-        '/guru/dashboard',
-        [JadwalController::class, 'index']
-    )->name('guru.dashboard');
-
-
-    Route::get('/user/dashboard', function () {
-        return Inertia::render('User/Dashboard');
-    })->name('user.dashboard');
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::get('/admin/dashboard', [AdminCon::class, 'dashboard'])->name('admin.dashboard');
 });
 
+// khusus guru
+Route::middleware(['auth', 'role:guru'])->group(function () {
+    Route::get('/guru/dashboard', [JadwalController::class, 'index'])->name('guru.dashboard');
+});
+
+// khusus user
+Route::middleware(['auth', 'role:user'])->group(function () {
+    Route::get('/user/dashboard', fn() => Inertia::render('User/Dashboard'))->name('user.dashboard');
+});
 
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\NewPasswordController;
@@ -187,4 +183,3 @@ Route::get('/reset-password/{token}', function (string $token) {
 Route::post('/reset-password', [NewPasswordController::class, 'store'])
     ->middleware('guest')
     ->name('password.store');
-
