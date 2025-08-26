@@ -1,4 +1,5 @@
-<?php
+
+<!--
 
 use App\Http\Controllers\KontakController;
 use Illuminate\Http\Request;
@@ -8,4 +9,4 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-
+-->

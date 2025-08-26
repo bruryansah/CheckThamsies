@@ -47,9 +47,4 @@ class Guru extends Model
     {
         return $this->belongsTo(User::class, 'user_id', 'id');
     }
-
-    public function mapel()
-    {
-        return $this->belongsTo(Mapel::class, 'id_mapel', 'id_mapel');
-    }
 }
