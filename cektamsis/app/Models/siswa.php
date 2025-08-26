@@ -4,8 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Kelas;
+use App\Models\User;
 
-class siswa extends Model
+class Siswa extends Model
 {
     use HasFactory;
 
@@ -15,11 +17,10 @@ class siswa extends Model
     // Primary key custom (bukan id default)
     protected $primaryKey = 'id_siswa';
 
-    // Jika primary key bukan auto increment integer (misal UUID), bisa set false.
-    // Karena disini integer auto increment, biarkan default true.
+    // Auto increment primary key
     public $incrementing = true;
 
-    // Jika primary key bukan tipe int, set ke string. Defaultnya int.
+    // Tipe data primary key
     protected $keyType = 'int';
 
     // Kolom yang bisa diisi (mass assignment)
@@ -32,10 +33,11 @@ class siswa extends Model
     ];
 
     // Relasi ke tabel kelas
-    public function kelas()
-    {
-        return $this->belongsTo(Kelas::class, 'id_kelas', 'id_kelas');
-    }
+public function kelas()
+{
+    return $this->belongsTo(Kelas::class, 'id_kelas', 'id_kelas');
+}
+
 
     // Relasi ke tabel users
     public function user()
