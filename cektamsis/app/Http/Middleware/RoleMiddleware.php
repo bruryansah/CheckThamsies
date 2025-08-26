@@ -3,18 +3,33 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use App\Enums\UserRole;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth; // ⬅️ Tambahkan ini
 use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Support\Facades\Auth; // ⬅️ Tambahkan ini
 
 class RoleMiddleware
 {
-    public function handle(Request $request, Closure $next, $role)
+    public function handle(Request $request, Closure $next, string $role)
     {
-        if (Auth::check() && Auth::user()->role === $role) {
-            return $next($request);
+        if (!Auth::check()) {
+            return redirect('/login');
         }
 
-        abort(403, "HAYO NGAPAIN KAMU, KAMU BUKAN {$role}");
+        // Ambil role user sebagai string lowercase
+        $userRole = strtolower(Auth::user()->role->value);
+        $role = strtolower($role);
+
+        if ($userRole !== $role) {
+            // redirect ke dashboard sesuai role
+            return match ($userRole) {
+                UserRole::ADMIN->value => redirect()->route('admin.dashboard'),
+                UserRole::GURU->value  => redirect()->route('guru.dashboard'),
+                UserRole::USER->value  => redirect()->route('user.dashboard'),
+                default => redirect('/login'),
+            };
+        }
+
+        return $next($request);
     }
 }
