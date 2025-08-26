@@ -18,7 +18,7 @@ class JadwalSeeder extends Seeder
             [
                 'id_guru'    => 7,
                 'id_mapel'   => 14,
-                'id_kelas'   => 4,
+                'id_kelas'   => 1,
                 'hari'       => '2025-08-01',
                 'jam_mulai'  => '08:00:00',
                 'jam_selesai' => '12:00:00',
@@ -28,7 +28,7 @@ class JadwalSeeder extends Seeder
             [
                 'id_guru'    => 6,
                 'id_mapel'   => 9,
-                'id_kelas'   => 3,
+                'id_kelas'   => 7,
                 'hari'       => '2025-08-02',
                 'jam_mulai'  => '09:00:00',
                 'jam_selesai' => '11:00:00',
@@ -38,7 +38,7 @@ class JadwalSeeder extends Seeder
             [
                 'id_guru'    => 5,
                 'id_mapel'   => 5,
-                'id_kelas'   => 5,
+                'id_kelas'   => 2,
                 'hari'       => '2025-08-03',
                 'jam_mulai'  => '09:00:00',
                 'jam_selesai' => '11:00:00',

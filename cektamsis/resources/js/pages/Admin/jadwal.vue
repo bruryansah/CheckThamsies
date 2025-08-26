@@ -20,8 +20,8 @@ import AppLayout from '@/layouts/AppLayout.vue';
             href: '/dashboard',
         },
         {
-            title: 'Data Guru',
-            href: '/guru',
+            title: 'Data Jadwal',
+            href: '/jadwal',
         },
     ];
     interface jadwal {
@@ -59,7 +59,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
     const proceedDelete = () => {
         if (selectedjadwal.value) {
             // Redirect ke route hapus
-            window.location.href = route('guru.hapus', selectedjadwal.value.id_jadwal)
+            window.location.href = route('jadwal.hapus', selectedjadwal.value.id_jadwal)
         }
     }
 </script>

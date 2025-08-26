@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Kelas;
 use App\Models\Mapel;
+use App\Models\Guru;
+use App\Models\Jadwal;
 use App\Models\Jurusan;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
@@ -209,7 +211,7 @@ class AdminCon extends Controller
     // Menampilkan Form Tambah Jadwal
     public function tambahd()
     {
-        $jadwal = \App\Models\Jadwal::all([ 'hari', 'jam_mulai', 'jam_selesai']); // ambil user yang ada
+        $jadwal = \App\Models\Jadwal::all(['hari', 'jam_mulai', 'jam_selesai']); // ambil user yang ada
         $mapel = \App\Models\Mapel::all(['id_mapel', 'nama_mapel']); // ambil user yang ada
         $guru = \App\Models\guru::all(['id_guru', 'nama']); // ambil user yang ada
         $kelas = \App\Models\kelas::all(['id_kelas', 'nama_kelas']); // ambil user yang ada
@@ -241,45 +243,45 @@ class AdminCon extends Controller
         return redirect()->route('jadwal')->with('success', 'Data guru berhasil ditambahkan!');
     }
 
-    // Menampilkan Form Edit JadwalGJadwaluru
+
+    // Menampilkan form edit jadwal
     public function editd($id)
     {
-        $jadwal = DB::table('jadwal')->where('id_jadwal', $id)->first(); // gunakan first()
-        $mapel = \App\Models\Mapel::all(['id_mapel', 'nama_mapel']);
-        $guru = \App\Models\Guru::all(['id_guru', 'nama']);
-        $kelas = \App\Models\kelas::all(['id_kelas', 'nama_kelas']);
+        $jadwal = DB::table('jadwal')->where('id_jadwal', $id)->first();
+        $mapel = Mapel::all(['id_mapel', 'nama_mapel']);
+        $guru  = Guru::all(['id_guru', 'nama']);
+        $kelas = Kelas::all(['id_kelas', 'nama_kelas']);
 
         return inertia('Admin/editjadwal', [
             'jadwal' => $jadwal,
-            'guru' => $guru,
-            'mapel' => $mapel,
-            'kelas' => $kelas,
+            'guru'   => $guru,
+            'mapel'  => $mapel,
+            'kelas'  => $kelas,
         ]);
     }
 
-    // Memperbarui Data Jadwal Yang Dikirim dari Form Edit Jadwal
+    // Memperbarui data jadwal
     public function updated(Request $request, $id)
     {
-        // Validasi data
         $validated = $request->validate([
-            'id_guru' => 'required|string|exists:guru,id_guru',
-            'id_mapel' => 'required|exists:mapel,id_mapel',
-            'id_kelas' => 'required|string|exists:kelas,id_kelas',
-            'hari' => 'required|string',
-            'jam_mulai' => 'required|string',
+            'id_guru'     => 'required|string|exists:guru,id_guru',
+            'id_mapel'    => 'required|exists:mapel,id_mapel',
+            'id_kelas'    => 'required|string|exists:kelas,id_kelas',
+            'hari'        => 'required|string',
+            'jam_mulai'   => 'required|string',
             'jam_selesai' => 'required|string',
         ]);
 
-        DB::table('jadwal')->update($validated);
-         return redirect()->route('jadwal')->with('success', 'Data guru berhasil ditambahkan!');
+        DB::table('jadwal')->where('id_jadwal', $id)->update($validated);
 
+        return redirect()->route('jadwal')->with('success', 'Data jadwal berhasil diperbarui!');
     }
 
     // Menghapus Data Jadwal
     public function destroyd($id)
     {
-        DB::table('guru')->where('id_guru', operator: $id)->delete();
-        return redirect('/guru');
+        DB::table('jadwal')->where('id_jadwal', operator: $id)->delete();
+        return redirect('/jadwal');
     }
     // Jadwal Section End
 
@@ -650,10 +652,7 @@ class AdminCon extends Controller
     // Menampilkan Data Kelas
     public function indexk()
     {
-        $kelas = DB::table('kelas')
-        ->join('jurusan', 'kelas.id_jurusan', '=', 'jurusan.id_jurusan')
-        ->join('guru', 'kelas.id_wali_kelas', '=', 'guru.id_guru')
-        ->select('kelas.id_kelas','kelas.tingkat_kelas','kelas.total_siswa', 'kelas.nama_kelas', 'jurusan.nama_jurusan as jurusan', 'guru.nama as guru')->get();
+        $kelas = DB::table('kelas')->join('jurusan', 'kelas.id_jurusan', '=', 'jurusan.id_jurusan')->join('guru', 'kelas.id_wali_kelas', '=', 'guru.id_guru')->select('kelas.id_kelas', 'kelas.tingkat_kelas', 'kelas.total_siswa', 'kelas.nama_kelas', 'jurusan.nama_jurusan as jurusan', 'guru.nama as guru')->get();
         return Inertia::render('Admin/kelas', ['kelas' => $kelas]);
     }
 
