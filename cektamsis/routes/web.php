@@ -147,6 +147,11 @@ Route::middleware(['auth'])->group(function () {
         [JadwalController::class, 'index']
     )->name('guru.dashboard');
 
+    Route::get(
+        '/user/dashboard',
+        [AbsenController::class, 'index']
+    )->name('user.dashboard');
+
 
     Route::get('/user/dashboard', function () {
         return Inertia::render('User/Dashboard');
@@ -182,8 +187,11 @@ Route::post('/reset-password', [NewPasswordController::class, 'store'])
 
 
 
-use App\Http\Controllers\AbsensiController;
+use App\Http\Controllers\AbsenController;
 
-Route::post('/absen/masuk', [AbsensiController::class, 'checkIn'])->name('absen.masuk');
-Route::post('/absen/pulang', [AbsensiController::class, 'checkOut'])->name('absen.pulang');
+Route::middleware(['auth'])->group(function () {
+    Route::post('/absen/checkin', [AbsenController::class, 'checkIn'])->name('absen.checkin');
+    Route::post('/absen/checkout', [AbsenController::class, 'checkOut'])->name('absen.checkout');
+    Route::post('/absen/pelajaran', [AbsenController::class, 'absenPelajaran'])->name('absen.pelajaran');
+});
 
