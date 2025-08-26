@@ -486,13 +486,16 @@
 import { router, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
 import jsPDF from "jspdf";
+import axios from "axios";
+import QRCode from "qrcode";
 import autoTable from "jspdf-autotable";
 
+
+// Reactive data
 const { props } = usePage();
 const teacherName = ref(props.guru?.nama ?? 'Guru');
 const showAttendanceModal = ref(false);
 const jadwalData = ref(props.jadwalData ?? []);
-const qrCodeData = ref(null);
 const selectedClass = ref('');
 const selectedSubject = ref('');
 const selectedDate = ref('');
@@ -502,6 +505,66 @@ const attendanceFilter = ref({
     class: '',
     subject: '',
 });
+
+const refreshQRCode = async () => {
+  if (!qrCodeData.value) {
+    alert("Belum ada QR Code untuk direfresh. Silakan generate dulu.");
+    return;
+  }
+
+  const confirmRefresh = confirm("Apakah anda yakin untuk merefresh QR Code?");
+  if (!confirmRefresh) return;
+
+  await generateQRCode(); // panggil ulang generator
+};
+
+
+const generateQRCode = async () => {
+  if (!selectedSubject.value || !selectedClass.value) {
+    alert("Pilih kelas dan mata pelajaran dulu!");
+    return;
+  }
+
+  const currentTime = new Date();
+  const validUntil = new Date(currentTime.getTime() + 10 * 60000); // 10 menit
+
+  const subjectSchedule = jadwalData.value.find(
+    (schedule) => schedule.mata_pelajaran === selectedSubject.value
+  );
+
+  qrCodeData.value = {
+    subject: selectedSubject.value,
+    class: subjectSchedule ? subjectSchedule.nama_kelas : selectedClass.value,
+    timestamp: currentTime.getTime(),
+    validUntil: validUntil.toLocaleTimeString("id-ID", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+    teacherId: props.guru?.id ?? "GURU001",
+    sessionId: `QR_${selectedSubject.value}_${Date.now()}`,
+  };
+
+  // Generate QR beneran
+  qrImage.value = await QRCode.toDataURL(qrCodeData.value.sessionId, {
+    width: 200,
+    margin: 2,
+    color: { dark: "#000000", light: "#ffffff" },
+  });
+
+  const qrDiv = document.getElementById("qrcode");
+  qrDiv.innerHTML = "";
+  const img = document.createElement("img");
+  img.src = qrImage.value;
+  img.className = "h-48 w-48";
+  qrDiv.appendChild(img);
+};
+
+
+const qrCodeData = ref(null);
+const qrImage = ref(null);
+const selectedJadwal = ref(null);
+
+
 
 const exportToPDF = () => {
   const doc = new jsPDF();
@@ -656,67 +719,6 @@ const logout = () => {
     router.post(route('logout'));
 };
 
-const generateQRCode = () => {
-    if (!selectedSubject.value) return;
-
-    const currentTime = new Date();
-    const validUntil = new Date(currentTime.getTime() + 30 * 60000);
-
-    const subjectSchedule = jadwalData.value.find((schedule) => schedule.mata_pelajaran === selectedSubject.value);
-
-    qrCodeData.value = {
-        subject: selectedSubject.value,
-        class: subjectSchedule ? subjectSchedule.nama_kelas : 'Semua Kelas',
-        timestamp: currentTime.getTime(),
-        validUntil: validUntil.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-        teacherId: 'GURU001',
-        sessionId: `QR_${selectedSubject.value}_${Date.now()}`,
-    };
-
-    setTimeout(() => {
-        const qrElement = document.getElementById('qrcode');
-        if (qrElement) {
-            qrElement.innerHTML = `
-        <div class="w-full h-full bg-white flex items-center justify-center">
-          <div class="grid grid-cols-8 gap-1">
-            ${Array.from({ length: 64 }, (_, i) => `<div class="w-2 h-2 ${Math.random() > 0.5 ? 'bg-black' : 'bg-white'} rounded-sm"></div>`).join(
-                '',
-            )}
-          </div>
-        </div>
-      `;
-        }
-    }, 500);
-};
-
-const refreshQRCode = () => {
-    if (qrCodeData.value) {
-        const qrElement = document.getElementById('qrcode');
-        if (qrElement) {
-            qrElement.innerHTML = '<p class="text-gray-500 text-sm">Generating new QR Code...</p>';
-        }
-
-        setTimeout(() => {
-            qrCodeData.value.sessionId = `QR_${selectedSubject.value}_${Date.now()}`;
-            qrCodeData.value.timestamp = Date.now();
-
-            const validUntil = new Date(Date.now() + 30 * 60000);
-            qrCodeData.value.validUntil = validUntil.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-
-            if (qrElement) {
-                qrElement.innerHTML = `
-          <div class="w-full h-full bg-white flex items-center justify-center">
-            <div class="grid grid-cols-8 gap-1">
-              ${Array.from({ length: 64 }, (_, i) => `<div class="w-2 h-2 ${Math.random() > 0.5 ? 'bg-black' : 'bg-white'} rounded-sm"></div>`).join(
-                  '',
-              )}
-            </div>
-          </div>
-        `;
-            }
-        }, 1000);
-    }
-};
 
 const filterSchedule = () => {
     console.log('Filtering schedule...');
