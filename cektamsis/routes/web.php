@@ -183,3 +183,16 @@ Route::get('/reset-password/{token}', function (string $token) {
 Route::post('/reset-password', [NewPasswordController::class, 'store'])
     ->middleware('guest')
     ->name('password.store');
+
+use App\Http\Controllers\AbsenController;
+
+Route::middleware(['auth'])->group(function () {
+    // Absen Masuk
+    Route::post('/absen/checkin', [AbsenController::class, 'checkIn'])->name('absen.checkin');
+
+    // Absen Pulang
+    Route::post('/absen/checkout', [AbsenController::class, 'checkOut'])->name('absen.checkout');
+
+    // Absen Pelajaran via QR (opsional)
+    Route::post('/absen/pelajaran', [AbsenController::class, 'pelajaran'])->name('absen.pelajaran');
+});
