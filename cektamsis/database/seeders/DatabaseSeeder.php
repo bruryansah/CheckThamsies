@@ -119,6 +119,7 @@ class DatabaseSeeder extends Seeder
             GuruSeeder::class,   // guru harus ada dulu
             KelasSeeder::class,  // baru kelas
             SiswaSeeder::class,
+            JurusanSeeder::class,
         ]);
     }
 }
