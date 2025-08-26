@@ -506,48 +506,64 @@ const attendanceFilter = ref({
     subject: '',
 });
 
+const refreshQRCode = async () => {
+  if (!qrCodeData.value) {
+    alert("Belum ada QR Code untuk direfresh. Silakan generate dulu.");
+    return;
+  }
+
+  const confirmRefresh = confirm("Apakah anda yakin untuk merefresh QR Code?");
+  if (!confirmRefresh) return;
+
+  await generateQRCode(); // panggil ulang generator
+};
+
+
+const generateQRCode = async () => {
+  if (!selectedSubject.value || !selectedClass.value) {
+    alert("Pilih kelas dan mata pelajaran dulu!");
+    return;
+  }
+
+  const currentTime = new Date();
+  const validUntil = new Date(currentTime.getTime() + 10 * 60000); // 10 menit
+
+  const subjectSchedule = jadwalData.value.find(
+    (schedule) => schedule.mata_pelajaran === selectedSubject.value
+  );
+
+  qrCodeData.value = {
+    subject: selectedSubject.value,
+    class: subjectSchedule ? subjectSchedule.nama_kelas : selectedClass.value,
+    timestamp: currentTime.getTime(),
+    validUntil: validUntil.toLocaleTimeString("id-ID", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+    teacherId: props.guru?.id ?? "GURU001",
+    sessionId: `QR_${selectedSubject.value}_${Date.now()}`,
+  };
+
+  // Generate QR beneran
+  qrImage.value = await QRCode.toDataURL(qrCodeData.value.sessionId, {
+    width: 200,
+    margin: 2,
+    color: { dark: "#000000", light: "#ffffff" },
+  });
+
+  const qrDiv = document.getElementById("qrcode");
+  qrDiv.innerHTML = "";
+  const img = document.createElement("img");
+  img.src = qrImage.value;
+  img.className = "h-48 w-48";
+  qrDiv.appendChild(img);
+};
+
 
 const qrCodeData = ref(null);
 const qrImage = ref(null);
 const selectedJadwal = ref(null);
 
-const refreshQRCode = async () => {
-  try {
-    if (!selectedJadwal.value) {
-      alert("Pilih jadwal dulu!");
-      return;
-    }
-
-    // Panggil API generate QR di Laravel
-    const res = await axios.post("/api/generate-qr", {
-      id_jadwal: selectedJadwal.value,
-    });
-
-    qrCodeData.value = {
-      subject: res.data.nama_mapel,
-      class: res.data.nama_kelas,
-      validUntil: res.data.waktu_selesai,
-      token: res.data.kode_qr,
-    };
-
-    // Generate QR
-    qrImage.value = await QRCode.toDataURL(qrCodeData.value.token, {
-      width: 200,
-      margin: 2,
-      color: { dark: "#000000", light: "#ffffff" },
-    });
-
-    // Tampilkan ke div id="qrcode"
-    const qrDiv = document.getElementById("qrcode");
-    qrDiv.innerHTML = "";
-    const img = document.createElement("img");
-    img.src = qrImage.value;
-    img.className = "h-48 w-48";
-    qrDiv.appendChild(img);
-  } catch (err) {
-    console.error("Gagal generate QR:", err);
-  }
-};
 
 
 const exportToPDF = () => {
@@ -703,38 +719,6 @@ const logout = () => {
     router.post(route('logout'));
 };
 
-const generateQRCode = () => {
-    if (!selectedSubject.value) return;
-
-    const currentTime = new Date();
-    const validUntil = new Date(currentTime.getTime() + 30 * 60000);
-
-    const subjectSchedule = jadwalData.value.find((schedule) => schedule.mata_pelajaran === selectedSubject.value);
-
-    qrCodeData.value = {
-        subject: selectedSubject.value,
-        class: subjectSchedule ? subjectSchedule.nama_kelas : 'Semua Kelas',
-        timestamp: currentTime.getTime(),
-        validUntil: validUntil.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
-        teacherId: 'GURU001',
-        sessionId: `QR_${selectedSubject.value}_${Date.now()}`,
-    };
-
-    setTimeout(() => {
-        const qrElement = document.getElementById('qrcode');
-        if (qrElement) {
-            qrElement.innerHTML = `
-        <div class="w-full h-full bg-white flex items-center justify-center">
-          <div class="grid grid-cols-8 gap-1">
-            ${Array.from({ length: 64 }, (_, i) => `<div class="w-2 h-2 ${Math.random() > 0.5 ? 'bg-black' : 'bg-white'} rounded-sm"></div>`).join(
-                '',
-            )}
-          </div>
-        </div>
-      `;
-        }
-    }, 500);
-};
 
 const filterSchedule = () => {
     console.log('Filtering schedule...');
