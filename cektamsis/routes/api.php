@@ -9,3 +9,6 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 
+use App\Http\Controllers\QrSessionController;
+
+Route::post('/generate-qr', [QrSessionController::class, 'generate']);

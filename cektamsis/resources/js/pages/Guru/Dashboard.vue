@@ -486,13 +486,16 @@
 import { router, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref } from 'vue';
 import jsPDF from "jspdf";
+import axios from "axios";
+import QRCode from "qrcode";
 import autoTable from "jspdf-autotable";
 
+
+// Reactive data
 const { props } = usePage();
 const teacherName = ref(props.guru?.nama ?? 'Guru');
 const showAttendanceModal = ref(false);
 const jadwalData = ref(props.jadwalData ?? []);
-const qrCodeData = ref(null);
 const selectedClass = ref('');
 const selectedSubject = ref('');
 const selectedDate = ref('');
@@ -502,6 +505,50 @@ const attendanceFilter = ref({
     class: '',
     subject: '',
 });
+
+
+const qrCodeData = ref(null);
+const qrImage = ref(null);
+const selectedJadwal = ref(null);
+
+const refreshQRCode = async () => {
+  try {
+    if (!selectedJadwal.value) {
+      alert("Pilih jadwal dulu!");
+      return;
+    }
+
+    // Panggil API generate QR di Laravel
+    const res = await axios.post("/api/generate-qr", {
+      id_jadwal: selectedJadwal.value,
+    });
+
+    qrCodeData.value = {
+      subject: res.data.nama_mapel,
+      class: res.data.nama_kelas,
+      validUntil: res.data.waktu_selesai,
+      token: res.data.kode_qr,
+    };
+
+    // Generate QR
+    qrImage.value = await QRCode.toDataURL(qrCodeData.value.token, {
+      width: 200,
+      margin: 2,
+      color: { dark: "#000000", light: "#ffffff" },
+    });
+
+    // Tampilkan ke div id="qrcode"
+    const qrDiv = document.getElementById("qrcode");
+    qrDiv.innerHTML = "";
+    const img = document.createElement("img");
+    img.src = qrImage.value;
+    img.className = "h-48 w-48";
+    qrDiv.appendChild(img);
+  } catch (err) {
+    console.error("Gagal generate QR:", err);
+  }
+};
+
 
 const exportToPDF = () => {
   const doc = new jsPDF();
@@ -687,35 +734,6 @@ const generateQRCode = () => {
       `;
         }
     }, 500);
-};
-
-const refreshQRCode = () => {
-    if (qrCodeData.value) {
-        const qrElement = document.getElementById('qrcode');
-        if (qrElement) {
-            qrElement.innerHTML = '<p class="text-gray-500 text-sm">Generating new QR Code...</p>';
-        }
-
-        setTimeout(() => {
-            qrCodeData.value.sessionId = `QR_${selectedSubject.value}_${Date.now()}`;
-            qrCodeData.value.timestamp = Date.now();
-
-            const validUntil = new Date(Date.now() + 30 * 60000);
-            qrCodeData.value.validUntil = validUntil.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-
-            if (qrElement) {
-                qrElement.innerHTML = `
-          <div class="w-full h-full bg-white flex items-center justify-center">
-            <div class="grid grid-cols-8 gap-1">
-              ${Array.from({ length: 64 }, (_, i) => `<div class="w-2 h-2 ${Math.random() > 0.5 ? 'bg-black' : 'bg-white'} rounded-sm"></div>`).join(
-                  '',
-              )}
-            </div>
-          </div>
-        `;
-            }
-        }, 1000);
-    }
 };
 
 const filterSchedule = () => {
