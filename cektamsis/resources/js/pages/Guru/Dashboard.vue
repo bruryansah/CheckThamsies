@@ -1,6 +1,9 @@
 <template>
     <div class="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-        <header class="sticky top-0 z-50 border-b border-white/20 bg-white/80 shadow-lg backdrop-blur-md">
+        <header
+            class="fixed top-0 z-50 w-full border-b border-white/20 bg-white/80 shadow-lg backdrop-blur-md transition-all duration-500 ease-in-out"
+            :class="isNavbarVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'"
+        >
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="flex items-center justify-between py-4">
                     <div class="flex items-center space-x-3">
@@ -47,7 +50,7 @@
             </div>
         </header>
 
-        <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 pt-25">
             <div class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
                 <div
                     v-for="(stat, index) in stats"
@@ -487,7 +490,7 @@ import { router, usePage } from '@inertiajs/vue3';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import QRCode from 'qrcode';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 // Reactive data
 const { props } = usePage();
@@ -505,6 +508,32 @@ const attendanceFilter = ref({
     class: '',
     subject: '',
 });
+
+const isNavbarVisible = ref(true);
+let lastScrollY = window.scrollY;
+let scrollTimeout = null;
+
+onMounted(() => {
+    window.addEventListener('scroll', handleScroll);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('scroll', handleScroll);
+});
+
+function handleScroll() {
+    clearTimeout(scrollTimeout);
+
+    if (window.scrollY > lastScrollY) {
+        isNavbarVisible.value = false;
+    } else {
+        scrollTimeout = setTimeout(() => {
+            isNavbarVisible.value = true;
+        }, 100);
+    }
+
+    lastScrollY = window.scrollY;
+}
 
 const refreshQRCode = async () => {
     if (!qrCodeData.value) {
