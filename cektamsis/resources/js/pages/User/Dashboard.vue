@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Link, router, usePage } from '@inertiajs/vue3';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { BookOpen, Calendar, CheckCircle, Eye, LogOut, QrCode, Users } from 'lucide-vue-next';
 import { onMounted, ref } from 'vue';
 import { QrcodeStream } from 'vue-qrcode-reader';
@@ -76,8 +76,9 @@ const checkIn = () => {
                         checkinStatus.value = 'Sudah Absen (' + status + ')';
                         stats.value.absenHariIni = status;
                         canCheckout.value = true; // langsung bisa absen pulang
-                        showNotification('✅ Absen ' + status + ' berhasil!', 'success');
+                        showNotification('✅ Absen masuk berhasil!', 'success');
                     },
+
                     onError: () => showNotification('❌ Gagal absen masuk!', 'error'),
                     onFinish: () => (processingIn.value = false),
                 },
@@ -89,7 +90,6 @@ const checkIn = () => {
         },
     );
 };
-
 
 // ✅ Absen Pulang
 const checkOut = () => {
@@ -158,8 +158,8 @@ onMounted(() => {
 });
 </script>
 
-
 <template>
+    <Head title="Dashboard Siswa" />
     <div class="min-h-screen bg-gray-50 p-6">
         <!-- Header -->
         <div class="mb-8 flex items-center justify-between">
@@ -351,6 +351,44 @@ onMounted(() => {
             </div>
         </div>
     </div>
+
+    <!-- Elegant Popup Notification dengan Animasi Centang -->
+    <transition name="fade-scale">
+        <div v-if="showToast" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+            <div class="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-2xl">
+                <!-- Success Animation -->
+                <div v-if="toastType === 'success'" class="mx-auto mb-4 h-16 w-16">
+                    <svg class="mx-auto h-16 w-16" viewBox="0 0 52 52">
+                        <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none" />
+                        <path class="checkmark-check" fill="none" d="M14 27l7 7 16-16" />
+                    </svg>
+                </div>
+
+                <!-- Error Icon -->
+                <div v-else class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
+                    <svg class="h-10 w-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </div>
+
+                <!-- Title -->
+                <h2 class="mb-2 text-xl font-semibold text-gray-900">
+                    {{ toastType === 'success' ? 'Berhasil' : 'Gagal' }}
+                </h2>
+
+                <!-- Message -->
+                <p class="mb-6 text-gray-600">{{ toastMessage }}</p>
+
+                <!-- Action -->
+                <button
+                    @click="showToast = false"
+                    class="w-full rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-2 font-medium text-white shadow hover:from-blue-700 hover:to-purple-700"
+                >
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </transition>
 </template>
 
 <style scoped>
@@ -362,4 +400,49 @@ onMounted(() => {
 .fade-leave-to {
     opacity: 0;
 }
+
+/* Animasi centang */
+.checkmark-circle {
+    stroke: #22c55e; /* green-500 */
+    stroke-width: 2;
+    stroke-dasharray: 166;
+    stroke-dashoffset: 166;
+    stroke-linecap: round;
+    animation: circleStroke 0.6s ease-in-out forwards;
+}
+.checkmark-check {
+    stroke: #22c55e;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-dasharray: 48;
+    stroke-dashoffset: 48;
+    animation: checkStroke 0.4s ease-in-out 0.6s forwards;
+}
+
+@keyframes circleStroke {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+@keyframes checkStroke {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+/* Fade scale */
+.fade-scale-enter-active,
+.fade-scale-leave-active {
+    transition: all 0.3s ease;
+}
+.fade-scale-enter-from {
+    opacity: 0;
+    transform: scale(0.9);
+}
+.fade-scale-leave-to {
+    opacity: 0;
+    transform: scale(0.9);
+}
+
+
 </style>
