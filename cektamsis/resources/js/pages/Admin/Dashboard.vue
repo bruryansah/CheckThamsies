@@ -19,6 +19,14 @@ interface Props {
   totalSiswa: number;
   totalGuru: number;
   totalAdmin: number;
+  totalabsen: number;
+  totalizin: number;
+  totalsakit: number;
+  totalalfa: number;
+  absen: number;
+  warning: number;
+  telat: number;
+  alfa: number;
   auth: {
     user: UserType;
   };
@@ -43,6 +51,14 @@ const stats = computed(() => ({
   totalSiswa: props.totalSiswa || 0,
   totalGuru: props.totalGuru || 0,
   totalAdmin: props.totalAdmin || 0,
+  totalabsen: props.totalabsen || 0,
+  totalizin: props.totalizin || 0,
+  totalsakit: props.totalsakit || 0,
+  totalalfa: props.totalalfa || 0,
+  absen: props.absen || 0,
+  warning: props.warning || 0,
+  telat: props.telat || 0,
+  alfa: props.alfa || 0,
 }));
 
 // Dummy data kelas
@@ -83,7 +99,7 @@ const getProgressColor = (p: number) => p >= 90 ? 'bg-green-500' : p >= 80 ? 'bg
   <Head title="Dashboard" />
 
   <AppLayout :breadcrumbs="breadcrumbs">
-    
+
     <div class="flex h-full flex-1 flex-col gap-6 p-6 overflow-x-auto">
       <!-- Statistik Cards -->
       <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -153,15 +169,19 @@ const getProgressColor = (p: number) => p >= 90 ? 'bg-green-500' : p >= 80 ? 'bg
               <div class="space-y-3">
                 <div class="flex justify-between items-center py-2 px-3 bg-zinc-700/30 rounded-lg">
                   <span class="text-zinc-300">07:00 - 07:30</span>
-                  <span class="text-green-400 font-semibold">856 siswa</span>
+                  <span class="text-green-400 font-semibold">{{ stats.absen }}</span>
                 </div>
                 <div class="flex justify-between items-center py-2 px-3 bg-zinc-700/30 rounded-lg">
                   <span class="text-zinc-300">07:30 - 08:00</span>
-                  <span class="text-yellow-400 font-semibold">289 siswa</span>
+                  <span class="text-yellow-400 font-semibold">{{ stats.warning }}</span>
                 </div>
                 <div class="flex justify-between items-center py-2 px-3 bg-zinc-700/30 rounded-lg">
                   <span class="text-zinc-300">Terlambat</span>
-                  <span class="text-red-400 font-semibold">42 siswa</span>
+                  <span class="text-red-400 font-semibold">{{ stats.telat }}</span>
+                </div>
+                <div class="flex justify-between items-center py-2 px-3 bg-zinc-700/30 rounded-lg">
+                  <span class="text-zinc-300">Alfa</span>
+                  <span class="text-red-400 font-semibold">{{ stats.alfa }}</span>
                 </div>
               </div>
             </div>
@@ -175,28 +195,28 @@ const getProgressColor = (p: number) => p >= 90 ? 'bg-green-500' : p >= 80 ? 'bg
                     <div class="w-4 h-4 rounded-full bg-green-500"></div>
                     <span class="text-zinc-300">Hadir</span>
                   </div>
-                  <span class="text-white font-semibold">1,147</span>
+                  <span class="text-white font-semibold">{{ stats.totalabsen }}</span>
                 </div>
                 <div class="flex justify-between items-center py-2 px-3 bg-zinc-700/30 rounded-lg">
                   <div class="flex items-center gap-3">
                     <div class="w-4 h-4 rounded-full bg-blue-500"></div>
                     <span class="text-zinc-300">Izin</span>
                   </div>
-                  <span class="text-white font-semibold">32</span>
+                  <span class="text-white font-semibold">{{ stats.totalizin }}</span>
                 </div>
                 <div class="flex justify-between items-center py-2 px-3 bg-zinc-700/30 rounded-lg">
                   <div class="flex items-center gap-3">
                     <div class="w-4 h-4 rounded-full bg-yellow-500"></div>
                     <span class="text-zinc-300">Sakit</span>
                   </div>
-                  <span class="text-white font-semibold">28</span>
+                  <span class="text-white font-semibold">{{ stats.totalsakit }}</span>
                 </div>
                 <div class="flex justify-between items-center py-2 px-3 bg-zinc-700/30 rounded-lg">
                   <div class="flex items-center gap-3">
                     <div class="w-4 h-4 rounded-full bg-red-500"></div>
                     <span class="text-zinc-300">Alpha</span>
                   </div>
-                  <span class="text-white font-semibold">38</span>
+                  <span class="text-white font-semibold">{{ stats.totalalfa }}</span>
                 </div>
               </div>
             </div>
