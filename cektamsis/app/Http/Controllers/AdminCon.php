@@ -8,6 +8,7 @@ use App\Models\Guru;
 use App\Models\Jadwal;
 use App\Models\Jurusan;
 use App\Models\User;
+use App\Models\AbsensiSekolah;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
@@ -23,6 +24,14 @@ class AdminCon extends Controller
             'totalSiswa' => User::where('role', 'user')->count(),
             'totalGuru' => User::where('role', 'guru')->count(),
             'totalAdmin' => User::where('role', 'admin')->count(),
+            'totalabsen' => AbsensiSekolah::where('status', 'hadir')->count(),
+            'totalizin' => AbsensiSekolah::where('status', 'izin')->count(),
+            'totalsakit' => AbsensiSekolah::where('status', 'sakit')->count(),
+            'totalalfa' => AbsensiSekolah::where('status', 'alfa')->count(),
+            'absen' => AbsensiSekolah::whereBetween('jam_masuk', ['06:40:00', '06:50:00'])->count(),
+            'warning' => AbsensiSekolah::whereBetween('jam_masuk',['06:51:00', '07:00:00'])->count(),
+            'telat' => AbsensiSekolah::whereBetween('jam_masuk',['07:01:00', '09:00:00'])->count(),
+            'alfa' => AbsensiSekolah::whereBetween('jam_masuk',['09:01:00', '24:00:00'])->count(),
         ]);
     }
 
