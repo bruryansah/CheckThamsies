@@ -55,8 +55,8 @@
         user_id: '',
         nama: '',
         email: '',
-        id_kelas: '',
-        id_jurusan: '',
+        id_kelas: '3',
+        id_jurusan: '1',
     })
 
     // Isi form dengan data siswa X RPL saat component dimount

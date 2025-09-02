@@ -28,12 +28,16 @@ class AdminCon extends Controller
 
     // Users section Start
     // Menampilkan Data User
+
     public function indexs()
     {
-        $user = DB::table('users')->select('id', 'name', 'email', 'role')->get();
-        return Inertia::render('Admin/manageuser', ['users' => $user]);
-    }
+        // Ambil data user dengan pagination (5 per halaman)
+        $users = DB::table('users')->select('id', 'name', 'email', 'role')->paginate(5);
 
+        return Inertia::render('Admin/manageuser', [
+            'users' => $users,
+        ]);
+    }
     // Menampilkan Form Tambah Guru
     public function tambahs()
     {
@@ -115,7 +119,7 @@ class AdminCon extends Controller
     // Menampilkan Data Guru
     public function index()
     {
-        $guru = DB::table('guru')->join('mapel', 'guru.id_mapel', '=', 'mapel.id_mapel')->select('guru.id_guru', 'guru.nama', 'guru.nip', 'guru.email', 'mapel.nama_mapel as mapel')->get();
+        $guru = DB::table('guru')->join('mapel', 'guru.id_mapel', '=', 'mapel.id_mapel')->select('guru.id_guru', 'guru.nama', 'guru.nip', 'guru.email', 'mapel.nama_mapel as mapel')->paginate(5);
         return Inertia::render('Admin/guru', ['guru' => $guru]);
     }
 
@@ -173,6 +177,7 @@ class AdminCon extends Controller
             'nip' => 'required|string|max:20',
             'email' => 'required|email',
             'id_mapel' => 'required|exists:mapel,id_mapel',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         $updated = DB::table('guru')
@@ -183,6 +188,7 @@ class AdminCon extends Controller
                 'nip' => $request->nip,
                 'email' => $request->email,
                 'id_mapel' => $request->id_mapel,
+                'foto' => $request->foto ? $request->file('foto')->store('foto_guru', 'public') : null, // Simpan file jika ada
             ]);
 
         if ($updated) {
@@ -204,7 +210,7 @@ class AdminCon extends Controller
     // Menampilkan Data Jadwal
     public function jadwal()
     {
-        $jadwal = DB::table('jadwal')->join('mapel', 'jadwal.id_mapel', '=', 'mapel.id_mapel')->join('guru', 'jadwal.id_guru', '=', 'guru.id_guru')->join('kelas', 'jadwal.id_kelas', '=', 'kelas.id_kelas')->select('jadwal.id_jadwal', 'jadwal.id_mapel', 'jadwal.id_guru', 'jadwal.id_kelas', 'jadwal.hari', 'jadwal.jam_mulai', 'jadwal.jam_selesai', 'mapel.nama_mapel as mapel', 'guru.nama as guru', 'kelas.nama_kelas as kelas')->get();
+        $jadwal = DB::table('jadwal')->join('mapel', 'jadwal.id_mapel', '=', 'mapel.id_mapel')->join('guru', 'jadwal.id_guru', '=', 'guru.id_guru')->join('kelas', 'jadwal.id_kelas', '=', 'kelas.id_kelas')->select('jadwal.id_jadwal', 'jadwal.id_mapel', 'jadwal.id_guru', 'jadwal.id_kelas', 'jadwal.hari', 'jadwal.jam_mulai', 'jadwal.jam_selesai', 'mapel.nama_mapel as mapel', 'guru.nama as guru', 'kelas.nama_kelas as kelas')->paginate(5);
         return Inertia::render('Admin/jadwal', ['jadwal' => $jadwal]);
     }
 
@@ -243,20 +249,19 @@ class AdminCon extends Controller
         return redirect()->route('jadwal')->with('success', 'Data guru berhasil ditambahkan!');
     }
 
-
     // Menampilkan form edit jadwal
     public function editd($id)
     {
         $jadwal = DB::table('jadwal')->where('id_jadwal', $id)->first();
         $mapel = Mapel::all(['id_mapel', 'nama_mapel']);
-        $guru  = Guru::all(['id_guru', 'nama']);
+        $guru = Guru::all(['id_guru', 'nama']);
         $kelas = Kelas::all(['id_kelas', 'nama_kelas']);
 
         return inertia('Admin/editjadwal', [
             'jadwal' => $jadwal,
-            'guru'   => $guru,
-            'mapel'  => $mapel,
-            'kelas'  => $kelas,
+            'guru' => $guru,
+            'mapel' => $mapel,
+            'kelas' => $kelas,
         ]);
     }
 
@@ -264,11 +269,11 @@ class AdminCon extends Controller
     public function updated(Request $request, $id)
     {
         $validated = $request->validate([
-            'id_guru'     => 'required|string|exists:guru,id_guru',
-            'id_mapel'    => 'required|exists:mapel,id_mapel',
-            'id_kelas'    => 'required|string|exists:kelas,id_kelas',
-            'hari'        => 'required|string',
-            'jam_mulai'   => 'required|string',
+            'id_guru' => 'required|string|exists:guru,id_guru',
+            'id_mapel' => 'required|exists:mapel,id_mapel',
+            'id_kelas' => 'required|string|exists:kelas,id_kelas',
+            'hari' => 'required|string',
+            'jam_mulai' => 'required|string',
             'jam_selesai' => 'required|string',
         ]);
 
@@ -294,7 +299,7 @@ class AdminCon extends Controller
             ->join('jurusan', 'siswa.id_jurusan', '=', 'jurusan.id_jurusan')
             ->select('siswa.id_siswa', 'siswa.nama', 'siswa.email', 'kelas.nama_kelas as kelas', 'jurusan.nama_jurusan as jurusan')
             ->where('kelas.nama_kelas', '=', 'X RPL') // Filter hanya kelas X RPL
-            ->get();
+            ->paginate(5);
 
         return Inertia::render('Admin/xrpl', ['siswa' => $siswax]);
     }
@@ -392,7 +397,7 @@ class AdminCon extends Controller
             ->join('jurusan', 'siswa.id_jurusan', '=', 'jurusan.id_jurusan')
             ->select('siswa.id_siswa', 'siswa.nama', 'siswa.email', 'kelas.nama_kelas as kelas', 'jurusan.nama_jurusan as jurusan')
             ->where('kelas.nama_kelas', '=', 'XI RPL') // Filter hanya kelas X RPL
-            ->get();
+            ->paginate(5);
 
         return Inertia::render('Admin/xirpl', ['siswa' => $siswa]);
     }
@@ -490,7 +495,7 @@ class AdminCon extends Controller
             ->join('jurusan', 'siswa.id_jurusan', '=', 'jurusan.id_jurusan')
             ->select('siswa.id_siswa', 'siswa.nama', 'siswa.email', 'kelas.nama_kelas as kelas', 'jurusan.nama_jurusan as jurusan')
             ->where('kelas.nama_kelas', '=', 'XII RPL') // Filter hanya kelas X RPL
-            ->get();
+            ->paginate(5);
 
         return Inertia::render('Admin/xiirpl', ['siswa' => $siswa]);
     }
@@ -583,7 +588,7 @@ class AdminCon extends Controller
     // Menampilkan Data Mapel
     public function indexm()
     {
-        $mapel = DB::table('mapel')->select('id_mapel', 'nama_mapel')->get();
+        $mapel = DB::table('mapel')->select('id_mapel', 'nama_mapel')->paginate(5);
         return Inertia::render('Admin/mapel', ['mapel' => $mapel]);
     }
 
@@ -652,7 +657,7 @@ class AdminCon extends Controller
     // Menampilkan Data Kelas
     public function indexk()
     {
-        $kelas = DB::table('kelas')->join('jurusan', 'kelas.id_jurusan', '=', 'jurusan.id_jurusan')->join('guru', 'kelas.id_wali_kelas', '=', 'guru.id_guru')->select('kelas.id_kelas', 'kelas.tingkat_kelas', 'kelas.total_siswa', 'kelas.nama_kelas', 'jurusan.nama_jurusan as jurusan', 'guru.nama as guru')->get();
+        $kelas = DB::table('kelas')->join('jurusan', 'kelas.id_jurusan', '=', 'jurusan.id_jurusan')->join('guru', 'kelas.id_wali_kelas', '=', 'guru.id_guru')->select('kelas.id_kelas', 'kelas.tingkat_kelas', 'kelas.total_siswa', 'kelas.nama_kelas', 'jurusan.nama_jurusan as jurusan', 'guru.nama as guru')->paginate(5);
         return Inertia::render('Admin/kelas', ['kelas' => $kelas]);
     }
 
@@ -747,7 +752,7 @@ class AdminCon extends Controller
     // Menampilkan Data Jurusan
     public function indexj()
     {
-        $jurusan = DB::table('jurusan')->select('id_jurusan', 'nama_jurusan')->get();
+        $jurusan = DB::table('jurusan')->select('id_jurusan', 'nama_jurusan')->paginate(5);
         return Inertia::render('Admin/jurusan', ['jurusan' => $jurusan]);
     }
 

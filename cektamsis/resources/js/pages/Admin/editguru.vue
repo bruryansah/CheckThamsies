@@ -34,6 +34,7 @@
             nip: number;
             email: string;
             id_mapel: number;
+            foto: string;
         },
         users: {
             id: number;
@@ -54,6 +55,7 @@
         email: '',
         id_kelas: '',
         id_mapel: '',
+        foto: null as File | null, // WAJIB ada untuk file upload
     })
 
     // Isi form dengan data guru saat component dimount
@@ -64,6 +66,7 @@
             form.nip = props.guru.nip?.toString() || '';
             form.email = props.guru.email || '';
             form.id_mapel = props.guru.id_mapel?.toString() || '';
+            foto: null as File | null; // WAJIB ada untuk file upload
         }
     });
 
@@ -105,6 +108,13 @@
 
                 <!-- Form -->
                 <form @submit.prevent="submitForm" class="space-y-5">
+                    <!-- Foto -->
+                    <div class="mb-4">
+                        <label class="mb-2 block">Foto Guru</label>
+                        <input type="file" class="block w-full rounded border bg-gray-800 p-2"
+                            @change="(e: any) => (form.foto = e.target.files[0])" />
+                        <div v-if="form.errors.foto" class="text-sm text-red-500">{{ form . errors . foto }}</div>
+                    </div>
                     <!-- Id Users -->
                     <div>
                         <label class="block text-sm font-medium text-zinc-300 mb-1">Pilih User</label>
@@ -112,11 +122,10 @@
                             class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 focus:ring focus:ring-green-500 focus:outline-none">
                             <option value="">-- Pilih User --</option>
                             <option v-for="user in props.users" :key="user.id" :value="user.id">
-                                {{ user.name }}
+                                {{ user . name }}
                             </option>
                         </select>
-                        <span v-if="form.errors.user_id"
-                            class="text-red-500 text-sm">{{ form.errors.user_id }}</span>
+                        <span v-if="form.errors.user_id" class="text-red-500 text-sm">{{ form . errors . user_id }}</span>
                     </div>
 
                     <!-- Nama -->
@@ -125,7 +134,7 @@
                         <input v-model="form.nama" type="text"
                             class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 focus:ring focus:ring-green-500 focus:outline-none disabled:opacity-50"
                             placeholder="Masukkan nama guru" />
-                        <span v-if="form.errors.nama" class="text-red-500 text-sm">{{ form.errors.nama }}</span>
+                        <span v-if="form.errors.nama" class="text-red-500 text-sm">{{ form . errors . nama }}</span>
                     </div>
 
                     <!-- NIP -->
@@ -134,7 +143,7 @@
                         <input v-model="form.nip" type="text"
                             class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 focus:ring focus:ring-green-500 focus:outline-none disabled:opacity-50"
                             placeholder="Masukkan NIP guru" />
-                        <span v-if="form.errors.nip" class="text-red-500 text-sm">{{ form.errors.nip }}</span>
+                        <span v-if="form.errors.nip" class="text-red-500 text-sm">{{ form . errors . nip }}</span>
                     </div>
 
                     <!-- Email -->
@@ -143,7 +152,7 @@
                         <input v-model="form.email" type="email" :readonly="!!form.user_id"
                             class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 focus:ring focus:ring-green-500 focus:outline-none disabled:opacity-50"
                             placeholder="Masukkan email guru" />
-                        <span v-if="form.errors.email" class="text-red-500 text-sm">{{ form.errors.email }}</span>
+                        <span v-if="form.errors.email" class="text-red-500 text-sm">{{ form . errors . email }}</span>
                     </div>
 
                     <!-- Mapel -->
@@ -153,11 +162,10 @@
                             class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 focus:ring focus:ring-green-500 focus:outline-none">
                             <option value="">-- Pilih Mapel --</option>
                             <option v-for="mapel in props.mapel" :key="mapel.id_mapel" :value="mapel.id_mapel">
-                                {{ mapel.nama_mapel }}
+                                {{ mapel . nama_mapel }}
                             </option>
                         </select>
-                        <span v-if="form.errors.id_mapel"
-                            class="text-red-500 text-sm">{{ form.errors.id_mapel }}</span>
+                        <span v-if="form.errors.id_mapel" class="text-red-500 text-sm">{{ form . errors . id_mapel }}</span>
                     </div>
 
                     <!-- Tombol -->
@@ -168,7 +176,7 @@
                         </Link>
                         <button type="submit" :disabled="form.processing"
                             class="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700 disabled:opacity-50">
-                            {{ form.processing ? 'Menyimpan...' : 'Simpan' }}
+                            {{ form . processing ? 'Menyimpan...' : 'Simpan' }}
                         </button>
                     </div>
                 </form>
