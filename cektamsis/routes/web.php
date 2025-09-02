@@ -200,3 +200,11 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/absen/status', [AbsenController::class, 'status'])->name('absen.status');
 });
+
+
+use App\Http\Controllers\StudentPasswordController;
+
+Route::middleware(['auth'])->group(function () {
+    Route::put('/student/password', [StudentPasswordController::class, 'update'])
+        ->name('student.password.update');
+});
