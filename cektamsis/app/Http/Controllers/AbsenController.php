@@ -5,84 +5,72 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Enums\UserRole;
+use App\Models\Siswa;
 use App\Models\AbsensiSekolah;
+use Carbon\Carbon;
 
 class AbsenController extends Controller
 {
     public function checkIn(Request $request)
     {
-        $user = Auth::user();
+        $siswa = Siswa::where('user_id', Auth::id())->first();
 
-        // Cek role siswa
-        if ($user->role !== UserRole::USER->value) {
-            return redirect()->back()->with('error', 'Hanya siswa yang bisa melakukan absen.');
+        // Cek apakah sudah ada absensi hari ini
+        $absensi = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)->whereDate('tanggal', Carbon::today())->first();
+
+        if ($absensi) {
+            return back()->with('error', 'Anda sudah absen masuk hari ini');
         }
 
-        $siswa = $user->siswa;
-
-        if (!$siswa) {
-            return redirect()->back()->with('error', 'User ini belum terdaftar sebagai siswa!');
-        }
-
-        $today = now()->toDateString();
-
-$absen = AbsensiSekolah::firstOrNew([
-    'id_siswa' => $siswa->id_siswa,
-    'tanggal' => now()->toDateString(),
-]);
-
-        if ($absen->jam_masuk) {
-            return redirect()->back()->with('error', 'Sudah absen masuk hari ini!');
-        }
-        $validated = $request->validate([
-            'status' => 'nullable|in:Hadir,Izin,Sakit',
-            'latitude' => 'nullable|numeric',
-            'longitude' => 'nullable|numeric',
+        AbsensiSekolah::create([
+            'id_siswa' => $siswa->id_siswa,
+            'tanggal' => Carbon::today(),
+            'jam_masuk' => Carbon::now()->format('H:i:s'),
+            'latitude_in' => $request->latitude,
+            'longitude_in' => $request->longitude,
+            'status' => $request->status,
         ]);
 
-       $absen->fill([
-    'jam_masuk' => now()->toTimeString(),
-    'latitude_in' => $request->latitude ?? null,
-    'longitude_in' => $request->longitude ?? null,
-    'status' => strtolower($validated['status'] ?? 'hadir'),
-])->save();
-        return redirect()->back()->with('success', 'Absen masuk berhasil!');
+        return back()->with('success', 'Absen masuk berhasil');
     }
 
     public function checkOut(Request $request)
     {
-        $user = Auth::user();
+        $siswa = Siswa::where('user_id', Auth::id())->first();
 
-        if ($user->role !== UserRole::USER->value) {
-            return redirect()->back()->with('error', 'Hanya siswa yang bisa melakukan absen.');
+        $absensi = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)->whereDate('tanggal', Carbon::today())->first();
+
+        if (!$absensi) {
+            return back()->with('error', 'Anda belum absen masuk hari ini');
         }
 
-        $siswa = $user->siswa;
-
-        if (!$siswa) {
-            return redirect()->back()->with('error', 'User ini belum terdaftar sebagai siswa!');
+        if ($absensi->jam_keluar) {
+            return back()->with('error', 'Anda sudah absen pulang hari ini');
         }
 
-        $today = now()->toDateString();
-
-        $absen = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)
-            ->where('tanggal', $today)
-            ->first();
-
-        if (!$absen || !$absen->jam_masuk) {
-            return redirect()->back()->with('error', 'Belum ada data absen masuk hari ini.');
-        }
-
-        if ($absen->jam_keluar) {
-            return redirect()->back()->with('error', 'Sudah absen pulang hari ini!');
-        }
-
-        $absen->update([
-            'jam_keluar' => now()->toTimeString(),
-            'latitude_out' => $request->latitude ?? null,
-            'longitude_out' => $request->longitude ?? null,
+        $absensi->update([
+            'jam_keluar' => Carbon::now()->format('H:i:s'),
+            'latitude_out' => $request->latitude,
+            'longitude_out' => $request->longitude,
         ]);
 
-        return redirect()->back()->with('success', 'Absen pulang berhasil!');
+        return back()->with('success', 'Absen pulang berhasil');
+    }
+
+    public function status()
+    {
+        $siswa = Siswa::where('user_id', Auth::id())->first();
+
+        $absensi = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)->whereDate('tanggal', Carbon::today())->first();
+
+        if (!$absensi) {
+            return response()->json(['status' => 'belum_masuk']);
+        }
+
+        if ($absensi && !$absensi->jam_keluar) {
+            return response()->json(['status' => 'sudah_masuk']);
+        }
+
+        return response()->json(['status' => 'sudah_pulang']);
     }
 }

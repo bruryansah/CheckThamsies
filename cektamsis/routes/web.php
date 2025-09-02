@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 
-
 // Halaman umum
 Route::get('/', fn() => Inertia::render('Welcome'))->name('home');
 
@@ -123,7 +122,6 @@ require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
 //
 
-
 // MULTI USERRRRRRRRRRRRRRRRRRRRR
 
 use App\Enums\UserRole;
@@ -137,11 +135,13 @@ Route::get('/dashboard', function () {
 
     return match ($role) {
         UserRole::ADMIN->value => redirect('/admin/dashboard'),
-        UserRole::GURU->value  => redirect('/guru/dashboard'),
-        UserRole::USER->value  => redirect('/user/dashboard'),
+        UserRole::GURU->value => redirect('/guru/dashboard'),
+        UserRole::USER->value => redirect('/user/dashboard'),
         default => redirect('/login'),
     };
-})->middleware(['auth'])->name('dashboard');
+})
+    ->middleware(['auth'])
+    ->name('dashboard');
 
 // role: admin
 Route::middleware(['auth', 'role:admin'])->group(function () {
@@ -162,9 +162,7 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\NewPasswordController;
 
 // Halaman form lupa password
-Route::get('/forgot-password', fn() => Inertia::render('auth/ForgotPassword'))
-    ->middleware('guest')
-    ->name('password.request');
+Route::get('/forgot-password', fn() => Inertia::render('auth/ForgotPassword'))->middleware('guest')->name('password.request');
 
 // Kirim link reset ke email
 Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])
@@ -177,7 +175,9 @@ Route::get('/reset-password/{token}', function (string $token) {
         'token' => $token,
         'email' => request('email'),
     ]);
-})->middleware('guest')->name('password.reset');
+})
+    ->middleware('guest')
+    ->name('password.reset');
 
 // Proses reset password
 Route::post('/reset-password', [NewPasswordController::class, 'store'])
@@ -195,4 +195,8 @@ Route::middleware(['auth'])->group(function () {
 
     // Absen Pelajaran via QR (opsional)
     Route::post('/absen/pelajaran', [AbsenController::class, 'pelajaran'])->name('absen.pelajaran');
+
+    Route::get('/debug-absen', [AbsenController::class, 'debugAbsen'])->name('debug.absen');
+
+    Route::get('/absen/status', [AbsenController::class, 'status'])->name('absen.status');
 });

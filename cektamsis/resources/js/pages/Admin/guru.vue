@@ -30,11 +30,13 @@ import AppLayout from '@/layouts/AppLayout.vue';
         nama: string
         email: string
         mapel: string
+        foto: string | null;
     }
 
     // contoh dummy data
     const props = defineProps < {
-        guru: Guru[]
+        guru:  {    data: Guru[]
+    links: { url: string | null; label: string; active: boolean }[]}
     } > ()
 
     // State untuk modal konfirmasi
@@ -86,6 +88,8 @@ import AppLayout from '@/layouts/AppLayout.vue';
                             <tr>
                                 <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Id Guru
                                 </th>
+                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Foto Guru
+                                </th>
                                 <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Nama
                                 </th>
                                 <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">NIP
@@ -99,9 +103,10 @@ import AppLayout from '@/layouts/AppLayout.vue';
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-zinc-800 bg-zinc-900 text-sm text-zinc-200">
-                            <tr v-for="guru in props.guru" :key="guru.id_guru"
+                            <tr v-for="guru in props.guru.data" :key="guru.id_guru"
                                 class="hover:bg-zinc-800/60 transition">
                                 <td class="px-6 py-4 text-center">{{ guru.id_guru }}</td>
+                                <td class="px-6 py-4 text-center">{{ guru.foto }}</td>
                                 <td class="px-6 py-4 text-center">{{ guru.nama }}</td>
                                 <td class="px-6 py-4 text-center">{{ guru.nip }}</td>
                                 <td class="px-6 py-4 text-center">{{ guru.email }}</td>
@@ -123,8 +128,24 @@ import AppLayout from '@/layouts/AppLayout.vue';
 
                     </table>
                 </div>
+                <!-- Pagination -->
+        <div class="flex justify-center mt-4 gap-2">
+          <button
+            v-for="link in props.guru.links"
+            :key="link.label"
+            v-html="link.label"
+            :disabled="!link.url"
+            @click.prevent="link.url && $inertia.visit(link.url)"
+            class="px-3 py-1 rounded-lg border text-sm"
+            :class="{
+              'bg-zinc-700 text-white': link.active,
+              'bg-zinc-900 text-zinc-400 hover:bg-zinc-800': !link.active
+            }"
+          />
+        </div>
             </div>
         </div>
+
 
         <!-- Modal Konfirmasi Hapus -->
         <div v-if="showConfirmModal" class="fixed inset-0 z-50 flex items-center justify-center">

@@ -105,7 +105,7 @@ const form = useForm({
             <label class="block text-sm font-medium text-zinc-300 mb-1">Hari</label>
             <input
               v-model="form.hari"
-              type="text"
+              type="date"
               class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 focus:ring focus:ring-green-500 focus:outline-none"
               placeholder="Contoh: Senin"
             />

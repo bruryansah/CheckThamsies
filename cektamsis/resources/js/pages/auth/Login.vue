@@ -33,7 +33,7 @@ const submit = () => {
 
         <form method="POST" @submit.prevent="submit" class="space-y-5">
             <div>
-                <Label for="email">Email</Label>
+                <Label for="email" class="text-sm text-gray-600">Email</Label>
                 <Input
                     id="email"
                     type="email"
@@ -48,8 +48,8 @@ const submit = () => {
 
             <div>
                 <div class="flex items-center justify-between">
-                    <Label for="password">Password</Label>
-                    <TextLink v-if="canResetPassword" :href="route('password.request')" class="text-sm text-blue-600 hover:underline">
+                    <Label for="password" class="text-sm text-gray-600">Password</Label>
+                    <TextLink  v-if="canResetPassword" :href="route('password.request')" class="text-sm text-gray-600">
                         Lupa password?
                     </TextLink>
                 </div>
@@ -75,7 +75,7 @@ const submit = () => {
                 Masuk
             </Button>
 
-             
+
         </form>
     </AuthBase>
 </template>

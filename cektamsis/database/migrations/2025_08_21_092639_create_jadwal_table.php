@@ -17,7 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('id_guru');
             $table->unsignedBigInteger('id_mapel');
             $table->unsignedBigInteger('id_kelas');
-            $table->date('hari');
+            $table->string('hari');
             $table->time('jam_mulai');
             $table->time('jam_selesai');
             $table->timestamps();

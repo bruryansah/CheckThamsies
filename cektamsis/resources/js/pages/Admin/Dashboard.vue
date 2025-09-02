@@ -4,6 +4,7 @@ import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import { Users, User, GraduationCap, Shield, RefreshCw, AlertTriangle, PieChart, Settings } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
+import { usePage } from '@inertiajs/vue3'
 
 // 🔹 Import komponen dropdown user
 import UserInfo from '@/components/UserInfo.vue';
@@ -30,9 +31,11 @@ const handleLogout = () => {
   router.flushAll();
 };
 
+const user = usePage().props.auth.user
+
 const breadcrumbs: BreadcrumbItem[] = [
   { title: 'Dashboard', href: '/dashboard' },
-];
+]
 
 // Stats
 const stats = computed(() => ({
@@ -80,6 +83,7 @@ const getProgressColor = (p: number) => p >= 90 ? 'bg-green-500' : p >= 80 ? 'bg
   <Head title="Dashboard" />
 
   <AppLayout :breadcrumbs="breadcrumbs">
+    
     <div class="flex h-full flex-1 flex-col gap-6 p-6 overflow-x-auto">
       <!-- Statistik Cards -->
       <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -339,7 +343,7 @@ const getProgressColor = (p: number) => p >= 90 ? 'bg-green-500' : p >= 80 ? 'bg
               <div class="p-2 bg-purple-500/20 rounded-lg">
                 <Settings class="h-5 w-5 text-purple-400" />
               </div>
-              <h3 class="text-lg font-semibold text-white">Manajemen Pengguna</h3>
+              <h3 class="text-lg font-semibold text-white">Aksi Cepat </h3>
             </div>
             <button class="p-2 hover:bg-zinc-800 rounded-lg transition">
               <svg class="h-4 w-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -351,8 +355,8 @@ const getProgressColor = (p: number) => p >= 90 ? 'bg-green-500' : p >= 80 ? 'bg
           <!-- Quick actions atau user management content -->
           <div class="space-y-4">
             <div class="flex justify-between items-center py-3 border-b border-zinc-800">
-              <span class="text-zinc-300">Tambah Pengguna Baru</span>
-              <button class="text-blue-400 hover:text-blue-300 transition">
+              <span class="text-zinc-300">Tambah User Baru</span>
+              <button href="Admin/tambahuser" class="text-blue-400 hover:text-blue-300 transition">
                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                 </svg>

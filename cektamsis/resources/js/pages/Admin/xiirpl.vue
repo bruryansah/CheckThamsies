@@ -35,7 +35,8 @@ import AppLayout from '@/layouts/AppLayout.vue';
 
     // Props harus sesuai dengan yang dikirim dari controller
     const props = defineProps<{
-        siswa: Siswa[]
+        siswa:  {    data: Siswa[]
+    links: { url: string | null; label: string; active: boolean }[]}
     }>()
 
     // State untuk modal konfirmasi
@@ -92,7 +93,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-zinc-800 bg-zinc-900 text-sm text-zinc-200">
-                            <tr v-for="siswa in props.siswa" :key="siswa.id_siswa"
+                            <tr v-for="siswa in props.siswa.data" :key="siswa.id_siswa"
                                 class="hover:bg-zinc-800/60 transition">
                                 <td class="px-6 py-4 text-center">{{ siswa.id_siswa }}</td>
                                 <td class="px-6 py-4 text-center">{{ siswa.nama }}</td>
@@ -115,8 +116,24 @@ import AppLayout from '@/layouts/AppLayout.vue';
                         </tbody>
                     </table>
                 </div>
+                    <!-- Pagination -->
+            <div class="flex justify-center mt-4 gap-2">
+            <button
+            v-for="link in props.siswa.links"
+            :key="link.label"
+            v-html="link.label"
+            :disabled="!link.url"
+            @click.prevent="link.url && $inertia.visit(link.url)"
+            class="px-3 py-1 rounded-lg border text-sm"
+            :class="{
+            'bg-zinc-700 text-white': link.active,
+            'bg-zinc-900 text-zinc-400 hover:bg-zinc-800': !link.active
+            }"
+            />
+            </div>
             </div>
         </div>
+
 
         <!-- Modal Konfirmasi Hapus -->
         <div v-if="showConfirmModal" class="fixed inset-0 z-50 flex items-center justify-center">
