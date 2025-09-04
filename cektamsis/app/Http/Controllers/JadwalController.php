@@ -37,7 +37,7 @@ class JadwalController extends Controller
 
         $jadwalFormatted = $jadwal->map(function ($item) {
             return [
-                'id'             => $item->id_jadwal,
+                'id_jadwal'             => $item->id_jadwal,
                 'mata_pelajaran' => $item->mapel->nama_mapel ?? '-',
                 'nama_kelas'     => $item->kelas->nama_kelas ?? '-',
                 'kelas_id'       => $item->guru->kelas->id_kelas ?? null,

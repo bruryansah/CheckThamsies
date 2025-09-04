@@ -1,32 +1,31 @@
 <script setup lang="ts">
 import { Head, router, usePage } from '@inertiajs/vue3';
-import { BookOpen, Calendar, CheckCircle, ChevronDown, Eye, Lock, LogOut, QrCode, Settings, Users } from 'lucide-vue-next';
-import { onMounted, ref } from 'vue';
+import { BookOpen, Calendar, CheckCircle, ChevronDown, Lock, LogOut, QrCode, Settings, Users } from 'lucide-vue-next';
+import { onMounted, onUnmounted, ref } from 'vue';
 import { QrcodeStream } from 'vue-qrcode-reader';
 
+// Props dari Inertia
 const page = usePage();
 const studentName = ref(page.props.auth?.user?.name ?? 'siswa');
-const currentDate = ref('');
 
+// Status & tanggal
+const currentDate = ref('');
 const checkinStatus = ref('Belum Absen');
 const checkoutStatus = ref('Belum Pulang');
 const canCheckout = ref(false);
 const processingIn = ref(false);
 const processingOut = ref(false);
 
-const scannerOpen = ref(false);
-const scannedCode = ref('');
-const selectedStatus = ref('Hadir');
+// QR Scanner
+const isScanning = ref(false);
+const scanResult = ref('');
+const errorMessage = ref('');
 
-const toastMessage = ref('');
-const toastType = ref<'success' | 'error'>('success');
-const showToast = ref(false);
-
-// Dropdown settings
+// Dropdown & Modal
 const dropdownOpen = ref(false);
-
-// Change Password Modal
 const showChangePasswordModal = ref(false);
+
+// Password form
 const passwordForm = ref({
     current_password: '',
     new_password: '',
@@ -35,68 +34,17 @@ const passwordForm = ref({
 const passwordErrors = ref<Record<string, string[]>>({});
 const processingPassword = ref(false);
 
-const stats = ref({
-    totalKehadiran: 85,
-    persentaseHadir: 94,
-    totalKelas: 6,
-    kelasAktif: 4,
-    absenHariIni: 'Belum Absen',
-    waktuAbsen: '',
-});
+// Dropdown functions
+const toggleDropdown = () => (dropdownOpen.value = !dropdownOpen.value);
+const closeDropdown = () => (dropdownOpen.value = false);
 
-const recentAttendance = ref([
-    {
-        name: 'Matematika',
-        time: '07:30',
-        status: 'Hadir',
-        color: 'bg-green-500',
-    },
-    {
-        name: 'Bahasa Indonesia',
-        time: '08:15',
-        status: 'Hadir',
-        color: 'bg-green-500',
-    },
-    {
-        name: 'Fisika',
-        time: '09:00',
-        status: 'Terlambat',
-        color: 'bg-yellow-500',
-    },
-    {
-        name: 'Kimia',
-        time: '10:30',
-        status: 'Hadir',
-        color: 'bg-green-500',
-    },
-]);
-
-const showNotification = (msg: string, type: 'success' | 'error' = 'success') => {
-    toastMessage.value = msg;
-    toastType.value = type;
-    showToast.value = true;
-    setTimeout(() => (showToast.value = false), 3000);
-};
-
-const toggleDropdown = () => {
-    dropdownOpen.value = !dropdownOpen.value;
-};
-
-const closeDropdown = () => {
-    dropdownOpen.value = false;
-};
-
+// Logout
 const logout = () => {
     router.post(route('logout'));
     closeDropdown();
 };
 
-const changePassword = () => {
-    // Open change password modal
-    showChangePasswordModal.value = true;
-    closeDropdown();
-};
-
+// Password Modal
 const closePasswordModal = () => {
     showChangePasswordModal.value = false;
     passwordForm.value = {
@@ -107,66 +55,66 @@ const closePasswordModal = () => {
     passwordErrors.value = {};
 };
 
-const submitPasswordChange = () => {
-    if (processingPassword.value) return;
-    processingPassword.value = true;
-    passwordErrors.value = {};
-
-    router.put(route('student.password.update'), passwordForm.value, {
-        onSuccess: () => {
-            showNotification('✅ Password berhasil diubah!', 'success');
-            closePasswordModal();
-        },
-        onError: (errors) => {
-            passwordErrors.value = Object.fromEntries(
-                Object.entries(errors).map(([key, val]) => [key, Array.isArray(val) ? val : [val]])
-            );
-            showNotification('❌ Gagal mengubah password!', 'error');
-        },
-        onFinish: () => {
-            processingPassword.value = false;
-        },
-    });
+// Toast Notification
+const toastMessage = ref('');
+const toastType = ref<'success' | 'error'>('success');
+const showToast = ref(false);
+const showNotification = (msg: string, type: 'success' | 'error' = 'success') => {
+    toastMessage.value = msg;
+    toastType.value = type;
+    showToast.value = true;
+    setTimeout(() => (showToast.value = false), 3000);
 };
 
-onMounted(() => {
-    // Ambil status absensi dari backend
-    fetch(route('absen.status'))
-        .then((res) => res.json())
-        .then((data) => {
-            if (data.status === 'belum_masuk') {
-                checkinStatus.value = 'Belum Absen';
-                checkoutStatus.value = 'Belum Pulang';
-                canCheckout.value = false;
-            } else if (data.status === 'sudah_masuk') {
-                checkinStatus.value = 'Sudah Absen';
-                checkoutStatus.value = 'Belum Pulang';
-                canCheckout.value = true;
-            } else if (data.status === 'sudah_pulang') {
-                checkinStatus.value = 'Sudah Absen';
-                checkoutStatus.value = 'Sudah Pulang';
-                canCheckout.value = false;
-            }
-        });
+// Stats
+const stats = ref({
+    totalKehadiran: 85,
+    persentaseHadir: 94,
+    totalKelas: 6,
+    kelasAktif: 4,
+    absenHariIni: 'Belum Absen',
+    waktuAbsen: '',
 });
 
-// ✅ Absen Masuk
+// Recent Attendance
+const recentAttendance = ref([
+    { name: 'Matematika', time: '07:30', status: 'Hadir', color: 'bg-green-500' },
+    { name: 'Bahasa Indonesia', time: '08:15', status: 'Hadir', color: 'bg-green-500' },
+    { name: 'Fisika', time: '09:00', status: 'Terlambat', color: 'bg-yellow-500' },
+    { name: 'Kimia', time: '10:30', status: 'Hadir', color: 'bg-green-500' },
+]);
+
+// Status Select
+const selectedStatus = ref('Hadir');
+
+// Helper: Tailwind colors for stats
+const statColor = (color: string) => {
+    switch (color) {
+        case 'blue':
+            return 'bg-blue-100 text-blue-600';
+        case 'green':
+            return 'bg-green-100 text-green-600';
+        case 'purple':
+            return 'bg-purple-100 text-purple-600';
+        case 'orange':
+            return 'bg-orange-100 text-orange-600';
+    }
+    return '';
+};
+
+// Absen Masuk
 const checkIn = () => {
     if (processingIn.value) return;
     processingIn.value = true;
 
     navigator.geolocation.getCurrentPosition(
         (pos) => {
-            // Tentukan status berdasarkan jam
             const now = new Date();
-            const batasJam = 8; // jam 08:00
-            const batasMenit = 0;
             let status = selectedStatus.value;
-
-            if (status === 'Hadir') {
-                if (now.getHours() > batasJam || (now.getHours() === batasJam && now.getMinutes() > batasMenit)) {
-                    status = 'Terlambat';
-                }
+            const batasJam = 8;
+            const batasMenit = 0;
+            if (status === 'Hadir' && (now.getHours() > batasJam || (now.getHours() === batasJam && now.getMinutes() > batasMenit))) {
+                status = 'Terlambat';
             }
 
             router.post(
@@ -174,16 +122,15 @@ const checkIn = () => {
                 {
                     latitude: pos.coords.latitude,
                     longitude: pos.coords.longitude,
-                    status: status,
+                    status,
                 },
                 {
                     onSuccess: () => {
                         checkinStatus.value = 'Sudah Absen (' + status + ')';
                         stats.value.absenHariIni = status;
-                        canCheckout.value = true; // langsung bisa absen pulang
+                        canCheckout.value = true;
                         showNotification('✅ Absen masuk berhasil!', 'success');
                     },
-
                     onError: () => showNotification('❌ Gagal absen masuk!', 'error'),
                     onFinish: () => (processingIn.value = false),
                 },
@@ -196,7 +143,7 @@ const checkIn = () => {
     );
 };
 
-// ✅ Absen Pulang
+// Absen Pulang
 const checkOut = () => {
     if (processingOut.value) return;
     processingOut.value = true;
@@ -226,55 +173,39 @@ const checkOut = () => {
     );
 };
 
-// ✅ QR Scanner
-const openQRScanner = () => (scannerOpen.value = true);
-const onDecode = (result: string) => {
-    scannedCode.value = result;
-    scannerOpen.value = false;
-    router.post(
-        route('absen.pelajaran'),
-        {
-            kode: result,
-        },
-        {
-            onSuccess: () => showNotification('✅ Absen pelajaran berhasil!', 'success'),
-            onError: () => showNotification('❌ QR tidak valid!', 'error'),
-        },
-    );
-};
-const onInit = (promise: Promise<void>) =>
-    promise.catch(() => {
-        showNotification('❌ Kamera tidak bisa diakses!', 'error');
-        scannerOpen.value = false;
-    });
+// QR Scanner Detect
+interface QrCodeResult {
+    rawValue: string;
+}
 
-// ✅ On Mounted
-onMounted(() => {
-    const now = new Date();
-    currentDate.value = now.toLocaleDateString('id-ID', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-    });
+const onDetect = (detectedCodes: QrCodeResult[]) => {
+    if (detectedCodes.length > 0) {
+        scanResult.value = detectedCodes[0].rawValue;
+        isScanning.value = false;
 
-    // aktifkan absen pulang kalau sudah absen masuk
-    if (checkinStatus.value.includes('Sudah')) {
-        canCheckout.value = true;
+        // Ambil id_jadwal dari string QR (misal: "jadwal:5")
+        const id_jadwal = parseInt(scanResult.value.replace('jadwal:', ''));
+
+        router.post(
+            '/absensi-pelajaran/checkin',
+            {
+                id_jadwal: id_jadwal,
+            },
+            {
+                onSuccess: () => {
+                    showNotification('✅ Absensi berhasil!', 'success');
+                },
+                onError: () => {
+                    errorMessage.value = '❌ Gagal absen, coba lagi!';
+                    showNotification('❌ Gagal absen, coba lagi!', 'error');
+                },
+            },
+        );
     }
+};
 
-    // Close dropdown when clicking outside
-    document.addEventListener('click', (e) => {
-        const dropdown = document.querySelector('.dropdown-container');
-        if (dropdown && !dropdown.contains(e.target as Node)) {
-            closeDropdown();
-        }
-    });
-});
-
-
-//ubah password
-const updatePassword = () => {
+// Password Change
+const submitPasswordChange = () => {
     if (processingPassword.value) return;
     processingPassword.value = true;
     passwordErrors.value = {};
@@ -285,17 +216,27 @@ const updatePassword = () => {
             closePasswordModal();
         },
         onError: (errors) => {
-            passwordErrors.value = Object.fromEntries(
-                Object.entries(errors).map(([key, val]) => [key, Array.isArray(val) ? val : [val]])
-            );
+            passwordErrors.value = Object.fromEntries(Object.entries(errors).map(([key, val]) => [key, Array.isArray(val) ? val : [val]]));
             showNotification('❌ Gagal mengubah password!', 'error');
         },
-        onFinish: () => {
-            processingPassword.value = false;
-        },
+        onFinish: () => (processingPassword.value = false),
     });
 };
 
+// Lifecycle
+onMounted(() => {
+    const now = new Date();
+    currentDate.value = now.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+    // Close dropdown on click outside
+    const handleClick = (e: Event) => {
+        const dropdown = document.querySelector('.dropdown-container');
+        if (dropdown && !dropdown.contains(e.target as Node)) closeDropdown();
+    };
+    document.addEventListener('click', handleClick);
+
+    onUnmounted(() => document.removeEventListener('click', handleClick));
+});
 </script>
 
 <template>
@@ -317,30 +258,28 @@ const updatePassword = () => {
             <div class="dropdown-container relative">
                 <button
                     @click="toggleDropdown"
-                    class="flex items-center gap-2 rounded-xl bg-gray-100 px-4 py-2 font-medium text-gray-700 transition-all duration-300 hover:bg-gray-200"
+                    class="flex items-center gap-2 rounded-xl bg-gray-100 px-4 py-2 font-medium text-gray-700 hover:bg-gray-200"
                 >
-                    <Settings class="h-4 w-4" />
-                    Pengaturan
-                    <ChevronDown class="h-4 w-4 transition-transform duration-200" :class="{ 'rotate-180': dropdownOpen }" />
+                    <Settings class="h-4 w-4" /> Pengaturan
+                    <ChevronDown class="h-4 w-4" :class="{ 'rotate-180': dropdownOpen }" />
                 </button>
-
-                <!-- Dropdown Menu -->
                 <transition name="dropdown">
                     <div v-if="dropdownOpen" class="absolute top-full right-0 z-10 mt-2 w-48 rounded-xl border border-gray-200 bg-white shadow-lg">
                         <div class="p-2">
                             <button
-                                @click="changePassword"
-                                class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-gray-700 transition-colors hover:bg-gray-100"
+                                @click="
+                                    showChangePasswordModal = true;
+                                    closeDropdown();
+                                "
+                                class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-gray-700 hover:bg-gray-100"
                             >
-                                <Lock class="h-4 w-4" />
-                                Ubah Password
+                                <Lock class="h-4 w-4" /> Ubah Password
                             </button>
                             <button
                                 @click="logout"
-                                class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-red-600 transition-colors hover:bg-red-50"
+                                class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-red-600 hover:bg-red-50"
                             >
-                                <LogOut class="h-4 w-4" />
-                                Logout
+                                <LogOut class="h-4 w-4" /> Logout
                             </button>
                         </div>
                     </div>
@@ -358,11 +297,11 @@ const updatePassword = () => {
                     { icon: Calendar, value: stats.kelasAktif, label: 'Mata Pelajaran', color: 'orange', change: 'Aktif' },
                 ]"
                 :key="i"
-                class="rounded-2xl border border-gray-200 bg-white p-6 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+                class="rounded-2xl border border-gray-200 bg-white p-6 shadow-md hover:-translate-y-1 hover:shadow-lg"
             >
                 <div class="flex items-center justify-between">
-                    <div :class="`h-12 w-12 bg-${stat.color}-100 flex items-center justify-center rounded-2xl shadow-inner`">
-                        <component :is="stat.icon" class="h-6 w-6" :class="`text-${stat.color}-600`" />
+                    <div :class="`${statColor(stat.color)} flex h-12 w-12 items-center justify-center rounded-2xl shadow-inner`">
+                        <component :is="stat.icon" class="h-6 w-6" />
                     </div>
                     <span class="text-sm font-medium text-green-600">{{ stat.change }}</span>
                 </div>
@@ -373,10 +312,9 @@ const updatePassword = () => {
             </div>
         </div>
 
-        <!-- Action Cards -->
+        <!-- Actions -->
         <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
-            <!-- Aksi Cepat -->
-            <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+            <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-md hover:-translate-y-1 hover:shadow-lg">
                 <div class="mb-6 flex items-center gap-3">
                     <div class="flex h-8 w-8 items-center justify-center rounded-2xl bg-blue-100 shadow-inner">
                         <CheckCircle class="h-5 w-5 text-blue-600" />
@@ -384,19 +322,18 @@ const updatePassword = () => {
                     <h3 class="text-lg font-semibold text-gray-900">Aksi Cepat</h3>
                 </div>
 
-                <!-- Absen Masuk -->
                 <div class="space-y-4">
-                    <div class="rounded-2xl border border-gray-200 p-4 transition-all duration-200 hover:bg-gray-50">
+                    <!-- Absen Masuk -->
+                    <div class="rounded-2xl border border-gray-200 p-4 hover:bg-gray-50">
                         <h4 class="mb-3 font-medium text-gray-900">Absen Masuk</h4>
                         <select
                             v-model="selectedStatus"
-                            class="w-full rounded-lg border border-gray-300 p-2 font-medium text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                            class="w-full rounded-lg border border-gray-300 p-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
                         >
-                            <option value="hadir" class="bg-green-100 font-semibold text-green-800">Hadir</option>
-                            <option value="izin" class="bg-yellow-100 font-semibold text-yellow-800">Izin</option>
-                            <option value="sakit" class="bg-red-100 font-semibold text-red-800">Sakit</option>
+                            <option value="Hadir">Hadir</option>
+                            <option value="Izin">Izin</option>
+                            <option value="Sakit">Sakit</option>
                         </select>
-
                         <p class="text-sm font-medium text-gray-900">
                             Status:
                             <span :class="checkinStatus.includes('Sudah') ? 'font-medium text-green-600' : 'text-red-500'">{{ checkinStatus }}</span>
@@ -417,7 +354,7 @@ const updatePassword = () => {
                     </div>
 
                     <!-- Absen Pulang -->
-                    <div class="rounded-2xl border border-gray-200 p-4 transition-all duration-200 hover:bg-gray-50">
+                    <div class="rounded-2xl border border-gray-200 p-4 hover:bg-gray-50">
                         <h4 class="mb-3 font-medium text-gray-900">Absen Pulang</h4>
                         <p class="mb-3 text-sm font-medium text-gray-900">
                             Status:
@@ -440,23 +377,21 @@ const updatePassword = () => {
                         </button>
                     </div>
 
+                    <!-- QR Scan -->
                     <button
-                        @click="openQRScanner"
-                        class="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-3 text-white transition-all duration-300 hover:from-blue-700 hover:to-purple-700 active:scale-95"
+                        @click="
+                            isScanning = true;
+                            scanResult = '';
+                        "
+                        class="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-3 text-white hover:from-blue-700 hover:to-purple-700 active:scale-95"
                     >
                         <QrCode class="h-5 w-5" /> Scan QR Absen
-                    </button>
-
-                    <button
-                        class="mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-green-600 px-4 py-3 text-white transition-all duration-300 hover:bg-green-700 active:scale-95"
-                    >
-                        <Eye class="h-5 w-5" /> Lihat Absensi
                     </button>
                 </div>
             </div>
 
-            <!-- Absensi Terbaru -->
-            <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+            <!-- Recent Attendance -->
+            <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-md hover:-translate-y-1 hover:shadow-lg">
                 <div class="mb-6 flex items-center gap-3">
                     <div class="flex h-8 w-8 items-center justify-center rounded-2xl bg-green-100 shadow-inner">
                         <CheckCircle class="h-5 w-5 text-green-600" />
@@ -464,11 +399,7 @@ const updatePassword = () => {
                     <h3 class="text-lg font-semibold text-gray-900">Absensi Terbaru</h3>
                 </div>
                 <div class="space-y-4">
-                    <div
-                        v-for="(item, index) in recentAttendance"
-                        :key="index"
-                        class="flex items-center gap-4 rounded-2xl p-2 transition-all duration-200 hover:bg-gray-50"
-                    >
+                    <div v-for="(item, index) in recentAttendance" :key="index" class="flex items-center gap-4 rounded-2xl p-2 hover:bg-gray-50">
                         <div class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
                             <span class="text-sm font-medium text-blue-600">{{ item.name.charAt(0) }}</span>
                         </div>
@@ -489,236 +420,23 @@ const updatePassword = () => {
             </div>
         </div>
 
-        <!-- Modal Scanner -->
-        <div v-if="scannerOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-            <div class="animate-fadeIn w-full max-w-md scale-100 transform overflow-hidden rounded-2xl bg-white shadow-2xl transition-all">
-                <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-                    <div class="flex items-center gap-2">
-                        <QrCode class="h-5 w-5 text-blue-600" />
-                        <h2 class="text-lg font-semibold text-gray-900">Scan QR Code</h2>
-                    </div>
-                    <button @click="scannerOpen = false" class="text-gray-400 transition-colors hover:text-gray-600">✕</button>
-                </div>
-                <div class="p-6">
-                    <div class="relative overflow-hidden rounded-2xl border-2 border-dashed border-gray-300">
-                        <qrcode-stream camera="rear" @decode="onDecode" @init="onInit" class="aspect-square w-full" />
-                    </div>
-                    <p class="mt-4 text-center text-sm text-gray-500">Arahkan kamera ke QR Code yang valid</p>
-                </div>
-                <div class="flex justify-between bg-gray-50 px-6 py-4">
-                    <button
-                        @click="scannerOpen = false"
-                        class="mr-2 w-full rounded-2xl bg-gray-500 py-2 text-white transition-colors hover:bg-gray-600"
-                    >
-                        Tutup
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Change Password Modal -->
-        <div
-            v-if="showChangePasswordModal"
-            class="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
-            @click.self="closePasswordModal"
-        >
-            <div class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white shadow-2xl" @click.stop>
-                <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-                    <div class="flex items-center gap-2">
-                        <Lock class="h-5 w-5 text-blue-600" />
-                        <h2 class="text-lg font-semibold text-gray-900">Ubah Password</h2>
-                    </div>
-                    <button @click="closePasswordModal" type="button" class="text-gray-400 transition-colors hover:text-gray-600">✕</button>
-                </div>
-<form @submit.prevent="submitPasswordChange" class="p-6 space-y-4">
-    <!-- Current Password -->
-    <div>
-        <label for="current_password" class="block text-sm font-medium text-gray-700 mb-2">
-            Password Saat Ini
-        </label>
-        <input 
-            id="current_password"
-            type="password" 
-            v-model="passwordForm.current_password"
-            class="w-full rounded-lg border border-gray-300 p-3 text-gray-900 placeholder-gray-400 
-                   focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            :class="{ 'border-red-500': passwordErrors.current_password }"
-            placeholder="Masukkan password saat ini"
-            autocomplete="current-password"
-            required
-        />
-        <p v-if="passwordErrors.current_password" class="text-red-500 text-sm mt-1">
-            {{ passwordErrors.current_password[0] }}
-        </p>
-    </div>
-
-    <!-- New Password -->
-    <div>
-        <label for="new_password" class="block text-sm font-medium text-gray-700 mb-2">
-            Password Baru
-        </label>
-        <input 
-            id="new_password"
-            type="password" 
-            v-model="passwordForm.new_password"
-            class="w-full rounded-lg border border-gray-300 p-3 text-gray-900 placeholder-gray-400 
-                   focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            :class="{ 'border-red-500': passwordErrors.new_password }"
-            placeholder="Masukkan password baru"
-            autocomplete="new-password"
-            required
-        />
-        <p v-if="passwordErrors.new_password" class="text-red-500 text-sm mt-1">
-            {{ passwordErrors.new_password[0] }}
-        </p>
-    </div>
-
-    <!-- Confirm New Password -->
-    <div>
-        <label for="new_password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">
-            Konfirmasi Password Baru
-        </label>
-        <input 
-            id="new_password_confirmation"
-            type="password" 
-            v-model="passwordForm.new_password_confirmation"
-            class="w-full rounded-lg border border-gray-300 p-3 text-gray-900 placeholder-gray-400 
-                   focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-            :class="{ 'border-red-500': passwordErrors.new_password_confirmation }"
-            placeholder="Konfirmasi password baru"
-            autocomplete="new-password"
-            required
-        />
-        <p v-if="passwordErrors.new_password_confirmation" class="text-red-500 text-sm mt-1">
-            {{ passwordErrors.new_password_confirmation[0] }}
-        </p>
-    </div>
-
-    <!-- Action Buttons -->
-    <div class="flex gap-3 pt-4">
-        <button type="button" @click="closePasswordModal"
-            class="flex-1 rounded-xl bg-gray-500 py-3 text-white font-medium transition-colors hover:bg-gray-600">
-            Batal
-        </button>
-        <button type="submit" :disabled="processingPassword"
-            class="flex-1 rounded-xl bg-blue-600 py-3 text-white font-medium transition-colors hover:bg-blue-700 disabled:bg-blue-400">
-            <span v-if="processingPassword">Mengubah...</span>
-            <span v-else>Ubah Password</span>
-        </button>
-    </div>
-</form>
-
-            </div>
-        </div>
-    </div>
-
-    <!-- Elegant Popup Notification dengan Animasi Centang -->
-    <transition name="fade-scale">
-        <div v-if="showToast" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-            <div class="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-2xl">
-                <!-- Success Animation -->
-                <div v-if="toastType === 'success'" class="mx-auto mb-4 h-16 w-16">
-                    <svg class="mx-auto h-16 w-16" viewBox="0 0 52 52">
-                        <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none" />
-                        <path class="checkmark-check" fill="none" d="M14 27l7 7 16-16" />
-                    </svg>
-                </div>
-
-                <!-- Error Icon -->
-                <div v-else class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
-                    <svg class="h-10 w-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </div>
-
-                <!-- Title -->
-                <h2 class="mb-2 text-xl font-semibold text-gray-900">
-                    {{ toastType === 'success' ? 'Berhasil' : 'Gagal' }}
-                </h2>
-
-                <!-- Message -->
-                <p class="mb-6 text-gray-600">{{ toastMessage }}</p>
-
-                <!-- Action -->
+        <!-- QR Scanner Modal -->
+        <div class="mt-6 flex justify-center rounded-xl border p-4">
+            <QrcodeStream v-if="isScanning" @detect="onDetect" />
+            <div v-else class="text-center">
+                <p class="font-semibold text-green-600">QR Code Terdeteksi:</p>
+                <p class="rounded bg-gray-100 p-2 font-mono">{{ scanResult }}</p>
                 <button
-                    @click="showToast = false"
-                    class="w-full rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-2 font-medium text-white shadow hover:from-blue-700 hover:to-purple-700"
+                    @click="
+                        isScanning = true;
+                        scanResult = '';
+                    "
+                    class="mt-4 rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
                 >
-                    Tutup
+                    Scan Ulang
                 </button>
             </div>
         </div>
-    </transition>
+        <p v-if="errorMessage" class="mt-4 text-red-500">{{ errorMessage }}</p>
+    </div>
 </template>
-
-<style scoped>
-.fade-enter-active,
-.fade-leave-active {
-    transition: opacity 0.3s;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-    opacity: 0;
-}
-
-/* Animasi centang */
-.checkmark-circle {
-    stroke: #22c55e;
-    /* green-500 */
-    stroke-width: 2;
-    stroke-dasharray: 166;
-    stroke-dashoffset: 166;
-    stroke-linecap: round;
-    animation: circleStroke 0.6s ease-in-out forwards;
-}
-
-.checkmark-check {
-    stroke: #22c55e;
-    stroke-width: 3;
-    stroke-linecap: round;
-    stroke-dasharray: 48;
-    stroke-dashoffset: 48;
-    animation: checkStroke 0.4s ease-in-out 0.6s forwards;
-}
-
-@keyframes circleStroke {
-    to {
-        stroke-dashoffset: 0;
-    }
-}
-
-@keyframes checkStroke {
-    to {
-        stroke-dashoffset: 0;
-    }
-}
-
-/* Fade scale */
-.fade-scale-enter-active,
-.fade-scale-leave-active {
-    transition: all 0.3s ease;
-}
-
-.fade-scale-enter-from {
-    opacity: 0;
-    transform: scale(0.9);
-}
-
-.fade-scale-leave-to {
-    opacity: 0;
-    transform: scale(0.9);
-}
-
-/* Dropdown animation */
-.dropdown-enter-active,
-.dropdown-leave-active {
-    transition: all 0.2s ease;
-}
-
-.dropdown-enter-from,
-.dropdown-leave-to {
-    opacity: 0;
-    transform: translateY(-10px) scale(0.95);
-}
-</style>

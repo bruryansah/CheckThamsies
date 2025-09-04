@@ -208,3 +208,6 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/student/password', [StudentPasswordController::class, 'update'])
         ->name('student.password.update');
 });
+
+Route::post('/absensi-pelajaran/checkin', [\App\Http\Controllers\AbsenPelajaranController::class, 'checkIn'])
+    ->middleware(['auth', 'verified']);
