@@ -1,4 +1,5 @@
 <template>
+    <Head title="Dashboard Guru" />
     <div class="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
         <header
             class="fixed top-0 z-50 w-full border-b border-white/20 bg-white/80 shadow-lg backdrop-blur-md transition-all duration-500 ease-in-out"
@@ -489,6 +490,7 @@
 import { router, usePage } from '@inertiajs/vue3';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { Head } from '@inertiajs/vue3'
 import QRCode from 'qrcode';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 

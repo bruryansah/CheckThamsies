@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Link } from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3'
 import { onMounted, ref } from 'vue';
 
 const activeMenu = ref('tentang');
@@ -127,6 +128,7 @@ const stats = ref([
 </script>
 
 <template>
+    <Head title="Tentang" />
     <div class="about-page">
         <!-- Navbar -->
         <nav class="navbar">
@@ -263,7 +265,7 @@ const stats = ref([
                         alt="Logo SMK Tamansiswa 2 Jakarta"
                         class="footer-logo"
                     />
-                    <span class="footer-text">© 2025 SMK TAMANSISWA 2 JAKARTA | RPL</span>
+                    <span class="footer-text"><a href="https://smktamansiswa2jakarta.sch.id">© 2025 SMK TAMANSISWA 2 JAKARTA | RPL</a></span>
                 </div>
                 <div class="footer-right">
                     <a href="https://facebook.com/smktamansiswa2jakarta" class="social-link" target="_blank" title="Facebook">
