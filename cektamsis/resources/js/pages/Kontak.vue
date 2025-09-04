@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Link, useForm } from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3'
 import { onMounted, ref } from 'vue';
 
 const activeMenu = ref('kontak');
@@ -81,6 +82,7 @@ onMounted(() => {
 </script>
 
 <template>
+    <Head title="Kontak" />
     <div class="contact-page">
         <!-- Navbar -->
         <nav class="navbar">
@@ -309,7 +311,7 @@ onMounted(() => {
                         alt="Logo SMK Tamansiswa 2 Jakarta"
                         class="footer-logo"
                     />
-                    <span class="footer-text">© 2025 SMK TAMANSISWA 2 JAKARTA | RPL</span>
+                    <span class="footer-text"><a href="https://smktamansiswa2jakarta.sch.id">© 2025 SMK TAMANSISWA 2 JAKARTA | RPL</a></span>
                 </div>
                 <div class="footer-right">
                     <a href="https://facebook.com/smktamansiswa2jakarta" class="social-link" target="_blank" title="Facebook">

@@ -12,19 +12,15 @@ return new class extends Migration {
     {
         Schema::create('absensi_pelajaran', function (Blueprint $table) {
             $table->id('id_absensi_pelajaran');
-            $table->unsignedBigInteger('id_qr');
-            $table->unsignedBigInteger('id_siswa');
-            $table->unsignedBigInteger('id_jadwal');
-            $table->unsignedBigInteger('id_guru');
-            $table->dateTime('waktu_scan');
-            $table->enum('status', ['hadir', 'izin', 'sakit', 'alfa']);
+            $table->unsignedBigInteger('id_jadwal');   // relasi ke jadwal
+            $table->unsignedBigInteger('id_siswa');    // relasi ke siswa
+            $table->dateTime('waktu_scan');            // waktu absen
+            $table->enum('status', ['hadir', 'izin', 'sakit', 'alpa'])->default('hadir');
             $table->string('keterangan', 255)->nullable();
             $table->timestamps();
 
-            $table->foreign('id_qr')->references('id_qr')->on('qr_session');
-            $table->foreign('id_siswa')->references('id_siswa')->on('siswa');
-            $table->foreign('id_jadwal')->references('id_jadwal')->on('jadwal');
-            $table->foreign('id_guru')->references('id_guru')->on('guru');
+            $table->foreign('id_jadwal')->references('id_jadwal')->on('jadwal')->onDelete('cascade');
+            $table->foreign('id_siswa')->references('id_siswa')->on('siswa')->onDelete('cascade');
         });
     }
 

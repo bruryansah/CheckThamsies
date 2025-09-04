@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\AbsensiPelajaran;
 use Illuminate\Database\Eloquent\Model;
 
 class Jadwal extends Model
@@ -22,10 +23,5 @@ class Jadwal extends Model
     public function kelas()
     {
         return $this->belongsTo(Kelas::class, 'id_kelas', 'id_kelas');
-    }
-
-        public function absensi()
-    {
-        return $this->hasMany(AbsenPelajaran::class, 'id_jadwal');
     }
 }

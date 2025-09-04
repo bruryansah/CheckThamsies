@@ -50,7 +50,7 @@
             </div>
         </header>
 
-        <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 pt-25">
+        <main class="mx-auto max-w-7xl px-4 py-8 pt-25 sm:px-6 lg:px-8">
             <div class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
                 <div
                     v-for="(stat, index) in stats"
@@ -85,28 +85,16 @@
                         </h2>
 
                         <div class="mb-4">
-                            <label class="mb-2 block text-sm font-medium text-gray-700">Pilih Kelas:</label>
+                            <label class="mb-2 block text-sm font-medium text-gray-700">Pilih Jadwal:</label>
                             <select
-                                v-model="selectedClass"
-                                @change="filterScheduleByClass"
+                                v-model="selectedJadwal"
+                                @change="onJadwalChange"
                                 class="w-full rounded-lg border border-gray-300 px-4 py-2 transition-all duration-300 focus:border-transparent focus:ring-2 focus:ring-blue-500"
                             >
-                                <option value="">Semua Kelas</option>
-                                <option v-for="kelas in kelasData" :key="kelas.id" :value="kelas.id">
-                                    {{ kelas.nama_kelas }}
-                                </option>
-                            </select>
-                        </div>
-
-                        <div class="mb-6">
-                            <label class="mb-2 block text-sm font-medium text-gray-700">Pilih Mata Pelajaran untuk QR Code:</label>
-                            <select
-                                v-model="selectedSubject"
-                                class="w-full rounded-lg border border-gray-300 px-4 py-2 transition-all duration-300 focus:border-transparent focus:ring-2 focus:ring-blue-500"
-                            >
-                                <option value="">Pilih Mata Pelajaran</option>
-                                <option v-for="subject in availableSubjects" :key="subject" :value="subject">
-                                    {{ subject }}
+                                <option disabled value="">-- Pilih Jadwal --</option>
+                                <option v-for="j in localJadwalData" :key="j.id_jadwal" :value="j.id_jadwal">
+                                    {{ j.mata_pelajaran }} - {{ j.nama_kelas }} ({{ formatScheduleDate(j.tanggal) }} {{ j.jam_mulai }} -
+                                    {{ j.jam_selesai }})
                                 </option>
                             </select>
                         </div>
@@ -114,8 +102,8 @@
                         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <button
                                 @click="generateQRCode"
-                                :disabled="!selectedSubject"
-                                :class="selectedSubject ? 'hover:from-blue-500 hover:to-blue-600' : 'cursor-not-allowed opacity-50'"
+                                :disabled="!selectedJadwal || isGeneratingQR"
+                                :class="selectedJadwal && !isGeneratingQR ? 'hover:from-blue-500 hover:to-blue-600' : 'cursor-not-allowed opacity-50'"
                                 class="group transform rounded-xl border border-blue-200 bg-gradient-to-r from-blue-50 to-blue-100 p-4 transition-all duration-300 hover:scale-105 hover:border-blue-500"
                             >
                                 <div class="flex items-center space-x-3">
@@ -132,12 +120,15 @@
                                                 stroke-linecap="round"
                                                 stroke-linejoin="round"
                                                 stroke-width="2"
-                                                d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M12 12h4.01M12 12v4.01M12 12V8.01"
+                                                d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M12 12v4.01M12 12V8.01"
                                             ></path>
                                         </svg>
                                     </div>
                                     <div class="text-left">
-                                        <p class="font-semibold text-blue-900 group-hover:text-white">Generate QR Absen</p>
+                                        <p class="font-semibold text-blue-900 group-hover:text-white">
+                                            <span v-if="isGeneratingQR">Generating...</span>
+                                            <span v-else>Generate QR Absen</span>
+                                        </p>
                                         <p class="text-sm text-blue-600 group-hover:text-blue-100">Buat kode QR untuk absen</p>
                                     </div>
                                 </div>
@@ -161,7 +152,7 @@
                                                 stroke-linecap="round"
                                                 stroke-linejoin="round"
                                                 stroke-width="2"
-                                                d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+                                                d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2"
                                             ></path>
                                         </svg>
                                     </div>
@@ -262,14 +253,14 @@
                 </div>
 
                 <div class="space-y-8">
-                    <div v-if="qrCodeData" class="rounded-2xl border border-white/30 bg-white/80 p-6 shadow-lg backdrop-blur-md">
+                    <div v-if="qrImage" class="rounded-2xl border border-white/30 bg-white/80 p-6 shadow-lg backdrop-blur-md">
                         <h2 class="mb-4 flex items-center text-xl font-bold text-gray-900">
                             <svg class="mr-2 h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path
                                     stroke-linecap="round"
                                     stroke-linejoin="round"
                                     stroke-width="2"
-                                    d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M12 12h4.01M12 12v4.01M12 12V8.01"
+                                    d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M12 12v4.01M12 12V8.01"
                                 ></path>
                             </svg>
                             QR Code Absensi
@@ -280,11 +271,13 @@
                                     id="qrcode"
                                     class="mx-auto flex h-48 w-48 items-center justify-center rounded-xl border-4 border-dashed border-gray-300 bg-gray-50"
                                 >
-                                    <p class="text-sm text-gray-500">QR Code akan muncul di sini</p>
+                                    <!-- image injected by generateQRCode -->
                                 </div>
                             </div>
-                            <p class="mb-2 text-sm text-gray-600">{{ qrCodeData.subject }} - {{ qrCodeData.class }}</p>
-                            <p class="text-xs text-gray-500">Berlaku: {{ qrCodeData.validUntil }}</p>
+                            <p class="mb-2 text-sm text-gray-600">
+                                {{ selectedJadwalLabel }}
+                            </p>
+                            <p class="text-xs text-gray-500">Siswa dapat memindai QR code ini untuk melakukan absensi</p>
                             <button
                                 @click="refreshQRCode"
                                 class="mt-4 rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white transition-colors duration-300 hover:bg-blue-600"
@@ -486,15 +479,24 @@
 </template>
 
 <script setup>
-import { router, usePage } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import QRCode from 'qrcode';
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
 
 // Reactive data
-const { props } = usePage();
-const allAttendanceData = ref(props.absensiData ?? []);
+const props = defineProps({
+    auth: Object,
+    flash: Object,
+    guru: Object,
+    jadwalData: { type: Array, default: () => [] },
+    absensiData: { type: Array, default: () => [] },
+    kelasData: { type: Array, default: () => [] },
+});
+const localAbsensiData = ref(props.absensiData ?? []);
+
+const allAttendanceData = ref(localAbsensiData.value ?? []);
 const filteredAttendanceData = ref([...allAttendanceData.value]);
 const teacherName = ref(props.guru?.nama ?? 'Guru');
 const showAttendanceModal = ref(false);
@@ -508,7 +510,8 @@ const attendanceFilter = ref({
     class: '',
     subject: '',
 });
-
+const localKelasData = ref(props.kelasData ?? []);
+const localJadwalData = ref(props.jadwalData ?? []);
 const isNavbarVisible = ref(true);
 let lastScrollY = window.scrollY;
 let scrollTimeout = null;
@@ -535,68 +538,74 @@ function handleScroll() {
     lastScrollY = window.scrollY;
 }
 
+/**
+ * 🔹 QR Code Absensi
+ */
+const qrImage = ref('');
+const selectedJadwal = ref('');
+const isGeneratingQR = ref(false);
+
+const generateQRCode = async () => {
+    if (!selectedJadwal.value) {
+        alert('Silakan pilih jadwal terlebih dahulu!');
+        return;
+    }
+    try {
+        isGeneratingQR.value = true;
+        const payload = `jadwal:${selectedJadwal.value}`;
+        const qrDataUrl = await QRCode.toDataURL(payload, {
+            width: 250,
+            margin: 2,
+            color: { dark: '#000000', light: '#ffffff' },
+        });
+        qrImage.value = qrDataUrl;
+        await nextTick();
+        const qrDiv = document.getElementById('qrcode');
+        if (qrDiv) {
+            qrDiv.innerHTML = '';
+            const img = document.createElement('img');
+            img.src = qrImage.value;
+            img.className = 'h-48 w-48 object-contain';
+            img.alt = 'QR Code Absensi';
+            qrDiv.appendChild(img);
+        }
+        console.log('QR Code berhasil di-generate:', payload);
+    } catch (error) {
+        console.error('Error generating QR code:', error);
+        alert('Gagal membuat QR Code. Silakan coba lagi.');
+    } finally {
+        isGeneratingQR.value = false;
+    }
+};
+
 const refreshQRCode = async () => {
-    if (!qrCodeData.value) {
+    if (!qrImage.value) {
         alert('Belum ada QR Code untuk direfresh. Silakan generate dulu.');
         return;
     }
-
-    const confirmRefresh = confirm('Apakah anda yakin untuk merefresh QR Code?');
-    if (!confirmRefresh) return;
-
-    await generateQRCode(); // panggil ulang generator
+    if (!confirm('Apakah anda yakin untuk merefresh QR Code?')) return;
+    await generateQRCode();
 };
 
-const generateQRCode = async () => {
-    if (!selectedSubject.value || !selectedClass.value) {
-        alert('Pilih kelas dan mata pelajaran dulu!');
-        return;
-    }
-
-    const currentTime = new Date();
-    const validUntil = new Date(currentTime.getTime() + 10 * 60000); // 10 menit
-
-    const subjectSchedule = jadwalData.value.find((schedule) => schedule.mata_pelajaran === selectedSubject.value);
-
-    qrCodeData.value = {
-        subject: selectedSubject.value,
-        class: subjectSchedule ? subjectSchedule.nama_kelas : selectedClass.value,
-        timestamp: currentTime.getTime(),
-        validUntil: validUntil.toLocaleTimeString('id-ID', {
-            hour: '2-digit',
-            minute: '2-digit',
-        }),
-        teacherId: props.guru?.id ?? 'GURU001',
-        sessionId: `QR_${selectedSubject.value}_${Date.now()}`,
-    };
-
-    // Generate QR beneran
-    qrImage.value = await QRCode.toDataURL(qrCodeData.value.sessionId, {
-        width: 200,
-        margin: 2,
-        color: { dark: '#000000', light: '#ffffff' },
-    });
-
+const onJadwalChange = () => {
+    qrImage.value = '';
     const qrDiv = document.getElementById('qrcode');
-    qrDiv.innerHTML = '';
-    const img = document.createElement('img');
-    img.src = qrImage.value;
-    img.className = 'h-48 w-48';
-    qrDiv.appendChild(img);
+    if (qrDiv) {
+        qrDiv.innerHTML = '<p class="text-sm text-gray-500">QR Code akan muncul di sini</p>';
+    }
 };
 
-const qrCodeData = ref(null);
-const qrImage = ref(null);
-const selectedJadwal = ref(null);
+/**
+ * 🔹 Absensi data & utilities
+ */
 
 const exportToPDF = () => {
     const doc = new jsPDF();
-
     doc.setFontSize(14);
     doc.text('Laporan Absensi Siswa', 14, 15);
     doc.setFontSize(10);
-    doc.text(`Kelas: ${selectedClass.value || 'Semua'}`, 14, 22);
-    doc.text(`Tanggal: ${selectedDate.value || 'Semua'}`, 14, 28);
+    doc.text(`Kelas: ${attendanceFilter.value.class || 'Semua'}`, 14, 22);
+    doc.text(`Mata Pelajaran: ${attendanceFilter.value.subject || 'Semua'}`, 14, 28);
 
     const tableData = (filteredAttendanceData.value || []).map((a, index) => [
         index + 1,
@@ -619,13 +628,10 @@ const exportToPDF = () => {
             headStyles: { fillColor: [41, 128, 185] },
         });
     }
-
-    doc.save(`Absensi_${selectedClass.value || 'Semua'}_${Date.now()}.pdf`);
+    doc.save(`Absensi_${attendanceFilter.value.class || 'Semua'}_${Date.now()}.pdf`);
 };
 
 const months = ref(['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']);
-
-const kelasData = ref(props.kelasData ?? []);
 
 const stats = ref([
     {
