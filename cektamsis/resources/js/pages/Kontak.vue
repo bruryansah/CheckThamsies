@@ -118,13 +118,6 @@ onMounted(() => {
             <div class="auth-buttons">
                 <Link href="/login" class="btn-login"> <span class="auth-icon">🔑</span> Login </Link>
             </div>
-
-            <!-- Mobile menu toggle -->
-            <div class="mobile-menu-toggle">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
         </nav>
 
         <!-- Main Container -->
