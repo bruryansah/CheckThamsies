@@ -19,6 +19,8 @@ class AdminCon extends Controller
 {
     public function dashboard(): Response
     {
+        $distribusi = DB::table('absensi_sekolah as a')->join('siswa as s', 'a.id_siswa', '=', 's.id_siswa')->join('kelas as k', 's.id_kelas', '=', 'k.id_kelas')->select('k.nama_kelas', DB::raw("SUM(CASE WHEN a.status = 'hadir' THEN 1 ELSE 0 END) as hadir"), DB::raw("SUM(CASE WHEN a.status = 'izin' THEN 1 ELSE 0 END) as izin"), DB::raw("SUM(CASE WHEN a.status = 'sakit' THEN 1 ELSE 0 END) as sakit"), DB::raw("SUM(CASE WHEN a.status = 'alfa' THEN 1 ELSE 0 END) as alfa"), DB::raw('COUNT(a.id_absensi) as total'))->groupBy('k.nama_kelas')->get();
+
         return Inertia::render('Admin/Dashboard', [
             'totalUsers' => User::count(),
             'totalSiswa' => User::where('role', 'user')->count(),
@@ -29,9 +31,10 @@ class AdminCon extends Controller
             'totalsakit' => AbsensiSekolah::where('status', 'sakit')->count(),
             'totalalfa' => AbsensiSekolah::where('status', 'alfa')->count(),
             'absen' => AbsensiSekolah::whereBetween('jam_masuk', ['06:40:00', '06:50:00'])->count(),
-            'warning' => AbsensiSekolah::whereBetween('jam_masuk',['06:51:00', '07:00:00'])->count(),
-            'telat' => AbsensiSekolah::whereBetween('jam_masuk',['07:01:00', '09:00:00'])->count(),
-            'alfa' => AbsensiSekolah::whereBetween('jam_masuk',['09:01:00', '24:00:00'])->count(),
+            'warning' => AbsensiSekolah::whereBetween('jam_masuk', ['06:51:00', '07:00:00'])->count(),
+            'telat' => AbsensiSekolah::whereBetween('jam_masuk', ['07:01:00', '09:00:00'])->count(),
+            'alfa' => AbsensiSekolah::whereBetween('jam_masuk', ['09:01:00', '24:00:00'])->count(),
+            'distribusi' => $distribusi,
         ]);
     }
 

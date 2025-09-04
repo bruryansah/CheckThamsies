@@ -88,8 +88,6 @@ import AppLayout from '@/layouts/AppLayout.vue';
                             <tr>
                                 <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Id Guru
                                 </th>
-                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Foto Guru
-                                </th>
                                 <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Nama
                                 </th>
                                 <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">NIP
@@ -106,7 +104,6 @@ import AppLayout from '@/layouts/AppLayout.vue';
                             <tr v-for="guru in props.guru.data" :key="guru.id_guru"
                                 class="hover:bg-zinc-800/60 transition">
                                 <td class="px-6 py-4 text-center">{{ guru.id_guru }}</td>
-                                <td class="px-6 py-4 text-center">{{ guru.foto }}</td>
                                 <td class="px-6 py-4 text-center">{{ guru.nama }}</td>
                                 <td class="px-6 py-4 text-center">{{ guru.nip }}</td>
                                 <td class="px-6 py-4 text-center">{{ guru.email }}</td>

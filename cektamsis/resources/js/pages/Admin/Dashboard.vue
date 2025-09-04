@@ -2,7 +2,7 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
-import { Users, User, GraduationCap, Shield, RefreshCw, AlertTriangle, PieChart, Settings } from 'lucide-vue-next';
+import { Users, User, GraduationCap, Shield, RefreshCw, AlertTriangle, PieChart, Settings, Database } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 import { usePage } from '@inertiajs/vue3'
 
@@ -12,6 +12,15 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem,
 import { LogOut, Settings as SettingsIcon } from 'lucide-vue-next';
 import { Link, router } from '@inertiajs/vue3';
 import type { User as UserType } from '@/types';
+
+interface KelasDistribusi {
+  nama_kelas: string;
+  hadir: number;
+  izin: number;
+  sakit: number;
+  alfa: number;
+  total: number;
+}
 
 // Props dari Laravel
 interface Props {
@@ -27,6 +36,7 @@ interface Props {
   warning: number;
   telat: number;
   alfa: number;
+   distribusi: KelasDistribusi[];
   auth: {
     user: UserType;
   };
@@ -59,14 +69,12 @@ const stats = computed(() => ({
   warning: props.warning || 0,
   telat: props.telat || 0,
   alfa: props.alfa || 0,
+
 }));
 
-// Dummy data kelas
-const kelasData = ref([
-  { kelas: 'X RPL 1', hadir: 28, izin: 2, sakit: 1, alpha: 1, total: 32 },
-  { kelas: 'XI RPL 1', hadir: 27, izin: 3, sakit: 1, alpha: 1, total: 32 },
-  { kelas: 'XII RPL 1', hadir: 25, izin: 4, sakit: 2, alpha: 1, total: 32 },
-]);
+// Ambil langsung dari props
+const kelasData = computed(() => props.distribusi || []);
+
 
 const getPercentage = (hadir: number, total: number) => Math.round((hadir / total) * 100);
 const getStatusColor = (p: number) => p >= 90 ? 'text-green-400' : p >= 80 ? 'text-yellow-400' : p >= 70 ? 'text-orange-400' : 'text-red-400';
@@ -223,72 +231,78 @@ const getProgressColor = (p: number) => p >= 90 ? 'bg-green-500' : p >= 80 ? 'bg
           </div>
         </div>
 
-        <!-- Alert & Peringatan -->
-        <div class="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 shadow-lg">
-          <div class="flex items-center gap-3 mb-6">
-            <div class="p-2 bg-red-500/20 rounded-lg">
-              <AlertTriangle class="h-5 w-5 text-red-400" />
-            </div>
-            <h3 class="text-lg font-semibold text-white">Alert & Peringatan</h3>
-          </div>
 
-          <div class="space-y-4">
-            <!-- Alert tingkat ketidakhadiran tinggi -->
-            <div class="p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
-              <div class="flex items-start gap-3">
-                <AlertTriangle class="h-4 w-4 text-red-400 mt-1 flex-shrink-0" />
-                <div class="flex-1">
-                  <h4 class="text-red-400 font-medium text-sm">Tingkat Ketidakhadiran Tinggi</h4>
-                  <p class="text-zinc-400 text-xs mt-1">Kelas XII IPS 2: 15% siswa tidak hadir</p>
-                  <button class="text-red-400 text-xs underline mt-2">Lihat Detail</button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Alert guru belum absen -->
-            <div class="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-              <div class="flex items-start gap-3">
-                <AlertTriangle class="h-4 w-4 text-yellow-400 mt-1 flex-shrink-0" />
-                <div class="flex-1">
-                  <h4 class="text-yellow-400 font-medium text-sm">Siswa Belum Absen</h4>
-                  <p class="text-zinc-400 text-xs mt-1">3 Siswa belum melakukan absen masuk</p>
-                  <button class="text-yellow-400 text-xs underline mt-2">Kirim Reminder</button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Alert backup otomatis -->
-            <div class="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-              <div class="flex items-start gap-3">
-                <RefreshCw class="h-4 w-4 text-blue-400 mt-1 flex-shrink-0" />
-                <div class="flex-1">
-                  <h4 class="text-blue-400 font-medium text-sm">Backup Otomatis</h4>
-                  <p class="text-zinc-400 text-xs mt-1">Backup data berhasil: 03:00 WIB</p>
-                  <button class="text-blue-400 text-xs underline mt-2">Lihat Log</button>
-                </div>
-              </div>
-            </div>
-          </div>
+  <!-- Aksi Cepat (dipindahkan dari bawah) -->
+  <div class="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 shadow-lg">
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-3">
+        <div class="p-2 bg-purple-500/20 rounded-lg">
+          <Settings class="h-5 w-5 text-purple-400" />
         </div>
+        <h3 class="text-lg font-semibold text-white">Aksi Cepat</h3>
       </div>
+    </div>
 
-      <!-- Bottom Section -->
-      <div class="grid gap-6 lg:grid-cols-2">
-        <!-- Distribusi Kehadiran per Kelas -->
-        <div class="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 shadow-lg">
-          <div class="flex items-center gap-3 mb-6">
-            <div class="p-2 bg-green-500/20 rounded-lg">
-              <PieChart class="h-5 w-5 text-green-400" />
-            </div>
-            <h3 class="text-lg font-semibold text-white">Distribusi Kehadiran per Kelas</h3>
-          </div>
+    <!-- Quick actions -->
+    <div class="space-y-4">
+      <div class="flex justify-between items-center py-3 border-b border-zinc-800">
+        <span class="text-zinc-300">Tambah User Baru</span>
+        <button href="Admin/tambahuser" class="text-blue-400 hover:text-blue-300 transition">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="flex justify-between items-center py-3 border-b border-zinc-800">
+        <span class="text-zinc-300">Kelola Role & Permission</span>
+        <button class="text-blue-400 hover:text-blue-300 transition">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 5l7 7-7 7"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="flex justify-between items-center py-3 border-b border-zinc-800">
+        <span class="text-zinc-300">Import Data Siswa</span>
+        <button class="text-blue-400 hover:text-blue-300 transition">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+          </svg>
+        </button>
+      </div>
+      <div class="flex justify-between items-center py-3">
+        <span class="text-zinc-300">Backup & Restore</span>
+        <button class="text-blue-400 hover:text-blue-300 transition">
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+    </div>
 
-          <!-- Data Kehadiran per Kelas -->
+<!-- Bottom Section -->
+<div class="grid gap-6">
+  <!-- Distribusi Kehadiran per Kelas (full width) -->
+  <div class="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 shadow-lg">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="p-2 bg-green-500/20 rounded-lg">
+        <PieChart class="h-5 w-5 text-green-400" />
+      </div>
+      <h3 class="text-lg font-semibold text-white">Distribusi Kehadiran per Kelas</h3>
+    </div>
+
+    <!-- Data Kehadiran per Kelas -->
           <div class="space-y-4 max-h-80 overflow-y-auto" style="scrollbar-width: thin; scrollbar-color: #52525b #27272a;">
-            <div v-for="kelas in kelasData" :key="kelas.kelas"
+            <div v-for="kelas in kelasData" :key="kelas.nama_kelas"
                  class="p-4 bg-zinc-800/40 rounded-lg hover:bg-zinc-800/60 transition-all duration-200">
               <div class="flex items-center justify-between mb-3">
-                <h4 class="text-sm font-medium text-white">{{ kelas.kelas }}</h4>
+                <h4 class="text-sm font-medium text-white">{{ kelas.nama_kelas }}</h4>
                 <span :class="getStatusColor(getPercentage(kelas.hadir, kelas.total))"
                       class="text-sm font-semibold">
                   {{ getPercentage(kelas.hadir, kelas.total) }}%
@@ -331,7 +345,7 @@ const getProgressColor = (p: number) => p >= 90 ? 'bg-green-500' : p >= 80 ? 'bg
                     <div class="w-2 h-2 rounded-full bg-red-500"></div>
                     <span class="text-zinc-400">Alpha</span>
                   </div>
-                  <div class="text-white font-medium mt-1">{{ kelas.alpha }}</div>
+                  <div class="text-white font-medium mt-1">{{ kelas.alfa }}</div>
                 </div>
               </div>
             </div>
@@ -341,74 +355,21 @@ const getProgressColor = (p: number) => p >= 90 ? 'bg-green-500' : p >= 80 ? 'bg
           <div class="mt-6 pt-4 border-t border-zinc-700">
             <div class="grid grid-cols-2 gap-4 text-sm">
               <div class="text-center p-3 bg-zinc-800/40 rounded-lg">
-                <div class="text-zinc-400">Rata-rata Kehadiran</div>
-                <div class="text-xl font-bold text-green-400 mt-1">
-                  {{ Math.round(kelasData.reduce((acc, k) => acc + getPercentage(k.hadir, k.total), 0) / kelasData.length) }}%
+                  <div class="text-zinc-400">Rata-rata Kehadiran</div>
+                  <div class="text-xl font-bold text-green-400 mt-1">
+                      {{ Math.round(kelasData.reduce((acc, k) => acc + getPercentage(k.hadir, k.total), 0) / kelasData.length) }}%
+                    </div>
                 </div>
-              </div>
-              <div class="text-center p-3 bg-zinc-800/40 rounded-lg">
-                <div class="text-zinc-400">Total Siswa</div>
-                <div class="text-xl font-bold text-blue-400 mt-1">
-                  {{ kelasData.reduce((acc, k) => acc + k.total, 0) }}
+                <div class="text-center p-3 bg-zinc-800/40 rounded-lg">
+                    <div class="text-zinc-400">Total Siswa</div>
+                    <div class="text-xl font-bold text-blue-400 mt-1">
+                        {{ kelasData.reduce((acc, k) => acc + k.total, 0) }}
+                    </div>
                 </div>
-              </div>
             </div>
-          </div>
         </div>
-
-        <!-- Manajemen Pengguna -->
-        <div class="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 shadow-lg relative">
-          <div class="flex items-center justify-between mb-6">
-            <div class="flex items-center gap-3">
-              <div class="p-2 bg-purple-500/20 rounded-lg">
-                <Settings class="h-5 w-5 text-purple-400" />
-              </div>
-              <h3 class="text-lg font-semibold text-white">Aksi Cepat </h3>
-            </div>
-            <button class="p-2 hover:bg-zinc-800 rounded-lg transition">
-              <svg class="h-4 w-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V6a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2M16 4h2a2 2 0 012 2v2M16 20h2a2 2 0 002-2v-2"></path>
-              </svg>
-            </button>
-          </div>
-
-          <!-- Quick actions atau user management content -->
-          <div class="space-y-4">
-            <div class="flex justify-between items-center py-3 border-b border-zinc-800">
-              <span class="text-zinc-300">Tambah User Baru</span>
-              <button href="Admin/tambahuser" class="text-blue-400 hover:text-blue-300 transition">
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                </svg>
-              </button>
-            </div>
-            <div class="flex justify-between items-center py-3 border-b border-zinc-800">
-              <span class="text-zinc-300">Kelola Role & Permission</span>
-              <button class="text-blue-400 hover:text-blue-300 transition">
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                </svg>
-              </button>
-            </div>
-            <div class="flex justify-between items-center py-3 border-b border-zinc-800">
-              <span class="text-zinc-300">Import Data Siswa</span>
-              <button class="text-blue-400 hover:text-blue-300 transition">
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
-                </svg>
-              </button>
-            </div>
-            <div class="flex justify-between items-center py-3">
-              <span class="text-zinc-300">Backup & Restore</span>
-              <button class="text-blue-400 hover:text-blue-300 transition">
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
+</div>
+
   </AppLayout>
 </template>

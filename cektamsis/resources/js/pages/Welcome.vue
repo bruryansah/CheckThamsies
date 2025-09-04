@@ -81,14 +81,6 @@ onMounted(() => {
 
             <div class="auth-buttons">
                 <Link href="/login" class="btn-login"> <span class="auth-icon">🔑</span> Login </Link>
-               
-            </div>
-
-            <!-- Mobile menu toggle -->
-            <div class="mobile-menu-toggle">
-                <span></span>
-                <span></span>
-                <span></span>
             </div>
         </nav>
 
@@ -106,9 +98,10 @@ onMounted(() => {
                     <div class="banner-overlay"></div>
                     <div class="banner-content">
                         <div class="welcome-text">
-                            <h2>Selamat Datang di Sistem Absensi Digital</h2>
-                            <p>Kelola absensi siswa dan mata pelajaran dengan mudah, cepat, dan akurat</p>
-                            <div class="current-time">
+                            <h2>Selamat Datang di SMK Tamansiswa 2 Jakarta</h2>
+                            <p>SMK Tamansiswa 2 Jakarta berkomitmen menghadirkan pendidikan berkualitas <br>
+                                dengan mengutamakan pembentukan karakter, kompetensi, <br>
+                                serta keterampilan siswa agar siap menghadapi tantangan masa depan</p>                            <div class="current-time">
                                 <span class="time-icon">🕒</span>
                                 <span class="time-text">{{
                                     new Date().toLocaleString('id-ID', {
@@ -125,7 +118,7 @@ onMounted(() => {
                         <div class="quick-actions">
                             <Link href="/login" class="quick-btn primary">
                                 <span class="quick-icon">✅</span>
-                                <span>Absensi Sekarang</span>
+                                <span>Login Sekarang</span>
                             </Link>
                         </div>
                     </div>

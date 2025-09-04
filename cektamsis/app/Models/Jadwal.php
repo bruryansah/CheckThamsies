@@ -24,9 +24,4 @@ class Jadwal extends Model
     {
         return $this->belongsTo(Kelas::class, 'id_kelas', 'id_kelas');
     }
-
-    public function absensi()
-    {
-        return $this->hasMany(AbsensiPelajaran::class, 'id_jadwal');
-    }
 }
