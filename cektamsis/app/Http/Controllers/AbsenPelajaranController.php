@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 use App\Models\Siswa;
 use App\Models\Jadwal;
+use Illuminate\Http\Request;
 use App\Models\AbsensiPelajaran;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class AbsenPelajaranController extends Controller
 {
@@ -50,7 +51,7 @@ class AbsenPelajaranController extends Controller
             'id_siswa'  => $siswa->id_siswa,
             'id_jadwal' => $id_jadwal,
             'status'    => 'hadir',
-            'waktu_scan' => now(),
+            'waktu_scan' => Carbon::now('Asia/Jakarta'),
         ]);
 
         Log::info('✅ Absensi berhasil dicatat', ['id_absensi_pelajaran' => $absen->id_absensi_pelajaran]);

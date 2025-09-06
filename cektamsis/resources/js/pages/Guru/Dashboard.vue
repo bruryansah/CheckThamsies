@@ -619,6 +619,7 @@ const exportToPDF = () => {
         a.name || '-',
         a.class || '-',
         a.subject || '-',
+        a.time || '-',
         a.date || '-',
         a.status || '-',
     ]);
