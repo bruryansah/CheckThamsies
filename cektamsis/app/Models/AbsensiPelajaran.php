@@ -27,4 +27,8 @@ class AbsensiPelajaran extends Model
     {
         return $this->belongsTo(Siswa::class, 'id_siswa');
     }
+
+    protected $casts = [
+        'waktu_scan' => 'datetime:Y-m-d H:i:s',
+    ];
 }
