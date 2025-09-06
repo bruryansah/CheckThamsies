@@ -12,6 +12,28 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem,
 import { LogOut, Settings as SettingsIcon } from 'lucide-vue-next';
 import { Link, router } from '@inertiajs/vue3';
 import type { User as UserType } from '@/types';
+import { Line } from 'vue-chartjs'
+import {
+  Chart as ChartJS,
+  Title,
+  Tooltip,
+  Legend,
+  LineElement,
+  LinearScale,
+  PointElement,
+  CategoryScale
+} from 'chart.js'
+
+// Register ChartJS components
+ChartJS.register(
+  Title,
+  Tooltip,
+  Legend,
+  LineElement,
+  LinearScale,
+  PointElement,
+  CategoryScale
+)
 
 interface KelasDistribusi {
   nama_kelas: string;
@@ -20,6 +42,21 @@ interface KelasDistribusi {
   sakit: number;
   alfa: number;
   total: number;
+}
+
+interface RekapHarian {
+  tanggal: string;
+  hadir: number;
+  izin: number;
+  sakit: number;
+  alfa: number;
+}
+
+interface rekap {
+  rekapHarian: Props[];
+  auth: {
+    user: UserType;
+  };
 }
 
 // Props dari Laravel
@@ -37,12 +74,99 @@ interface Props {
   telat: number;
   alfa: number;
    distribusi: KelasDistribusi[];
+    rekapHarian: RekapHarian[]; 
   auth: {
     user: UserType;
   };
 }
 
 const props = defineProps<Props>();
+const chartData = computed(() => {
+  const labels = (props.rekapHarian ?? []).map(r => {
+    const date = new Date(r.tanggal)
+    return date.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' })
+  })
+
+  return {
+    labels,
+    datasets: [
+      {
+        label: 'hadir',
+        data: props.rekapHarian.map(r => r.hadir),
+        borderColor: '#22c55e',
+        backgroundColor: 'rgba(34,197,94,0.2)',
+        tension: 0.3,
+        fill: false,
+        pointBackgroundColor: '#22c55e',
+        pointRadius: 4,
+      },
+      {
+        label: 'izin',
+        data: props.rekapHarian.map(r => r.izin),
+        borderColor: '#3b82f6',
+        backgroundColor: 'rgba(59,130,246,0.2)',
+        tension: 0.3,
+        fill: false,
+        pointBackgroundColor: '#3b82f6',
+        pointRadius: 4,
+      },
+      {
+        label: 'sakit',
+        data: props.rekapHarian.map(r => r.sakit),
+        borderColor: '#eab308',
+        backgroundColor: 'rgba(234,179,8,0.2)',
+        tension: 0.3,
+        fill: false,
+        pointBackgroundColor: '#eab308',
+        pointRadius: 4,
+      },
+      {
+        label: 'alfa',
+        data: props.rekapHarian.map(r => r.alfa),
+        borderColor: '#ef4444',
+        backgroundColor: 'rgba(239,68,68,0.2)',
+        tension: 0.3,
+        fill: false,
+        pointBackgroundColor: '#ef4444',
+        pointRadius: 4,
+      }
+    ]
+  }
+})
+
+
+// Options chart
+const chartOptions = {
+  responsive: true,
+  plugins: {
+    legend: {
+      labels: {
+        color: '#fff', // biar kelihatan di dark mode
+      },
+    },
+  },
+  scales: {
+    x: {
+      ticks: {
+        color: '#fff',
+      },
+      grid: {
+        color: 'rgba(255,255,255,0.1)',
+      },
+    },
+    y: {
+      ticks: {
+        stepSize: 1,       // ✅ hanya bilangan bulat
+        color: '#fff',
+      },
+      grid: {
+        color: 'rgba(255,255,255,0.1)',
+      },
+      beginAtZero: true,
+    },
+  },
+}
+
 
 // Logout handler
 const handleLogout = () => {
@@ -150,86 +274,23 @@ const getProgressColor = (p: number) => p >= 90 ? 'bg-green-500' : p >= 80 ? 'bg
 
       <!-- Monitor & Alerts Section -->
       <div class="grid gap-6 lg:grid-cols-3">
-        <!-- Monitor Kehadiran Real-time Container -->
         <div class="lg:col-span-2 rounded-2xl border border-zinc-800 bg-zinc-900/60 p-6 shadow-lg">
-          <div class="flex items-center justify-between mb-6">
-            <div class="flex items-center gap-3">
-              <div class="p-2 bg-blue-500/20 rounded-lg">
-                <RefreshCw class="h-5 w-5 text-blue-400" />
-              </div>
-              <h3 class="text-lg font-semibold text-white">Monitor Kehadiran Real-time</h3>
-            </div>
-            <div class="flex items-center gap-2">
-              <RefreshCw class="h-4 w-4 text-blue-400" />
-              <select class="bg-zinc-800 text-white text-sm rounded-lg px-3 py-1 border border-zinc-700">
-                <option>Hari Ini</option>
-                <option>Kemarin</option>
-                <option>Minggu Ini</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Grid 2 Cards dalam satu container -->
-          <div class="grid md:grid-cols-2 gap-6">
-            <!-- Card Absen Kehadiran -->
-            <div class="rounded-xl border border-zinc-700/50 bg-zinc-800/40 p-5">
-              <h4 class="text-sm font-medium text-zinc-300 mb-4">Absen Masuk Hari Ini</h4>
-              <div class="space-y-3">
-                <div class="flex justify-between items-center py-2 px-3 bg-zinc-700/30 rounded-lg">
-                  <span class="text-zinc-300">07:00 - 07:30</span>
-                  <span class="text-green-400 font-semibold">{{ stats.absen }}</span>
-                </div>
-                <div class="flex justify-between items-center py-2 px-3 bg-zinc-700/30 rounded-lg">
-                  <span class="text-zinc-300">07:30 - 08:00</span>
-                  <span class="text-yellow-400 font-semibold">{{ stats.warning }}</span>
-                </div>
-                <div class="flex justify-between items-center py-2 px-3 bg-zinc-700/30 rounded-lg">
-                  <span class="text-zinc-300">Terlambat</span>
-                  <span class="text-red-400 font-semibold">{{ stats.telat }}</span>
-                </div>
-                <div class="flex justify-between items-center py-2 px-3 bg-zinc-700/30 rounded-lg">
-                  <span class="text-zinc-300">Alfa</span>
-                  <span class="text-red-400 font-semibold">{{ stats.alfa }}</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Card Status Kehadiran -->
-            <div class="rounded-xl border border-zinc-700/50 bg-zinc-800/40 p-5">
-              <h4 class="text-sm font-medium text-zinc-300 mb-4">Status Kehadiran</h4>
-              <div class="space-y-3">
-                <div class="flex justify-between items-center py-2 px-3 bg-zinc-700/30 rounded-lg">
-                  <div class="flex items-center gap-3">
-                    <div class="w-4 h-4 rounded-full bg-green-500"></div>
-                    <span class="text-zinc-300">Hadir</span>
-                  </div>
-                  <span class="text-white font-semibold">{{ stats.totalabsen }}</span>
-                </div>
-                <div class="flex justify-between items-center py-2 px-3 bg-zinc-700/30 rounded-lg">
-                  <div class="flex items-center gap-3">
-                    <div class="w-4 h-4 rounded-full bg-blue-500"></div>
-                    <span class="text-zinc-300">Izin</span>
-                  </div>
-                  <span class="text-white font-semibold">{{ stats.totalizin }}</span>
-                </div>
-                <div class="flex justify-between items-center py-2 px-3 bg-zinc-700/30 rounded-lg">
-                  <div class="flex items-center gap-3">
-                    <div class="w-4 h-4 rounded-full bg-yellow-500"></div>
-                    <span class="text-zinc-300">Sakit</span>
-                  </div>
-                  <span class="text-white font-semibold">{{ stats.totalsakit }}</span>
-                </div>
-                <div class="flex justify-between items-center py-2 px-3 bg-zinc-700/30 rounded-lg">
-                  <div class="flex items-center gap-3">
-                    <div class="w-4 h-4 rounded-full bg-red-500"></div>
-                    <span class="text-zinc-300">Alpha</span>
-                  </div>
-                  <span class="text-white font-semibold">{{ stats.totalalfa }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-3">
+        <div class="p-2 bg-blue-500/20 rounded-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v16h16M4 12h16" />
+          </svg>
         </div>
+        <h3 class="text-lg font-semibold text-white">Monitor Kehadiran Real-time</h3>
+      </div>
+    </div>
+
+    <!-- Chart Container -->
+    <div class="h-80">
+      <Line :data="chartData" :options="chartOptions" />
+    </div>
+  </div>
 
 
   <!-- Aksi Cepat (dipindahkan dari bawah) -->

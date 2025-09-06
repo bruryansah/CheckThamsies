@@ -5,12 +5,38 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Enums\UserRole;
+use Illuminate\Support\Facades\DB;
 use App\Models\Siswa;
 use App\Models\AbsensiSekolah;
 use Carbon\Carbon;
 
 class AbsenController extends Controller
 {
+    // CONTROLLER LENGKAP - SIMPLE & CLEAN
+    public function index()
+    {
+        $user = auth()->user();
+        $siswa = \DB::table('siswa')->where('user_id', $user->id)->first();
+
+        // Default values jika siswa tidak ditemukan
+        $kehadiransekolah = 0;
+        $totalAbsensi = 0;
+        $persentaseKehadiran = 0;
+
+        if ($siswa) {
+            $totalAbsensi = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)->count();
+            $kehadiransekolah = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)->where('status', 'hadir')->count();
+            $persentaseKehadiran = $totalAbsensi > 0 ? round(($kehadiransekolah / $totalAbsensi) * 100, 1) : 0;
+        }
+
+        return inertia('User/Dashboard', [
+            'auth' => ['user' => $user],
+            'kehadiransekolah' => $kehadiransekolah, // Field lama yang sudah bekerja
+            'persentaseKehadiran' => $persentaseKehadiran, // Field baru untuk persentase
+            'totalAbsensi' => $totalAbsensi, // Field tambahan untuk total
+        ]);
+    }
+
     public function checkIn(Request $request)
     {
         $siswa = Siswa::where('user_id', Auth::id())->first();
