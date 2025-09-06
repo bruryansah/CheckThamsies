@@ -343,38 +343,45 @@
                             Statistik Siswa
                         </h2>
                         <div class="space-y-4">
+                            <div class="flex items-center justify-between"></div>
+
                             <div class="flex items-center justify-between">
                                 <span class="text-gray-600">Kehadiran Hari Ini</span>
                                 <div class="flex items-center">
                                     <div class="mr-2 h-2 w-16 rounded-full bg-gray-200">
-                                        <div class="h-2 rounded-full bg-green-500" style="width: 85%"></div>
+                                        <div class="h-2 rounded-full bg-green-500" :style="{ width: attendanceStats.hadirPct + '%' }"></div>
                                     </div>
-                                    <span class="text-sm font-semibold text-gray-900">85%</span>
+                                    <span class="text-sm font-semibold text-gray-900">{{ attendanceStats.hadirPct }}%</span>
                                 </div>
                             </div>
                             <div class="flex items-center justify-between">
                                 <span class="text-gray-600">Siswa Terlambat</span>
                                 <div class="flex items-center">
                                     <div class="mr-2 h-2 w-16 rounded-full bg-gray-200">
-                                        <div class="h-2 rounded-full bg-yellow-500" style="width: 12%"></div>
+                                        <div class="h-2 rounded-full bg-yellow-500" :style="{ width: attendanceStats.terlambatPct + '%' }"></div>
                                     </div>
-                                    <span class="text-sm font-semibold text-gray-900">12%</span>
+                                    <span class="text-sm font-semibold text-gray-900">{{ attendanceStats.terlambatPct }}%</span>
                                 </div>
                             </div>
                             <div class="flex items-center justify-between">
                                 <span class="text-gray-600">Tidak Hadir</span>
                                 <div class="flex items-center">
                                     <div class="mr-2 h-2 w-16 rounded-full bg-gray-200">
-                                        <div class="h-2 rounded-full bg-red-500" style="width: 3%"></div>
+                                        <div class="h-2 rounded-full bg-red-500" :style="{ width: attendanceStats.tidakHadirPct + '%' }"></div>
                                     </div>
-                                    <span class="text-sm font-semibold text-gray-900">3%</span>
+                                    <span class="text-sm font-semibold text-gray-900">{{ attendanceStats.tidakHadirPct }}%</span>
                                 </div>
                             </div>
 
+                            <!-- Top siswa terlambat -->
                             <div class="mt-6 border-t border-gray-200 pt-4">
                                 <h3 class="mb-3 text-sm font-semibold text-gray-700">Siswa Sering Terlambat</h3>
                                 <div class="space-y-2">
-                                    <div v-for="student in topLateStudents" :key="student.id" class="flex items-center justify-between text-sm">
+                                    <div
+                                        v-for="student in attendanceStats.topLateStudents"
+                                        :key="student.name"
+                                        class="flex items-center justify-between text-sm"
+                                    >
                                         <span class="text-gray-600">{{ student.name }}</span>
                                         <span class="font-medium text-red-500">{{ student.lateCount }}x</span>
                                     </div>
@@ -668,19 +675,37 @@ const stats = ref([
     },
 ]);
 
-const recentAttendance = ref([
-    { name: 'Ahmad Rizki', time: '07:05', status: 'Hadir' },
-    { name: 'Siti Nurhaliza', time: '07:03', status: 'Hadir' },
-    { name: 'Budi Setiawan', time: '07:15', status: 'Terlambat' },
-    { name: 'Dewi Kartika', time: '07:02', status: 'Hadir' },
-    { name: 'Eko Prasetyo', time: '07:08', status: 'Hadir' },
-]);
+const recentAttendance = computed(() => {
+    return [...localAbsensiData.value].sort((a, b) => new Date(b.tanggal + ' ' + b.waktu) - new Date(a.tanggal + ' ' + a.waktu)).slice(0, 5);
+});
 
-const topLateStudents = ref([
-    { id: 1, name: 'Budi Setiawan', lateCount: 5 },
-    { id: 2, name: 'Andi Pratama', lateCount: 4 },
-    { id: 3, name: 'Rini Kartika', lateCount: 3 },
-]);
+const today = new Date().toISOString().split('T')[0];
+
+const attendanceStats = computed(() => {
+    const todayData = localAbsensiData.value.filter((a) => a.tanggal === today);
+    const total = todayData.length || 1; // agar tidak error 0/0
+
+    const hadirCount = todayData.filter((a) => a.status === 'Hadir').length;
+    const terlambatCount = todayData.filter((a) => a.status === 'Terlambat').length;
+    const tidakHadirCount = todayData.filter((a) => a.status === 'Tidak Hadir').length;
+
+    // Top siswa terlambat
+    const lateMap = {};
+    todayData.forEach((a) => {
+        if (a.status === 'Terlambat') lateMap[a.name] = (lateMap[a.name] || 0) + 1;
+    });
+    const topLateStudents = Object.entries(lateMap)
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
+
+    return {
+        hadirPct: Math.round((hadirCount / total) * 100),
+        terlambatPct: Math.round((terlambatCount / total) * 100),
+        tidakHadirPct: Math.round((tidakHadirCount / total) * 100),
+        topLateStudents,
+    };
+});
 
 const availableSubjects = computed(() => {
     if (!jadwalData.value) return [];

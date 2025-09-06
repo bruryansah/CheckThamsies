@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
-import { Head } from '@inertiajs/vue3'
+import { Head, Link } from '@inertiajs/vue3';
 import { onMounted, ref } from 'vue';
 
 const activeMenu = ref('tentang');
@@ -41,94 +40,74 @@ onMounted(() => {
     }
 });
 
-// Data untuk halaman tentang
-const features = ref([
+// Data sekolah SMK Tamansiswa 2 Jakarta
+const schoolInfo = ref({
+    name: 'SMK Tamansiswa 2 Jakarta',
+    established: '1981',
+    accreditation: 'A (Unggul)',
+    address: 'Jl. Taman Siswa No. 18, Kramat, Jakarta Pusat 10450',
+    phone: '(021) 3190747',
+    email: 'smktamansiswa2@jakarta.sch.id',
+    website: 'https://smktamansiswa2jakarta.sch.id',
+});
+
+// Jurusan yang tersedia - Updated with correct majors
+const majors = ref([
     {
-        icon: '📱',
-        title: 'Teknologi Modern',
-        description: 'Menggunakan teknologi web terdepan untuk memberikan pengalaman pengguna yang optimal dan responsif di semua perangkat.',
+        code: 'RPL',
+        name: 'Rekayasa Perangkat Lunak',
+        icon: '💻',
+        description: 'Jurusan yang mempelajari pengembangan aplikasi, web development, dan sistem informasi modern.',
+        prospects: ['Software Developer', 'Web Developer', 'System Analyst', 'Mobile App Developer', 'Database Administrator'],
     },
     {
+        code: 'TKJ',
+        name: 'Teknik Komputer dan Jaringan',
+        icon: '🔧',
+        description: 'Jurusan yang fokus pada jaringan komputer, hardware, infrastruktur IT, dan troubleshooting sistem.',
+        prospects: ['Network Administrator', 'IT Support', 'System Administrator', 'Network Engineer', 'Cybersecurity Specialist'],
+    },
+    {
+        code: 'TP',
+        name: 'Teknik Pemesinan',
+        icon: '⚙️',
+        description: 'Jurusan yang mempelajari pengoperasian mesin produksi, CNC, dan teknologi manufaktur modern.',
+        prospects: ['Machine Operator', 'CNC Programmer', 'Production Supervisor', 'Quality Control Inspector', 'Manufacturing Engineer'],
+    },
+    {
+        code: 'TITL',
+        name: 'Teknik Instalasi Tenaga Listrik',
         icon: '⚡',
-        title: 'Real-time Processing',
-        description: 'Data absensi diproses secara real-time dengan sinkronisasi otomatis ke database sekolah untuk akurasi maksimal.',
+        description: 'Jurusan yang fokus pada instalasi listrik, sistem tenaga, dan teknologi kelistrikan.',
+        prospects: ['Electrical Technician', 'Power Plant Operator', 'Electrical Installer', 'Maintenance Engineer', 'Electrical Inspector'],
     },
     {
-        icon: '🔒',
-        title: 'Keamanan Tinggi',
-        description: 'Sistem keamanan berlapis dengan enkripsi data dan autentikasi multi-level untuk melindungi privasi siswa.',
+        code: 'TKR',
+        name: 'Teknik Kendaraan Ringan',
+        icon: '🚗',
+        description: 'Jurusan yang mempelajari perawatan, perbaikan, dan teknologi kendaraan ringan modern.',
+        prospects: ['Automotive Technician', 'Service Advisor', 'Parts Specialist', 'Automotive Inspector', 'Workshop Supervisor'],
     },
     {
-        icon: '📊',
-        title: 'Analytics & Reporting',
-        description: 'Dashboard analitik komprehensif dengan laporan kehadiran yang detail dan mudah dipahami oleh semua stakeholder.',
+        code: 'TSM',
+        name: 'Teknik dan Bisnis Sepeda Motor',
+        icon: '🏍️',
+        description: 'Jurusan yang mengkombinasikan teknik sepeda motor dengan aspek bisnis dan entrepreneurship.',
+        prospects: ['Motorcycle Technician', 'Service Manager', 'Spare Parts Sales', 'Motorcycle Business Owner', 'Technical Consultant'],
     },
 ]);
 
-const benefits = ref([
-    {
-        icon: '🎯',
-        title: 'Efisiensi Maksimal',
-        description: 'Mengurangi waktu pencatatan absensi dari 15 menit menjadi hanya 2 menit per kelas.',
-        percentage: '85%',
-    },
-    {
-        icon: '📈',
-        title: 'Akurasi Data',
-        description: 'Tingkat akurasi data mencapai 99.8% dengan sistem validasi berlapis.',
-        percentage: '99.8%',
-    },
-    {
-        icon: '🔔',
-        title: 'Notifikasi Instan',
-        description: 'Pemberitahuan real-time kepada orang tua tentang kehadiran siswa.',
-        percentage: '100%',
-    },
-    {
-        icon: '💾',
-        title: 'Penyimpanan Aman',
-        description: 'Data tersimpan aman dengan backup otomatis dan sistem recovery.',
-        percentage: '100%',
-    },
-]);
-
-const timeline = ref([
-    {
-        year: '2023',
-        title: 'Perencanaan Sistem',
-        description: 'Analisis kebutuhan dan desain arsitektur sistem absensi digital.',
-        status: 'completed',
-    },
-    {
-        year: '2024',
-        title: 'Pengembangan & Testing',
-        description: 'Fase pengembangan aplikasi dan pengujian menyeluruh di lingkungan sekolah.',
-        status: 'completed',
-    },
-    {
-        year: '2024',
-        title: 'Implementasi Penuh',
-        description: 'Peluncuran sistem secara menyeluruh di seluruh kelas dan mata pelajaran.',
-        status: 'current',
-    },
-    {
-        year: '2025',
-        title: 'Ekspansi Fitur',
-        description: 'Pengembangan fitur lanjutan seperti AI analytics dan integrasi sistem pembelajaran.',
-        status: 'upcoming',
-    },
-]);
-
+// Statistik sekolah
 const stats = ref([
     { number: '1,247', label: 'Total Siswa', icon: '👥' },
     { number: '87', label: 'Guru Aktif', icon: '👨‍🏫' },
     { number: '36', label: 'Kelas', icon: '🏫' },
-    { number: '45', label: 'Mata Pelajaran', icon: '📚' },
+    { number: '48', label: 'Mata Pelajaran', icon: '📚' },
 ]);
 </script>
 
 <template>
-    <Head title="Tentang" />
+    <Head title="Tentang SMK Tamansiswa 2 Jakarta" />
     <div class="about-page">
         <!-- Navbar -->
         <nav class="navbar">
@@ -147,33 +126,39 @@ const stats = ref([
                 <ul class="nav-links">
                     <li>
                         <Link href="/" :class="{ active: activeMenu === 'beranda' }" @click="setActiveMenu('beranda')">
-                            <span class="nav-icon">🏠</span> Beranda
+                            <span class="nav-icon">🏠</span> <span class="nav-text">Beranda</span>
                         </Link>
                     </li>
                     <li>
                         <Link href="/tentang" :class="{ active: activeMenu === 'tentang' }" @click="setActiveMenu('tentang')">
-                            <span class="nav-icon">📝</span> Tentang
+                            <span class="nav-icon">📝</span> <span class="nav-text">Tentang</span>
                         </Link>
                     </li>
                     <li>
                         <Link href="/kontak" :class="{ active: activeMenu === 'kontak' }" @click="setActiveMenu('kontak')">
-                            <span class="nav-icon">📥</span> Kontak
+                            <span class="nav-icon">📥</span> <span class="nav-text">Kontak</span>
                         </Link>
                     </li>
                 </ul>
             </div>
 
             <div class="auth-buttons">
-                <Link href="/login" class="btn-login"> <span class="auth-icon">🔑</span> Login </Link>
+                <Link href="/login" class="btn-login"> 
+                    <span class="auth-icon">🔑</span> 
+                    <span class="auth-text">Login</span>
+                </Link>
             </div>
         </nav>
 
         <!-- Main Container -->
         <div class="main-container">
-            <div class="breadcrumb animate-on-scroll"><span class="breadcrumb-icon">🏠</span> Beranda / Tentang Sistem</div>
+            <div class="breadcrumb animate-on-scroll">
+                <span class="breadcrumb-icon">🏠</span>
+                Beranda / Tentang
+            </div>
 
             <h1 class="page-title animate-on-scroll">
-                Tentang Sistem Absensi Digital
+                Tentang
                 <span class="title-subtitle">SMK Tamansiswa 2 Jakarta</span>
             </h1>
 
@@ -203,6 +188,48 @@ const stats = ref([
                                 <div class="illustration-circle tertiary"></div>
                                 <div class="illustration-icon">📱</div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- School Info Section -->
+                <div class="school-info-section animate-on-scroll">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <span class="section-icon">🏫</span>
+                            Informasi Sekolah
+                        </h3>
+                    </div>
+                    <div class="school-info-grid">
+                        <div class="info-card">
+                            <div class="info-icon">📅</div>
+                            <h4>Tahun Berdiri</h4>
+                            <p>{{ schoolInfo.established }}</p>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-icon">🏆</div>
+                            <h4>Akreditasi</h4>
+                            <p>{{ schoolInfo.accreditation }}</p>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-icon">📍</div>
+                            <h4>Alamat</h4>
+                            <p>{{ schoolInfo.address }}</p>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-icon">📞</div>
+                            <h4>Telepon</h4>
+                            <p>{{ schoolInfo.phone }}</p>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-icon">📧</div>
+                            <h4>Email</h4>
+                            <p>{{ schoolInfo.email }}</p>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-icon">🌐</div>
+                            <h4>Website</h4>
+                            <p><a :href="schoolInfo.website" target="_blank">smktamansiswa2jakarta.sch.id</a></p>
                         </div>
                     </div>
                 </div>
@@ -238,12 +265,38 @@ const stats = ref([
                     </div>
                 </div>
 
+                <!-- Majors Section -->
+                <div class="majors-section animate-on-scroll">
+                    <div class="section-header">
+                        <h3 class="section-title">
+                            <span class="section-icon">📚</span>
+                            Program Keahlian
+                        </h3>
+                        <p class="section-subtitle">6 Jurusan unggulan</p>
+                    </div>
+                    <div class="majors-grid">
+                        <div class="major-card" v-for="major in majors" :key="major.code">
+                            <div class="major-header">
+                                <span class="major-icon">{{ major.icon }}</span>
+                                <div class="major-info">
+                                    <h4>{{ major.name }}</h4>
+                                    <span class="major-code">({{ major.code }})</span>
+                                </div>
+                            </div>
+                            <p class="major-description">{{ major.description }}</p>
+                            <div class="major-prospects">
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Contact Section -->
                 <div class="contact-section animate-on-scroll">
                     <div class="contact-card">
                         <div class="contact-header">
                             <h3>Butuh Bantuan atau Informasi Lebih Lanjut?</h3>
-                            <p>Tim support kami siap membantu Anda 24/7</p>
+                            <p>Tim support kami siap membantu Anda</p>
                         </div>
                         <div class="contact-actions">
                             <Link href="/kontak" class="contact-btn primary">
@@ -265,7 +318,11 @@ const stats = ref([
                         alt="Logo SMK Tamansiswa 2 Jakarta"
                         class="footer-logo"
                     />
-                    <span class="footer-text"><a href="https://smktamansiswa2jakarta.sch.id">© 2025 SMK TAMANSISWA 2 JAKARTA | RPL</a></span>
+                    <div class="footer-info">
+                        <span class="footer-text">
+                            <a href="https://smktamansiswa2jakarta.sch.id" target="_blank"> © 2025 SMK Tamansiswa 2 Jakarta </a>
+                        </span>
+                    </div>
                 </div>
                 <div class="footer-right">
                     <a href="https://facebook.com/smktamansiswa2jakarta" class="social-link" target="_blank" title="Facebook">
@@ -332,7 +389,7 @@ const stats = ref([
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .about-page {
@@ -342,7 +399,7 @@ const stats = ref([
     flex-direction: column;
 }
 
-/* ====== Animations (inherit from main page) ====== */
+/* ====== Animations ====== */
 .animate-on-scroll {
     opacity: 0;
     transform: translateY(30px);
@@ -372,7 +429,7 @@ const stats = ref([
     transition-delay: 0.5s;
 }
 
-/* ====== Navbar (same as main page) ====== */
+/* ====== Navbar ====== */
 .navbar {
     display: flex;
     justify-content: space-between;
@@ -424,13 +481,6 @@ const stats = ref([
     font-size: 18px;
     color: #1e293b;
     line-height: 1.2;
-}
-
-.brand-subtitle {
-    font-size: 12px;
-    color: #2563eb;
-    font-weight: 500;
-    margin-top: 2px;
 }
 
 .nav-center {
@@ -494,8 +544,7 @@ const stats = ref([
     flex-shrink: 0;
 }
 
-.btn-login,
-.btn-register {
+.btn-login {
     padding: 10px 20px;
     font-size: 14px;
     font-weight: 600;
@@ -505,13 +554,6 @@ const stats = ref([
     display: flex;
     align-items: center;
     gap: 6px;
-}
-
-.auth-icon {
-    font-size: 14px;
-}
-
-.btn-login {
     border: 2px solid #2563eb;
     background: transparent;
     color: #2563eb;
@@ -524,17 +566,8 @@ const stats = ref([
     box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
 }
 
-.btn-register {
-    background: linear-gradient(135deg, #2563eb, #3b82f6);
-    color: white;
-    border: 2px solid transparent;
-    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
-}
-
-.btn-register:hover {
-    background: linear-gradient(135deg, #1d4ed8, #2563eb);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4);
+.auth-icon {
+    font-size: 14px;
 }
 
 /* ====== Main Container ====== */
@@ -593,6 +626,7 @@ const stats = ref([
     display: flex;
     flex-direction: column;
     gap: 48px;
+    margin-bottom: 48px;
 }
 
 /* ====== Hero Section ====== */
@@ -641,6 +675,12 @@ const stats = ref([
     background: #f8fafc;
     border-radius: 12px;
     text-align: center;
+    transition: all 0.3s ease;
+}
+
+.hero-stat:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
 }
 
 .hero-stat-icon {
@@ -657,8 +697,8 @@ const stats = ref([
 
 .hero-stat-label {
     font-size: 0.9rem;
-    color: #64748b;
-    font-weight: 500;
+    color: #1e293b;
+    font-weight: 600;
     margin-top: 4px;
 }
 
@@ -758,6 +798,61 @@ const stats = ref([
     font-weight: 500;
 }
 
+/* ====== School Info Section ====== */
+.school-info-section {
+    margin: 48px 0;
+}
+
+.school-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+}
+
+.info-card {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: center;
+}
+
+.info-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.info-icon {
+    font-size: 2.5rem;
+    margin-bottom: 16px;
+    display: block;
+}
+
+.info-card h4 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 8px;
+}
+
+.info-card p {
+    color: #64748b;
+    line-height: 1.6;
+    font-size: 0.9rem;
+}
+
+.info-card a {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.info-card a:hover {
+    text-decoration: underline;
+}
+
 /* ====== Vision Mission Section ====== */
 .vision-mission-section {
     margin: 48px 0;
@@ -828,81 +923,18 @@ const stats = ref([
     font-weight: bold;
 }
 
-/* ====== Features Section ====== */
-.features-section {
+/* ====== Majors Section ====== */
+.majors-section {
     margin: 48px 0;
 }
 
-.features-grid {
+.majors-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
     gap: 24px;
 }
 
-.feature-card {
-    background: white;
-    border-radius: 16px;
-    padding: 28px;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-    border: 1px solid rgba(226, 232, 240, 0.8);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-}
-
-.feature-card:before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, #2563eb, #3b82f6);
-    transform: scaleX(0);
-    transition: transform 0.3s ease;
-}
-
-.feature-card:hover:before {
-    transform: scaleX(1);
-}
-
-.feature-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-}
-
-.feature-icon {
-    font-size: 3.5rem;
-    margin-bottom: 20px;
-    display: block;
-}
-
-.feature-card h4 {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: #1e293b;
-    margin-bottom: 16px;
-}
-
-.feature-card p {
-    color: #64748b;
-    line-height: 1.6;
-    font-size: 0.95rem;
-}
-
-/* ====== Benefits Section ====== */
-.benefits-section {
-    margin: 48px 0;
-}
-
-.benefits-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 24px;
-}
-
-.benefit-card {
+.major-card {
     background: white;
     border-radius: 16px;
     padding: 28px;
@@ -911,240 +943,63 @@ const stats = ref([
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.benefit-card:hover {
+.major-card:hover {
     transform: translateY(-8px);
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
 }
 
-.benefit-header {
+.major-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: 16px;
     margin-bottom: 16px;
 }
 
-.benefit-icon {
+.major-icon {
     font-size: 2.5rem;
 }
 
-.benefit-percentage {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: #2563eb;
-    background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(59, 130, 246, 0.1));
-    padding: 8px 16px;
-    border-radius: 20px;
+.major-info h4 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 4px;
 }
 
-.benefit-card h4 {
-    font-size: 1.3rem;
-    font-weight: 700;
+.major-code {
+    font-size: 0.9rem;
+    color: #2563eb;
+    font-weight: 600;
+}
+
+.major-description {
+    color: #64748b;
+    line-height: 1.6;
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+}
+
+.major-prospects h5 {
+    font-size: 1rem;
+    font-weight: 600;
     color: #1e293b;
     margin-bottom: 12px;
 }
 
-.benefit-card p {
-    color: #64748b;
-    line-height: 1.6;
-    font-size: 0.95rem;
-    margin-bottom: 16px;
-}
-
-.benefit-progress {
-    height: 6px;
-    background: #e2e8f0;
-    border-radius: 3px;
-    overflow: hidden;
-}
-
-.progress-bar {
-    height: 100%;
-    background: linear-gradient(90deg, #2563eb, #3b82f6);
-    border-radius: 3px;
-    transition: width 2s ease-in-out;
-}
-
-/* ====== Timeline Section ====== */
-.timeline-section {
-    margin: 48px 0;
-}
-
-.timeline-container {
-    position: relative;
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-.timeline-line {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 4px;
-    height: 100%;
-    background: linear-gradient(to bottom, #2563eb, #3b82f6);
-    border-radius: 2px;
-}
-
-.timeline-items {
+.prospect-tags {
     display: flex;
-    flex-direction: column;
-    gap: 40px;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
-.timeline-item {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 24px;
-}
-
-.timeline-item:nth-child(even) {
-    flex-direction: row-reverse;
-}
-
-.timeline-dot {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: white;
-    z-index: 2;
-    position: relative;
-}
-
-.timeline-item.completed .timeline-dot {
-    background: linear-gradient(135deg, #10b981, #059669);
-}
-
-.timeline-item.current .timeline-dot {
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
-    animation: pulse-timeline 2s infinite;
-}
-
-.timeline-item.upcoming .timeline-dot {
-    background: linear-gradient(135deg, #64748b, #475569);
-}
-
-@keyframes pulse-timeline {
-    0%,
-    100% {
-        transform: scale(1);
-        box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4);
-    }
-    50% {
-        transform: scale(1.1);
-        box-shadow: 0 0 0 10px rgba(37, 99, 235, 0);
-    }
-}
-
-.timeline-content {
-    flex: 1;
-    background: white;
-    padding: 24px;
-    border-radius: 12px;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-    border: 1px solid rgba(226, 232, 240, 0.8);
-    transition: all 0.3s ease;
-}
-
-.timeline-content:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
-}
-
-.timeline-year {
-    font-size: 1.1rem;
-    font-weight: 800;
+.prospect-tag {
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.1), rgba(59, 130, 246, 0.1));
     color: #2563eb;
-    margin-bottom: 8px;
-}
-
-.timeline-content h4 {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: #1e293b;
-    margin-bottom: 8px;
-}
-
-.timeline-content p {
-    color: #64748b;
-    line-height: 1.6;
-    font-size: 0.95rem;
-}
-
-/* ====== Technology Section ====== */
-.tech-section {
-    margin: 48px 0;
-}
-
-.tech-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 24px;
-}
-
-.tech-category {
-    background: white;
-    border-radius: 16px;
-    padding: 28px;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-    border: 1px solid rgba(226, 232, 240, 0.8);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.tech-category:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-}
-
-.tech-category h4 {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: #1e293b;
-    margin-bottom: 20px;
-    text-align: center;
-    position: relative;
-}
-
-.tech-category h4:after {
-    content: '';
-    position: absolute;
-    bottom: -8px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 40px;
-    height: 3px;
-    background: linear-gradient(90deg, #2563eb, #3b82f6);
-    border-radius: 2px;
-}
-
-.tech-items {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-}
-
-.tech-item {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    padding: 12px;
-    text-align: center;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: #475569;
-    transition: all 0.3s ease;
-}
-
-.tech-item:hover {
-    background: #2563eb;
-    color: white;
-    border-color: #2563eb;
-    transform: translateY(-2px);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border: 1px solid rgba(37, 99, 235, 0.2);
 }
 
 /* ====== Contact Section ====== */
@@ -1222,26 +1077,12 @@ const stats = ref([
     box-shadow: 0 8px 25px rgba(255, 255, 255, 0.3);
 }
 
-.contact-btn.secondary {
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    backdrop-filter: blur(10px);
-}
-
-.contact-btn.secondary:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-}
-
 .contact-icon {
     font-size: 18px;
 }
 
-/* ====== Footer (same as main page) ====== */
+/* ====== Footer ====== */
 .footer {
-    margin-top: 80px;
     background: linear-gradient(135deg, #1e293b, #334155);
     color: white;
 }
@@ -1269,10 +1110,33 @@ const stats = ref([
     flex-shrink: 0;
 }
 
+.footer-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
 .footer-text {
     font-size: 14px;
     color: #e2e8f0;
     line-height: 1.6;
+}
+
+.footer-text a {
+    color: #e2e8f0;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.footer-text a:hover {
+    color: white;
+    text-decoration: underline;
+}
+
+.footer-subtitle {
+    font-size: 12px;
+    color: #94a3b8;
+    font-weight: 400;
 }
 
 .footer-right {
@@ -1306,265 +1170,322 @@ const stats = ref([
 }
 
 /* ====== Responsive Design ====== */
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
+    .main-container {
+        padding: 0 20px;
+    }
+    
+    .navbar {
+        padding: 16px 20px;
+    }
+    
     .hero-content {
         grid-template-columns: 1fr;
         text-align: center;
         gap: 32px;
     }
+    
+    .hero-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
 
+@media (max-width: 1024px) {
     .vision-mission-grid {
         grid-template-columns: 1fr;
         gap: 24px;
     }
-
-    .hero-stats {
-        grid-template-columns: repeat(4, 1fr);
+    
+    .nav-links {
+        gap: 20px;
     }
-
-    .timeline-line {
-        left: 25px;
-        transform: none;
+    
+    .majors-grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     }
-
-    .timeline-item {
-        flex-direction: row;
-        padding-left: 60px;
-    }
-
-    .timeline-item:nth-child(even) {
-        flex-direction: row;
-    }
-
-    .timeline-dot {
-        position: absolute;
-        left: 0;
+    
+    .school-info-grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     }
 }
 
 @media (max-width: 768px) {
     .navbar {
-        flex-wrap: wrap;
-        padding: 16px;
+        flex-direction: column;
+        gap: 16px;
+        padding: 16px 20px;
     }
-
-    .nav-center {
-        order: 3;
+    
+    .navbar-left {
         width: 100%;
-        margin-top: 16px;
+        justify-content: space-between;
+    }
+    
+    .nav-center {
+        width: 100%;
         justify-content: flex-start;
     }
-
+    
     .nav-links {
-        gap: 12px;
+        gap: 16px;
         flex-wrap: wrap;
+        width: 100%;
     }
-
+    
     .nav-links li a {
         padding: 8px 12px;
         font-size: 13px;
     }
-
-    .nav-icon {
-        font-size: 14px;
+    
+    .nav-text {
+        display: none;
     }
-
+    
     .auth-buttons {
-        gap: 8px;
+        position: absolute;
+        top: 16px;
+        right: 20px;
     }
-
-    .btn-login,
-    .btn-register {
+    
+    .btn-login {
         padding: 8px 12px;
         font-size: 12px;
     }
-
+    
+    .auth-text {
+        display: none;
+    }
+    
     .main-container {
         padding: 0 16px;
     }
-
+    
     .page-title {
         font-size: 2rem;
     }
-
+    
     .title-subtitle {
         font-size: 1rem;
     }
-
+    
     .hero-section {
         padding: 32px 20px;
     }
-
+    
     .hero-text h2 {
         font-size: 1.8rem;
     }
-
+    
     .hero-text p {
         font-size: 1rem;
     }
-
+    
     .hero-stats {
         grid-template-columns: 1fr 1fr;
         gap: 16px;
     }
-
+    
     .section-title {
         font-size: 1.5rem;
         flex-direction: column;
         gap: 8px;
     }
-
-    .features-grid,
-    .benefits-grid,
-    .tech-grid {
+    
+    .majors-grid,
+    .school-info-grid {
         grid-template-columns: 1fr;
         gap: 20px;
     }
-
+    
     .vision-card,
     .mission-card,
-    .feature-card,
-    .benefit-card,
-    .tech-category {
+    .major-card,
+    .info-card {
         padding: 20px;
     }
-
+    
     .contact-card {
         padding: 32px 20px;
     }
-
+    
     .contact-header h3 {
         font-size: 1.5rem;
     }
-
-    .contact-actions {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .contact-btn {
-        width: 100%;
-        max-width: 280px;
-    }
-
-    .timeline-container {
-        padding-left: 20px;
-    }
-
-    .timeline-item {
-        padding-left: 40px;
-    }
-
+    
     .footer-content {
         flex-direction: column;
         gap: 20px;
         text-align: center;
     }
-
+    
     .footer-left {
         flex-direction: column;
         gap: 12px;
+        max-width: 100%;
     }
-
-    .footer-links {
-        gap: 16px;
+    
+    .prospect-tags {
+        justify-content: center;
     }
 }
 
 @media (max-width: 480px) {
     .navbar {
-        padding: 12px;
+        padding: 12px 16px;
     }
-
+    
     .brand-title {
         font-size: 16px;
     }
-
-    .brand-subtitle {
-        font-size: 11px;
-    }
-
+    
     .nav-links li a {
-        padding: 6px 8px;
+        padding: 8px;
         font-size: 12px;
     }
-
-    .auth-buttons {
-        flex-direction: column;
-        width: 100%;
-        gap: 6px;
+    
+    .btn-login {
+        padding: 8px;
+        min-width: auto;
     }
-
-    .btn-login,
-    .btn-register {
-        width: 100%;
-        justify-content: center;
-    }
-
+    
     .hero-section {
         padding: 24px 16px;
     }
-
+    
     .hero-text h2 {
         font-size: 1.5rem;
     }
-
+    
     .hero-text p {
         font-size: 0.9rem;
     }
-
+    
     .page-title {
         font-size: 1.75rem;
     }
-
+    
     .title-subtitle {
         font-size: 0.9rem;
     }
-
+    
     .section-title {
         font-size: 1.3rem;
     }
-
+    
     .hero-stats {
         grid-template-columns: 1fr;
         gap: 12px;
     }
-
+    
     .hero-stat {
         padding: 16px;
     }
-
+    
     .vision-card,
     .mission-card,
-    .feature-card,
-    .benefit-card,
-    .tech-category,
-    .timeline-content {
+    .major-card,
+    .info-card {
         padding: 16px;
     }
-
-    .tech-items {
-        grid-template-columns: 1fr;
-    }
-
+    
     .contact-card {
         padding: 24px 16px;
     }
-
+    
     .contact-header h3 {
         font-size: 1.3rem;
     }
-
+    
     .contact-header p {
         font-size: 1rem;
+    }
+    
+    .major-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 12px;
+    }
+    
+    .major-icon {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .main-container {
+        padding: 0 12px;
+    }
+    
+    .navbar {
+        padding: 12px;
+    }
+    
+    .hero-section {
+        padding: 20px 12px;
+    }
+    
+    .contact-card {
+        padding: 20px 12px;
+    }
+    
+    .vision-card,
+    .mission-card,
+    .major-card,
+    .info-card {
+        padding: 12px;
+    }
+    
+    .nav-links {
+        gap: 8px;
+    }
+    
+    .nav-links li a {
+        padding: 6px;
     }
 }
 
 /* ====== Accessibility ====== */
 .contact-btn:focus,
-.nav-links li a:focus {
+.nav-links li a:focus,
+.social-link:focus {
     outline: 2px solid #2563eb;
     outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .animate-on-scroll {
+        transition: none;
+    }
+    
+    .illustration-circle {
+        animation: none;
+    }
+    
+    .illustration-icon {
+        animation: none;
+    }
+}
+
+/* ====== Print styles ====== */
+@media print {
+    .navbar,
+    .footer,
+    .contact-section {
+        display: none;
+    }
+    
+    .about-page {
+        background: white;
+    }
+    
+    .hero-section,
+    .major-card,
+    .info-card,
+    .vision-card,
+    .mission-card {
+        box-shadow: none;
+        border: 1px solid #e2e8f0;
+    }
 }
 
 /* ====== Smooth scrolling ====== */
