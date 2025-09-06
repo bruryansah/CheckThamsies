@@ -10,6 +10,7 @@ use App\Http\Controllers\AdminCon; // ✅ pindah ke atas (wajib)
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\AbsenController;
 
 // Halaman umum
 Route::get('/', fn() => Inertia::render('Welcome'))->name('home');
@@ -155,7 +156,7 @@ Route::middleware(['auth', 'role:guru'])->group(function () {
 
 // khusus user
 Route::middleware(['auth', 'role:user'])->group(function () {
-    Route::get('/user/dashboard', fn() => Inertia::render('User/Dashboard'))->name('user.dashboard');
+    Route::get('/user/dashboard', [AbsenController::class, 'index'])->name('absen');
 });
 
 use App\Http\Controllers\Auth\PasswordResetLinkController;
@@ -184,9 +185,11 @@ Route::post('/reset-password', [NewPasswordController::class, 'store'])
     ->middleware('guest')
     ->name('password.store');
 
-use App\Http\Controllers\AbsenController;
+
 
 Route::middleware(['auth'])->group(function () {
+
+    Route::post('/user/dashboard', [AbsenController::class, 'index'])->name('absen');
     // Absen Masuk
     Route::post('/absen/checkin', [AbsenController::class, 'checkIn'])->name('absen.checkin');
 

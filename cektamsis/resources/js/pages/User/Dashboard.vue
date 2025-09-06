@@ -18,11 +18,15 @@
     import {
         onMounted,
         onUnmounted,
-        ref
+        ref,
+        computed
     } from 'vue';
     import {
         QrcodeStream
     } from 'vue-qrcode-reader';
+    import type {
+        User as UserType
+    } from '@/types';
 
     // Props dari Inertia
     const page = usePage();
@@ -87,15 +91,30 @@
         setTimeout(() => (showToast.value = false), 3000);
     };
 
+    // QR Scanner Detect
+    interface QrCodeResult {
+        rawValue: string;
+    }
+
+    interface props {
+        kehadiransekolah: number;
+        persentaseKehadiran: number;
+        totalPelajaranHariIni: number;
+        auth: {
+            user: UserType;
+        };
+    }
+    const props = defineProps < props > ();
+
     // Stats
-    const stats = ref({
-        totalKehadiran: 85,
-        persentaseHadir: 94,
-        totalKelas: 6,
-        kelasAktif: 4,
+    const stats = computed(() => ({
+        totalkehadiran: props.kehadiransekolah || 0,
+        totalpresentase: props.persentaseKehadiran || 0,
+        totalPelajaranHariIni: props.totalPelajaranHariIni || 0,
         absenHariIni: 'Belum Absen',
         waktuAbsen: '',
-    });
+
+    }));
 
     // Recent Attendance
     const recentAttendance = ref([{
@@ -255,7 +274,7 @@
                     id_jadwal: id_jadwal,
                 }, {
                     onSuccess: () => {
-                        showNotification('✅ Absensi berhasil!', 'success');
+                        showNotification('✅ Absensi Pelajaran berhasil!', 'success');
                     },
                     onError: () => {
                         errorMessage.value = '❌ Gagal absen, coba lagi!';
@@ -356,10 +375,9 @@
         <!-- Stats Grid -->
         <div class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-4">
             <div v-for="(stat, i) in [
-                    { icon: Users, value: stats.totalKehadiran, label: 'Total Kehadiran', color: 'blue', change: '+12%' },
-                    { icon: CheckCircle, value: stats.persentaseHadir + '%', label: 'Persentase Hadir', color: 'green', change: '+8%' },
-                    { icon: BookOpen, value: stats.totalKelas, label: 'Total Kelas', color: 'purple', change: 'Aktif' },
-                    { icon: Calendar, value: stats.kelasAktif, label: 'Mata Pelajaran', color: 'orange', change: 'Aktif' },
+                    { icon: Users, value: stats.totalkehadiran, label: 'Total Kehadiran', color: 'blue',  },
+                    { icon: CheckCircle, value: stats.totalpresentase + '%', label: 'Persentase Hadir', color: 'green',},
+                    { icon: Calendar, value: stats.totalPelajaranHariIni, label: 'Pelajaran', color: 'orange',},
                 ]"
                 :key="i"
                 class="rounded-2xl border border-gray-200 bg-white p-6 shadow-md hover:-translate-y-1 hover:shadow-lg">
@@ -368,7 +386,7 @@
                         :class="`${statColor(stat.color)} flex h-12 w-12 items-center justify-center rounded-2xl shadow-inner`">
                         <component :is="stat.icon" class="h-6 w-6" />
                     </div>
-                    <span class="text-sm font-medium text-green-600">{{ stat . change }}</span>
+
                 </div>
                 <div class="mt-4">
                     <p class="text-3xl font-bold text-gray-900">{{ stat . value }}</p>
@@ -392,10 +410,10 @@
                     <div class="rounded-2xl border border-gray-200 p-4 hover:bg-gray-50">
                         <h4 class="mb-3 font-medium text-gray-900">Absen Masuk</h4>
                         <select v-model="selectedStatus"
-                            class="w-full rounded-lg border border-gray-300 p-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500">
-                            <option value="Hadir">Hadir</option>
-                            <option value="Izin">Izin</option>
-                            <option value="Sakit">Sakit</option>
+                            class="mb-3 font-medium text-gray-900 w-full rounded-lg border border-gray-300 p-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500">
+                            <option class="mb-3 font-medium text-gray-900" value="Hadir">Hadir</option>
+                            <option class="mb-3 font-medium text-gray-900" value="Izin">Izin</option>
+                            <option class="mb-3 font-medium text-gray-900" value="Sakit">Sakit</option>
                         </select>
                         <p class="text-sm font-medium text-gray-900">
                             Status:
@@ -597,5 +615,44 @@
                 </form>
             </div>
         </div>
+        <!-- Elegant Popup Notification dengan Animasi Centang -->
+        <transition name="fade-scale">
+            <div v-if="showToast"
+                class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+                <div class="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-2xl">
+                    <!-- Success Animation -->
+                    <div v-if="toastType === 'success'" class="mx-auto mb-4 h-16 w-16">
+                        <svg class="mx-auto h-16 w-16" viewBox="0 0 52 52">
+                            <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none" />
+                            <path class="checkmark-check" fill="none" d="M14 27l7 7 16-16" />
+                        </svg>
+                    </div>
+
+                    <!-- Error Icon -->
+                    <div v-else
+                        class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
+                        <svg class="h-10 w-10 text-red-600" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </div>
+
+                    <!-- Title -->
+                    <h2 class="mb-2 text-xl font-semibold text-gray-900">
+                        {{ toastType === 'success' ? 'Berhasil' : 'Gagal' }}
+                    </h2>
+
+                    <!-- Message -->
+                    <p class="mb-6 text-gray-600">{{ toastMessage }}</p>
+
+                    <!-- Action -->
+                    <button @click="showToast = false"
+                        class="w-full rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-2 font-medium text-white shadow hover:from-blue-700 hover:to-purple-700">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        </transition>
     </div>
 </template>
