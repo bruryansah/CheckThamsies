@@ -20,7 +20,7 @@ class AbsenPelajaranController extends Controller
         $siswa = Siswa::where('user_id', Auth::id())->first();
         if (!$siswa) {
             Log::warning('❌ Siswa tidak ditemukan', ['user_id' => Auth::id()]);
-            return back()->withErrors(['msg' => 'Siswa tidak ditemukan']);
+            return response()->json(['success' => false, 'message' => 'Siswa tidak ditemukan'], 422);
         }
         Log::info('✅ Siswa ditemukan', ['id_siswa' => $siswa->id_siswa]);
 
@@ -32,7 +32,7 @@ class AbsenPelajaranController extends Controller
         $jadwal = Jadwal::find($id_jadwal);
         if (!$jadwal) {
             Log::warning('❌ Jadwal tidak ditemukan', ['id_jadwal' => $id_jadwal]);
-            return back()->withErrors(['msg' => 'Jadwal tidak ditemukan']);
+            return response()->json(['success' => false, 'message' => 'Jadwal tidak ditemukan'], 422);
         }
         Log::info('✅ Jadwal ditemukan', ['mapel' => $jadwal->mapel->nama_mapel ?? '-', 'kelas' => $jadwal->kelas->nama_kelas ?? '-']);
 
@@ -43,7 +43,7 @@ class AbsenPelajaranController extends Controller
 
         if ($sudahAbsen) {
             Log::warning('⚠️ Sudah absen sebelumnya', ['id_siswa' => $siswa->id_siswa, 'id_jadwal' => $id_jadwal]);
-            return back()->withErrors(['msg' => 'Kamu sudah absen di jadwal ini!']);
+            return response()->json(['success' => false, 'message' => 'Kamu sudah absen di jadwal ini!'], 422);
         }
 
         // 5. Simpan absensi
@@ -56,6 +56,6 @@ class AbsenPelajaranController extends Controller
 
         Log::info('✅ Absensi berhasil dicatat', ['id_absensi_pelajaran' => $absen->id_absensi_pelajaran]);
 
-        return back()->with('success', 'Absensi berhasil!');
+        return response()->json(['success' => true, 'message' => 'Absensi berhasil!']);
     }
 }

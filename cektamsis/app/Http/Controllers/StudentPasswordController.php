@@ -5,33 +5,31 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Inertia\Inertia;
 
 class StudentPasswordController extends Controller
 {
     public function update(Request $request)
     {
-        $user = Auth::user();
+       $user = Auth::user();
 
-        // Validasi input
-        $request->validate([
-            'current_password' => 'required',
-            'new_password' => 'required|min:6|confirmed',
+    $request->validate([
+        'current_password' => 'required',
+        'new_password' => 'required|min:6|confirmed',
+    ]);
+
+    if (!Hash::check($request->current_password, $user->password)) {
+        return back()->withErrors([
+            'current_password' => 'Password lama salah.'
         ]);
+    }
 
-        // Cek password lama
-        if (!Hash::check($request->current_password, $user->password)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Password lama salah.'
-            ], 422);
-        }
+    $user->update([
+        'password' => Hash::make($request->new_password),
+    ]);
 
-        // Update password di database
-        $user->update([
-            'password' => Hash::make($request->new_password),
-        ]);
-
-        return back()->with('success', 'Absen masuk berhasil');
+    return back()->with('success', 'Password berhasil diubah.');
 
     }
+    
 }
