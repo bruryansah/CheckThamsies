@@ -562,6 +562,39 @@ class AdminCon extends Controller
             'jurusan' => $jurusan,
         ]);
     }
+        public function updatexii(Request $request, $id)
+    {
+        // Validasi data
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'nama' => 'required|string|max:255',
+            'email' => 'required|email',
+            'id_kelas' => 'required|exists:kelas,id_kelas',
+            'id_jurusan' => 'required|exists:jurusan,id_jurusan',
+        ]);
+
+        $update = DB::table('siswa')
+            ->where('id_siswa', $id)
+            ->update([
+                'user_id' => $request->user_id,
+                'nama' => $request->nama,
+                'email' => $request->email,
+                'id_kelas' => $request->id_kelas,
+                'id_jurusan' => $request->id_jurusan,
+            ]);
+
+        if ($update) {
+            return redirect()->route('siswaxii')->with('success', 'Data siswa X RPL berhasil diperbarui!');
+        } else {
+            return redirect()->back()->with('error', 'Gagal memperbarui data!');
+        }
+    }
+
+        public function destroyxii($id)
+    {
+        DB::table('siswa')->where('id_siswa', operator: $id)->delete();
+        return redirect('/siswaxii');
+    }
     // Siswa XII Section End
 
     // Aksi Cepat
