@@ -99,6 +99,8 @@
     interface props {
         kehadiransekolah: number;
         persentaseKehadiran: number;
+        totalSakit: number; // New prop for total sick days
+        totalIzin: number;  // New prop for total leave days
         totalPelajaranHariIni: number;
         auth: {
             user: UserType;
@@ -110,7 +112,8 @@
     const stats = computed(() => ({
         totalkehadiran: props.kehadiransekolah || 0,
         totalpresentase: props.persentaseKehadiran || 0,
-        // Removed totalPelajaranHariIni
+        totalsakit: props.totalSakit || 0,    // New stat for total sick days
+        totalizin: props.totalIzin || 0,      // New stat for total leave days
         absenHariIni: 'Belum Absen',
         waktuAbsen: '',
     }));
@@ -203,7 +206,7 @@
                 const batasMenit = 0;
                 if (status === 'hadir' && (now.getHours() > batasJam || (now.getHours() === batasJam && now
                         .getMinutes() > batasMenit))) {
-                    status = 'Terlambat';
+                    status = 'terlambat';
                 }
 
                 router.post(
@@ -380,11 +383,13 @@
         </div>
 
         <!-- Stats Grid -->
-        <div class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
             <div v-for="(stat, i) in [
-                    { icon: Users, value: stats.totalkehadiran, label: 'Total Kehadiran', color: 'blue',  },
-                    { icon: CheckCircle, value: stats.totalpresentase + '%', label: 'Persentase Hadir', color: 'green',},
-                    
+                    { icon: Users, value: stats.totalkehadiran, label: 'Total Kehadiran', color: 'blue', },
+                    { icon: Users, value: stats.totalsakit, label: 'Total Sakit', color: 'purple', },
+                    { icon: Users, value: stats.totalizin, label: 'Total Izin', color: 'orange', },
+                    { icon: CheckCircle, value: stats.totalpresentase + '%', label: 'Persentase Kehadiran', color: 'green', },
+                   
                 ]"
                 :key="i"
                 class="rounded-2xl border border-gray-200 bg-white p-6 shadow-md hover:-translate-y-1 hover:shadow-lg">
@@ -393,7 +398,6 @@
                         :class="`${statColor(stat.color)} flex h-12 w-12 items-center justify-center rounded-2xl shadow-inner`">
                         <component :is="stat.icon" class="h-6 w-6" />
                     </div>
-
                 </div>
                 <div class="mt-4">
                     <p class="text-3xl font-bold text-gray-900">{{ stat.value }}</p>
@@ -418,9 +422,9 @@
                         <h4 class="mb-3 font-medium text-gray-900">Absen Masuk</h4>
                         <select v-model="selectedStatus"
                             class="mb-3 font-medium text-gray-900 w-full rounded-lg border border-gray-300 p-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500">
-                            <option class="mb-3 font-medium text-gray-900" value="hadir">Hadir</option>
-                            <option class="mb-3 font-medium text-gray-900" value="izin">Izin</option>
-                            <option class="mb-3 font-medium text-gray-900" value="sakit">Sakit</option>
+                            <option value="hadir">Hadir</option>
+                            <option value="izin">Izin</option>
+                            <option value="sakit">Sakit</option>
                         </select>
                         <p class="text-sm font-medium text-gray-900">
                             Status:
