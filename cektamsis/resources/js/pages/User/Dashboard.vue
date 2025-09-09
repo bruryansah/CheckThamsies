@@ -375,7 +375,7 @@ onMounted(() => {
                 <div class="space-y-4">
                     <div class="rounded-2xl border border-gray-200 p-4 hover:bg-gray-50">
                         <h4 class="mb-3 font-medium text-gray-900">Absen Masuk</h4>
-                        <select v-model="selectedStatus" class="mb-3 w-full rounded-lg border border-gray-300 p-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500">
+                        <select v-model="selectedStatus" class="mb-3 w-full rounded-lg border border-gray-300 p-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 text-gray-900">
                             <option value="hadir">Hadir</option>
                             <option value="izin">Izin</option>
                             <option value="sakit">Sakit</option>
