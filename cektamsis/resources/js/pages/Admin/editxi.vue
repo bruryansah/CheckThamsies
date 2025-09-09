@@ -95,7 +95,7 @@
                 </div>
 
                 <!-- Form -->
-                <form @submit.prevent="form.put(`/siswaxi/update/${props.siswa.id_siswa}`)" class="space-y-5">
+                <form @submit.prevent="form.put(`/siswax/update/${props.siswa.id_siswa}`)" class="space-y-5">
                     <!-- Id Users -->
                     <div>
                         <label class="block text-sm font-medium text-zinc-300 mb-1">Pilih User</label>
