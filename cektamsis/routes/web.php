@@ -212,3 +212,5 @@ Route::middleware(['auth'])->group(function () {
 
 Route::post('/absensi-pelajaran/checkin', [\App\Http\Controllers\AbsenPelajaranController::class, 'checkIn'])
     ->middleware(['auth', 'verified']);
+
+Route::get('/absen/latest-status', [AbsenController::class, 'latestStatus'])->name('absen.latest-status');
