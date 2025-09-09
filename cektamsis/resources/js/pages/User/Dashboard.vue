@@ -168,6 +168,15 @@ const fetchStatus = async () => {
     }
 };
 
+// Refresh attendance data
+const refreshAttendance = async () => {
+    await router.get(route('dashboard'), {}, {
+        onSuccess: (page) => {
+            console.log('Attendance data refreshed');
+        },
+    });
+};
+
 // Absen Masuk
 const checkIn = () => {
     if (processingIn.value) return;
@@ -191,6 +200,7 @@ const checkIn = () => {
                         canCheckout.value = true;
                         showNotification('✅ Absen masuk berhasil!', 'success');
                     }
+                    refreshAttendance(); // Refresh data
                 },
                 onError: () => showNotification('❌ Gagal absen masuk!', 'error'),
                 onFinish: () => (processingIn.value = false),
@@ -239,24 +249,27 @@ const onDetect = (detectedCodes: QrCodeResult[]) => {
         isScanning.value = false;
 
         const id_jadwal = parseInt(scanResult.value.replace('jadwal:', ''));
+        if (isNaN(id_jadwal)) {
+            errorMessage.value = '❌ Format QR Code tidak valid!';
+            showNotification(errorMessage.value, 'error');
+            return;
+        }
 
-        router.post('/absensi-pelajaran/checkin', {
-            id_jadwal: id_jadwal,
-        }, {
-            onSuccess: (page) => {
-                fetchStatus();
-                showNotification('✅ Absensi Pelajaran berhasil!', 'success');
-                router.get(route('dashboard'), {}, {
-                    onSuccess: () => {
-                        console.log('Dashboard refreshed with new attendance data');
-                    },
-                });
-            },
-            onError: (errors) => {
-                errorMessage.value = errors.message || '❌ Gagal absen, coba lagi!';
-                showNotification(errorMessage.value, 'error');
-            },
-        });
+       router.post('/absensi-pelajaran/checkin', { id_jadwal }, {
+    onSuccess: () => {
+        fetchStatus();
+        showNotification('✅ Absensi Pelajaran berhasil!', 'success');
+        refreshAttendance();
+    },
+    onError: (errors) => {
+        errorMessage.value = errors.message || '❌ Gagal absen, coba lagi!';
+        if (errors.message === 'Kamu sudah absen di jadwal ini!') {
+            errorMessage.value = '❌ Kamu sudah absen untuk jadwal ini.';
+        }
+        showNotification(errorMessage.value, 'error');
+    },
+});
+
     }
 };
 
@@ -283,13 +296,16 @@ const submitPasswordChange = () => {
 
 // Lifecycle
 onMounted(() => {
-    const now = new Date();
-    currentDate.value = now.toLocaleDateString('id-ID', {
+    const now = new Date().toLocaleString('id-ID', {
+        timeZone: 'Asia/Jakarta',
         weekday: 'long',
         year: 'numeric',
         month: 'long',
-        day: 'numeric'
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
     });
+    currentDate.value = now;
 
     fetchStatus();
 
@@ -304,7 +320,6 @@ onMounted(() => {
 </script>
 
 <template>
-    <!-- Template remains unchanged -->
     <Head title="Dashboard Siswa" />
     <div class="min-h-screen bg-gray-50 p-6">
         <!-- Header -->
