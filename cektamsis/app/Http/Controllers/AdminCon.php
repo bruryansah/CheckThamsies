@@ -449,6 +449,25 @@ class AdminCon extends Controller
         ]);
     }
 
+    // Menyimpan Data Siswa Kelas XI RPL Yang Dikirim dari Form Tambah Siswa
+    public function storexi(Request $request)
+    {
+        // Validasi
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id', // id harus ada di tabel users
+            'nama' => 'required|string|max:255',
+            'email' => 'required|email',
+            'id_kelas' => 'required|exists:kelas,id_kelas',
+            'id_jurusan' => 'required|exists:jurusan,id_jurusan',
+        ]);
+
+        // Simpan ke tabel siswa
+        DB::table('siswa')->insert($validated);
+
+        // Redirect balik ke halaman data siswa X RPL
+        return redirect()->route('siswaxi')->with('success', 'Data Siswa X RPL berhasil ditambahkan!');
+    }
+
     // Menampilkan Form Edit Siswa Kelas X RPL
     public function editxi($id)
     {
@@ -463,6 +482,42 @@ class AdminCon extends Controller
             'kelas' => $kelas,
             'jurusan' => $jurusan,
         ]);
+    }
+
+    // Memperbarui Data Siswa X RPL Yang Dikirim dari Form Edit Siswa X RPL
+    public function updatexi(Request $request, $id)
+    {
+        // Validasi data
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'nama' => 'required|string|max:255',
+            'email' => 'required|email',
+            'id_kelas' => 'required|exists:kelas,id_kelas',
+            'id_jurusan' => 'required|exists:jurusan,id_jurusan',
+        ]);
+
+        $update = DB::table('siswa')
+            ->where('id_siswa', $id)
+            ->update([
+                'user_id' => $request->user_id,
+                'nama' => $request->nama,
+                'email' => $request->email,
+                'id_kelas' => $request->id_kelas,
+                'id_jurusan' => $request->id_jurusan,
+            ]);
+
+        if ($update) {
+            return redirect()->route('siswaxi')->with('success', 'Data siswa X RPL berhasil diperbarui!');
+        } else {
+            return redirect()->back()->with('error', 'Gagal memperbarui data!');
+        }
+    }
+
+    // Menghapus Data Siswa Kelas X RPL
+    public function destroyxi($id)
+    {
+        DB::table('siswa')->where('id_siswa', operator: $id)->delete();
+        return redirect('/siswaxi');
     }
     // Siswa XI Section End
 

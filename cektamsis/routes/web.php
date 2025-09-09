@@ -86,7 +86,7 @@ Route::get('/jurusan/delete/{id}', [AdminCon::class, 'destroyj'])->name('jurusan
 
 // Siswa X Route Start
 Route::get('/siswax', [AdminCon::class, 'siswax'])->name('siswax');
-Route::get('/siswax/tambah', [AdminCon::class, 'tambahx'])->name(name: 'siswax.tambah');
+Route::get('/siswax/tambah', [AdminCon::class, 'tambahx'])->name('siswax.tambah');
 Route::post('/siswax/tambahstore', [AdminCon::class, 'storex']);
 Route::get('/siswax/edit/{id}', [AdminCon::class, 'editx'])->name('siswax.edit');
 Route::put('/siswax/update/{id}', [AdminCon::class, 'updatex']);
@@ -96,13 +96,19 @@ Route::get('/siswax/delete/{id}', [AdminCon::class, 'destroyx'])->name('siswax.h
 // Siswa XI Route Start
 Route::get('/siswaxi', [AdminCon::class, 'siswaxi'])->name('siswaxi');
 Route::get('/siswaxi/tambah', [AdminCon::class, 'tambahxi'])->name('siswaxi.tambah');
+Route::post('/siswaxi/tambahstore', [AdminCon::class, 'storexi']);
 Route::get('/siswaxi/edit/{id}', [AdminCon::class, 'editxi'])->name('siswaxi.edit');
+Route::put('/siswaxi/update/{id}', [AdminCon::class, 'updatexi']);
+Route::get('/siswaxi/delete/{id}', [AdminCon::class, 'destroyxi'])->name('siswaxi.hapus');
 // Siswa XI Route End
 
 // Siswa XII Route Start
 Route::get('/siswaxii', [AdminCon::class, 'siswaxii'])->name('siswaxii');
 Route::get('/siswaxii/tambah', [AdminCon::class, 'tambahxii'])->name('siswaxii.tambah');
+Route::post('/siswaxii/tambahstore', [AdminCon::class, 'storexii']);
 Route::get('/siswaxii/edit/{id}', [AdminCon::class, 'editxii'])->name('siswaxii.edit');
+Route::put('/siswaxii/update/{id}', [AdminCon::class, 'updatexii']);
+Route::get('/siswaxii/delete/{id}', [AdminCon::class, 'destroyxii'])->name('siswaxii.hapus');
 // Siswa XII Route End
 
 //Aksi Cepat
