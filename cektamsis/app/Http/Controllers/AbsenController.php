@@ -37,28 +37,35 @@ class AbsenController extends Controller
         ]);
     }
 
-    public function checkIn(Request $request)
-    {
-        $siswa = Siswa::where('user_id', Auth::id())->first();
+   public function checkIn(Request $request)
+{
+    $siswa = Siswa::where('user_id', Auth::id())->first();
 
-        // Cek apakah sudah ada absensi hari ini
-        $absensi = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)->whereDate('tanggal', Carbon::today())->first();
-
-        if ($absensi) {
-            return back()->with('error', 'Anda sudah absen masuk hari ini');
-        }
-
-        AbsensiSekolah::create([
-            'id_siswa' => $siswa->id_siswa,
-            'tanggal' => Carbon::today(),
-            'jam_masuk' => Carbon::now()->format('H:i:s'),
-            'latitude_in' => $request->latitude,
-            'longitude_in' => $request->longitude,
-            'status' => $request->status,
-        ]);
-
-        return back()->with('success', 'Absen masuk berhasil');
+    if (!$siswa) {
+        return back()->with('error', 'Data siswa tidak ditemukan.');
     }
+
+    // Cek apakah sudah ada absensi hari ini
+    $absensi = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)
+        ->whereDate('tanggal', Carbon::today())
+        ->first();
+
+    if ($absensi) {
+        return back()->with('error', 'Anda sudah absen masuk hari ini');
+    }
+
+    AbsensiSekolah::create([
+        'id_siswa' => $siswa->id_siswa,
+        'tanggal' => Carbon::today(),
+        'jam_masuk' => Carbon::now()->format('H:i:s'),
+        'latitude_in' => $request->latitude,
+        'longitude_in' => $request->longitude,
+        'status' => $request->status,
+    ]);
+
+    return back()->with('success', 'Absen masuk berhasil');
+}
+
 
     public function checkOut(Request $request)
     {
