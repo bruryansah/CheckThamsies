@@ -38,8 +38,8 @@ class AbsenController extends Controller
             'kehadiransekolah' => $kehadiransekolah,
             'persentaseKehadiran' => $persentaseKehadiran,
             'totalAbsensi' => $totalAbsensi,
-            'totalSakit' => $totalSakit,    // Added real data for total sick days
-            'totalIzin' => $totalIzin,      // Added real data for total leave days
+            'totalSakit' => $totalSakit,
+            'totalIzin' => $totalIzin,
         ]);
     }
 
@@ -76,7 +76,9 @@ class AbsenController extends Controller
     {
         $siswa = Siswa::where('user_id', Auth::id())->first();
 
-        $absensi = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)->whereDate('tanggal', Carbon::today())->first();
+        $absensi = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)
+            ->whereDate('tanggal', Carbon::today())
+            ->first();
 
         if (!$absensi) {
             return back()->with('error', 'Anda belum absen masuk hari ini');
@@ -84,6 +86,11 @@ class AbsenController extends Controller
 
         if ($absensi->jam_keluar) {
             return back()->with('error', 'Anda sudah absen pulang hari ini');
+        }
+
+        // Tambahkan validasi untuk mencegah checkout jika status adalah 'izin' atau 'sakit'
+        if (in_array($absensi->status, ['izin', 'sakit'])) {
+            return back()->with('error', 'Anda tidak perlu absen pulang karena status Anda adalah ' . $absensi->status);
         }
 
         $absensi->update([
@@ -95,14 +102,13 @@ class AbsenController extends Controller
         return back()->with('success', 'Absen pulang berhasil');
     }
 
-
-    // poiuew
-    
     public function status()
     {
         $siswa = Siswa::where('user_id', Auth::id())->first();
 
-        $absensi = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)->whereDate('tanggal', Carbon::today())->first();
+        $absensi = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)
+            ->whereDate('tanggal', Carbon::today())
+            ->first();
 
         if (!$absensi) {
             return response()->json(['status' => 'belum_masuk']);
@@ -114,4 +120,18 @@ class AbsenController extends Controller
 
         return response()->json(['status' => 'sudah_pulang']);
     }
+
+    public function latestStatus()
+{
+    $siswa = Siswa::where('user_id', Auth::id())->first();
+    $absensi = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)
+        ->whereDate('tanggal', Carbon::today())
+        ->first();
+
+    if ($absensi) {
+        return response()->json(['status' => $absensi->status]);
+    }
+
+    return response()->json(['status' => null]);
+}
 }

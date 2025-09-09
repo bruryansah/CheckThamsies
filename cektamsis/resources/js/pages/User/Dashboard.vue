@@ -99,85 +99,90 @@
     interface props {
         kehadiransekolah: number;
         persentaseKehadiran: number;
-        totalSakit: number; // New prop for total sick days
-        totalIzin: number;  // New prop for total leave days
-        totalPelajaranHariIni: number;
+        totalSakit: number;
+        totalIzin: number;
+        totalAbsensi: number;
         auth: {
             user: UserType;
         };
     }
-    const props = defineProps < props > ();
+    const props = defineProps<props>();
 
     // Stats
     const stats = computed(() => ({
         totalkehadiran: props.kehadiransekolah || 0,
         totalpresentase: props.persentaseKehadiran || 0,
-        totalsakit: props.totalSakit || 0,    // New stat for total sick days
-        totalizin: props.totalIzin || 0,      // New stat for total leave days
+        totalsakit: props.totalSakit || 0,
+        totalizin: props.totalIzin || 0,
         absenHariIni: 'Belum Absen',
         waktuAbsen: '',
     }));
 
     // Recent Attendance
-    const recentAttendance = ref([{
-            name: 'Matematika',
-            time: '07:30',
-            status: 'Hadir',
-            color: 'bg-green-500'
-        },
-        {
-            name: 'Bahasa Indonesia',
-            time: '08:15',
-            status: 'Hadir',
-            color: 'bg-green-500'
-        },
-        {
-            name: 'Fisika',
-            time: '09:00',
-            status: 'Terlambat',
-            color: 'bg-yellow-500'
-        },
-        {
-            name: 'Kimia',
-            time: '10:30',
-            status: 'Hadir',
-            color: 'bg-green-500'
-        },
+    const recentAttendance = ref([
+        { name: 'Matematika', time: '07:30', status: 'Hadir', color: 'bg-green-500' },
+        { name: 'Bahasa Indonesia', time: '08:15', status: 'Hadir', color: 'bg-green-500' },
+        { name: 'Fisika', time: '09:00', status: 'Terlambat', color: 'bg-yellow-500' },
+        { name: 'Kimia', time: '10:30', status: 'Hadir', color: 'bg-green-500' },
     ]);
 
     // Status Select
     const selectedStatus = ref('hadir');
 
-    onMounted(() => {
-        const changePassword = () => {
-            // Open change password modal
-            showChangePasswordModal.value = true;
-            closeDropdown();
-        };
-        // Ambil status absensi dari backend
-        fetch(route('absen.status'))
-            .then((res) => res.json())
-            .then((data) => {
-                if (data.status === 'belum_masuk') {
-                    checkinStatus.value = 'Belum Absen';
-                    checkoutStatus.value = 'Belum Pulang';
-                    canCheckout.value = false;
-                } else if (data.status === 'sudah_masuk') {
-                    checkinStatus.value = 'Sudah Absen';
-                    checkoutStatus.value = 'Belum Pulang';
-                    canCheckout.value = true;
-                } else if (data.status === 'sudah_pulang') {
-                    checkinStatus.value = 'Sudah Absen';
-                    checkoutStatus.value = 'Sudah Pulang';
-                    canCheckout.value = false;
-                } else if (data.status === 'izin' || data.status === 'sakit') {
-                    checkinStatus.value = `Sudah Absen (${data.status.charAt(0).toUpperCase() + data.status.slice(1)})`;
-                    checkoutStatus.value = 'Tidak Perlu Pulang';
-                    canCheckout.value = false;
-                }
-            });
+   onMounted(() => {
+    const changePassword = () => {
+        showChangePasswordModal.value = true;
+        closeDropdown();
+    };
+    // Ambil status absensi dari backend
+    fetch(route('absen.status'))
+        .then((res) => res.json())
+        .then((data) => {
+            if (data.status === 'belum_masuk') {
+                checkinStatus.value = 'Belum Absen';
+                checkoutStatus.value = 'Belum Pulang';
+                canCheckout.value = false;
+            } else if (data.status === 'sudah_masuk') {
+                checkinStatus.value = 'Sudah Absen';
+                checkoutStatus.value = 'Belum Pulang';
+                // Fetch the latest attendance status to determine checkout eligibility
+                fetch(route('absen.latest-status')) // Add this new endpoint (see below)
+                    .then((res) => res.json())
+                    .then((statusData) => {
+                        canCheckout.value = !['izin', 'sakit'].includes(statusData.status);
+                    })
+                    .catch(() => {
+                        canCheckout.value = true; // Fallback to allow checkout if fetch fails
+                    });
+            } else if (data.status === 'sudah_pulang') {
+                checkinStatus.value = 'Sudah Absen';
+                checkoutStatus.value = 'Sudah Pulang';
+                canCheckout.value = false;
+            }
+        })
+        .catch(() => {
+            checkinStatus.value = 'Belum Absen';
+            checkoutStatus.value = 'Belum Pulang';
+            canCheckout.value = false;
+        });
+
+    const now = new Date();
+    currentDate.value = now.toLocaleDateString('id-ID', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
     });
 
+    // Close dropdown on click outside
+    const handleClick = (e: Event) => {
+        const dropdown = document.querySelector('.dropdown-container');
+        if (dropdown && !dropdown.contains(e.target as Node)) closeDropdown();
+    };
+    document.addEventListener('click', handleClick);
+
+    onUnmounted(() => document.removeEventListener('click', handleClick));
+});
     // Helper: Tailwind colors for stats
     const statColor = (color: string) => {
         switch (color) {
@@ -204,33 +209,30 @@
                 let status = selectedStatus.value;
                 const batasJam = 8;
                 const batasMenit = 0;
-                if (status === 'hadir' && (now.getHours() > batasJam || (now.getHours() === batasJam && now
-                        .getMinutes() > batasMenit))) {
-                    status = 'terlambat';
+                if (status === 'hadir' && (now.getHours() > batasJam || (now.getHours() === batasJam && now.getMinutes() > batasMenit))) {
+                    ;
                 }
 
-                router.post(
-                    route('absen.checkin'), {
-                        latitude: pos.coords.latitude,
-                        longitude: pos.coords.longitude,
-                        status,
-                    }, {
-                        onSuccess: () => {
-                            checkinStatus.value = 'Sudah Absen (' + status + ')';
-                            stats.value.absenHariIni = status;
-                            if (status === 'izin' || status === 'sakit') {
-                                canCheckout.value = false;
-                                checkoutStatus.value = 'Tidak Perlu Pulang';
-                                showNotification(`✅ Absen ${status.charAt(0).toUpperCase() + status.slice(1)} berhasil! Anda tidak perlu absen pulang.`, 'success');
-                            } else {
-                                canCheckout.value = true;
-                                showNotification('✅ Absen masuk berhasil!', 'success');
-                            }
-                        },
-                        onError: () => showNotification('❌ Gagal absen masuk!', 'error'),
-                        onFinish: () => (processingIn.value = false),
+                router.post(route('absen.checkin'), {
+                    latitude: pos.coords.latitude,
+                    longitude: pos.coords.longitude,
+                    status,
+                }, {
+                    onSuccess: () => {
+                        checkinStatus.value = 'Sudah Absen (' + status + ')';
+                        stats.value.absenHariIni = status;
+                        if (status === 'izin' || status === 'sakit') {
+                            canCheckout.value = false;
+                            checkoutStatus.value = 'Tidak Perlu Pulang';
+                            showNotification(`✅ Absen ${status.charAt(0).toUpperCase() + status.slice(1)} berhasil! Anda tidak perlu absen pulang.`, 'success');
+                        } else {
+                            canCheckout.value = true;
+                            showNotification('✅ Absen masuk berhasil!', 'success');
+                        }
                     },
-                );
+                    onError: () => showNotification('❌ Gagal absen masuk!', 'error'),
+                    onFinish: () => (processingIn.value = false),
+                });
             },
             () => {
                 showNotification('❌ Akses lokasi ditolak!', 'error');
@@ -246,19 +248,17 @@
 
         navigator.geolocation.getCurrentPosition(
             (pos) => {
-                router.post(
-                    route('absen.checkout'), {
-                        latitude: pos.coords.latitude,
-                        longitude: pos.coords.longitude,
-                    }, {
-                        onSuccess: () => {
-                            checkoutStatus.value = 'Sudah Pulang';
-                            showNotification('✅ Absen pulang berhasil!', 'success');
-                        },
-                        onError: () => showNotification('❌ Gagal absen pulang!', 'error'),
-                        onFinish: () => (processingOut.value = false),
+                router.post(route('absen.checkout'), {
+                    latitude: pos.coords.latitude,
+                    longitude: pos.coords.longitude,
+                }, {
+                    onSuccess: () => {
+                        checkoutStatus.value = 'Sudah Pulang';
+                        showNotification('✅ Absen pulang berhasil!', 'success');
                     },
-                );
+                    onError: () => showNotification('❌ Gagal absen pulang!', 'error'),
+                    onFinish: () => (processingOut.value = false),
+                });
             },
             () => {
                 showNotification('❌ Akses lokasi ditolak!', 'error');
@@ -280,19 +280,17 @@
             // Ambil id_jadwal dari string QR (misal: "jadwal:5")
             const id_jadwal = parseInt(scanResult.value.replace('jadwal:', ''));
 
-            router.post(
-                '/absensi-pelajaran/checkin', {
-                    id_jadwal: id_jadwal,
-                }, {
-                    onSuccess: () => {
-                        showNotification('✅ Absensi Pelajaran berhasil!', 'success');
-                    },
-                    onError: () => {
-                        errorMessage.value = '❌ Gagal absen, coba lagi!';
-                        showNotification('❌ Gagal absen, coba lagi!', 'error');
-                    },
+            router.post('/absensi-pelajaran/checkin', {
+                id_jadwal: id_jadwal,
+            }, {
+                onSuccess: () => {
+                    showNotification('✅ Absensi Pelajaran berhasil!', 'success');
                 },
-            );
+                onError: () => {
+                    errorMessage.value = '❌ Gagal absen, coba lagi!';
+                    showNotification('❌ Gagal absen, coba lagi!', 'error');
+                },
+            });
         }
     };
 
@@ -389,7 +387,6 @@
                     { icon: Users, value: stats.totalsakit, label: 'Total Sakit', color: 'purple', },
                     { icon: Users, value: stats.totalizin, label: 'Total Izin', color: 'orange', },
                     { icon: CheckCircle, value: stats.totalpresentase + '%', label: 'Persentase Kehadiran', color: 'green', },
-                   
                 ]"
                 :key="i"
                 class="rounded-2xl border border-gray-200 bg-white p-6 shadow-md hover:-translate-y-1 hover:shadow-lg">
@@ -626,7 +623,7 @@
                 </form>
             </div>
         </div>
-        <!-- Elegant Popup Notification dengan Animasi Centang cihuyyy-->
+        <!-- Elegant Popup Notification dengan Animasi Centang -->
         <transition name="fade-scale">
             <div v-if="showToast"
                 class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
@@ -666,5 +663,4 @@
             </div>
         </transition>
     </div>
-
 </template>
