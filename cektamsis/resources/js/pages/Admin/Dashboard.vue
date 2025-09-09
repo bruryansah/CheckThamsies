@@ -74,7 +74,7 @@ interface Props {
   telat: number;
   alfa: number;
    distribusi: KelasDistribusi[];
-    rekapHarian: RekapHarian[]; 
+    rekapHarian: RekapHarian[];
   auth: {
     user: UserType;
   };
@@ -200,7 +200,10 @@ const stats = computed(() => ({
 const kelasData = computed(() => props.distribusi || []);
 
 
-const getPercentage = (hadir: number, total: number) => Math.round((hadir / total) * 100);
+function getPercentage(hadir:number, total:number) {
+  if (!total || total === 0) return 0; // hindari pembagian nol
+  return (hadir / total) * 100;
+}
 const getStatusColor = (p: number) => p >= 90 ? 'text-green-400' : p >= 80 ? 'text-yellow-400' : p >= 70 ? 'text-orange-400' : 'text-red-400';
 const getProgressColor = (p: number) => p >= 90 ? 'bg-green-500' : p >= 80 ? 'bg-yellow-500' : p >= 70 ? 'bg-orange-500' : 'bg-red-500';
 </script>
@@ -304,45 +307,37 @@ const getProgressColor = (p: number) => p >= 90 ? 'bg-green-500' : p >= 80 ? 'bg
       </div>
     </div>
 
-    <!-- Quick actions -->
-    <div class="space-y-4">
-      <div class="flex justify-between items-center py-3 border-b border-zinc-800">
-        <span class="text-zinc-300">Tambah User Baru</span>
-        <button href="Admin/tambahuser" class="text-blue-400 hover:text-blue-300 transition">
-          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-          </svg>
-        </button>
-      </div>
-      <div class="flex justify-between items-center py-3 border-b border-zinc-800">
-        <span class="text-zinc-300">Kelola Role & Permission</span>
-        <button class="text-blue-400 hover:text-blue-300 transition">
-          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M9 5l7 7-7 7"></path>
-          </svg>
-        </button>
-      </div>
-      <div class="flex justify-between items-center py-3 border-b border-zinc-800">
-        <span class="text-zinc-300">Import Data Siswa</span>
-        <button class="text-blue-400 hover:text-blue-300 transition">
-          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
-          </svg>
-        </button>
-      </div>
-      <div class="flex justify-between items-center py-3">
-        <span class="text-zinc-300">Backup & Restore</span>
-        <button class="text-blue-400 hover:text-blue-300 transition">
-          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-          </svg>
-        </button>
-      </div>
-    </div>
+<!-- Quick actions -->
+<div class="space-y-4">
+  <button onclick="window.location.href='/user/tambah'"
+          class="flex justify-between items-center w-full py-3 border-b border-zinc-800 text-zinc-300 hover:text-blue-300 transition">
+    <span>Tambah User Baru</span>
+    <svg class="h-4 w-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+    </svg>
+  </button>
+
+  <button onclick="window.location.href='/guru/tambah'"
+          class="flex justify-between items-center w-full py-3 border-b border-zinc-800 text-zinc-300 hover:text-blue-300 transition">
+    <span>Tambah Guru</span>
+    <svg class="h-4 w-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M9 5l7 7-7 7"></path>
+    </svg>
+  </button>
+
+  <button onclick="window.location.href='/siswa/tambah'"
+          class="flex justify-between items-center w-full py-3 border-b border-zinc-800 text-zinc-300 hover:text-blue-300 transition">
+    <span>Tambah Siswa</span>
+    <svg class="h-4 w-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+    </svg>
+  </button>
+</div>
+
+
   </div>
 </div>
     </div>

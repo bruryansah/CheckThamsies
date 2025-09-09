@@ -19,8 +19,23 @@ class AdminCon extends Controller
 {
     public function dashboard(): Response
     {
-        // Distribusi absensi per kelas (tetap ada kalau masih dipakai di tabel)
-        $distribusi = DB::table('absensi_sekolah as a')->join('siswa as s', 'a.id_siswa', '=', 's.id_siswa')->join('kelas as k', 's.id_kelas', '=', 'k.id_kelas')->select('k.nama_kelas', DB::raw("SUM(CASE WHEN a.status = 'hadir' THEN 1 ELSE 0 END) as hadir"), DB::raw("SUM(CASE WHEN a.status = 'izin' THEN 1 ELSE 0 END) as izin"), DB::raw("SUM(CASE WHEN a.status = 'sakit' THEN 1 ELSE 0 END) as sakit"), DB::raw("SUM(CASE WHEN a.status = 'alfa' THEN 1 ELSE 0 END) as alfa"), DB::raw('COUNT(a.id_absensi) as total'))->groupBy('k.nama_kelas')->get();
+        $hariIni = now()->toDateString();
+
+        $distribusi = DB::table('kelas as k')
+            ->leftJoin('siswa as s', 's.id_kelas', '=', 'k.id_kelas')
+            ->leftJoin('absensi_sekolah as a', 'a.id_siswa', '=', 's.id_siswa')
+            ->select(
+                'k.nama_kelas',
+                DB::raw("COALESCE(SUM(CASE WHEN a.status = 'hadir' THEN 1 ELSE 0 END), 0) as hadir"),
+                DB::raw("COALESCE(SUM(CASE WHEN a.status = 'izin' THEN 1 ELSE 0 END), 0) as izin"),
+                DB::raw("COALESCE(SUM(CASE WHEN a.status = 'sakit' THEN 1 ELSE 0 END), 0) as sakit"),
+                DB::raw("COALESCE(SUM(CASE WHEN a.status = 'alfa' THEN 1 ELSE 0 END), 0) as alfa"),
+                DB::raw('COUNT(DISTINCT s.id_siswa) as total'), // total siswa per kelas
+            )
+            ->whereDate('a.tanggal', $hariIni) // filter hanya absensi hari ini
+            ->orWhereNull('a.tanggal') // biar kelas tetap tampil walau belum ada absen
+            ->groupBy('k.nama_kelas')
+            ->get();
 
         // 🔹 Rekap absensi semua siswa per hari
         $rekapHarian = DB::table('absensi_sekolah')->selectRaw('DATE(tanggal) as tanggal')->selectRaw("SUM(CASE WHEN status = 'hadir' THEN 1 ELSE 0 END) as hadir")->selectRaw("SUM(CASE WHEN status = 'izin' THEN 1 ELSE 0 END) as izin")->selectRaw("SUM(CASE WHEN status = 'sakit' THEN 1 ELSE 0 END) as sakit")->selectRaw("SUM(CASE WHEN status = 'alfa' THEN 1 ELSE 0 END) as alfa")->groupBy('tanggal')->orderBy('tanggal', 'ASC')->get();
@@ -433,24 +448,6 @@ class AdminCon extends Controller
             'jurusan' => $jurusan,
         ]);
     }
-    // Menyimpan Data Siswa Kelas XI RPL Yang Dikirim dari Form Tambah Siswa
-    public function storexi(Request $request)
-    {
-        // Validasi
-        $validated = $request->validate([
-            'user_id' => 'required|exists:users,id', // id harus ada di tabel users
-            'nama' => 'required|string|max:255',
-            'email' => 'required|email',
-            'id_kelas' => 'required|exists:kelas,id_kelas',
-            'id_jurusan' => 'required|exists:jurusan,id_jurusan',
-        ]);
-
-        // Simpan ke tabel siswa
-        DB::table('siswa')->insert($validated);
-
-        // Redirect balik ke halaman data siswa X RPL
-        return redirect()->route('siswaxi')->with('success', 'Data Siswa X RPL berhasil ditambahkan!');
-    }
 
     // Menampilkan Form Edit Siswa Kelas X RPL
     public function editxi($id)
@@ -466,42 +463,6 @@ class AdminCon extends Controller
             'kelas' => $kelas,
             'jurusan' => $jurusan,
         ]);
-    }
-
-    // Memperbarui Data Siswa X RPL Yang Dikirim dari Form Edit Siswa X RPL
-    public function updatexi(Request $request, $id)
-    {
-        // Validasi data
-        $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'nama' => 'required|string|max:255',
-            'email' => 'required|email',
-            'id_kelas' => 'required|exists:kelas,id_kelas',
-            'id_jurusan' => 'required|exists:jurusan,id_jurusan',
-        ]);
-
-        $update = DB::table('siswa')
-            ->where('id_siswa', $id)
-            ->update([
-                'user_id' => $request->user_id,
-                'nama' => $request->nama,
-                'email' => $request->email,
-                'id_kelas' => $request->id_kelas,
-                'id_jurusan' => $request->id_jurusan,
-            ]);
-
-        if ($update) {
-            return redirect()->route('siswaxi')->with('success', 'Data siswa X RPL berhasil diperbarui!');
-        } else {
-            return redirect()->back()->with('error', 'Gagal memperbarui data!');
-        }
-    }
-
-    // Menghapus Data Siswa Kelas X RPL
-    public function destroyxi($id)
-    {
-        DB::table('siswa')->where('id_siswa', operator: $id)->delete();
-        return redirect('/siswaxi');
     }
     // Siswa XI Section End
 
@@ -531,25 +492,6 @@ class AdminCon extends Controller
             'jurusan' => $jurusan,
         ]);
     }
-    // Menyimpan Data Siswa Kelas XI RPL Yang Dikirim dari Form Tambah Siswa
-    public function storexii(Request $request)
-    {
-        // Validasi
-        $validated = $request->validate([
-            'user_id' => 'required|exists:users,id', // id harus ada di tabel users
-            'nama' => 'required|string|max:255',
-            'email' => 'required|email',
-            'id_kelas' => 'required|exists:kelas,id_kelas',
-            'id_jurusan' => 'required|exists:jurusan,id_jurusan',
-        ]);
-
-        // Simpan ke tabel siswa
-        DB::table('siswa')->insert($validated);
-
-        // Redirect balik ke halaman data siswa X RPL
-        return redirect()->route('siswaxii')->with('success', 'Data Siswa X RPL berhasil ditambahkan!');
-    }
-
     // Menampilkan Form Edit Siswa Kelas X RPL
     public function editxii($id)
     {
@@ -565,44 +507,20 @@ class AdminCon extends Controller
             'jurusan' => $jurusan,
         ]);
     }
-
-    // Memperbarui Data Siswa X RPL Yang Dikirim dari Form Edit Siswa X RPL
-    public function updatexii(Request $request, $id)
-    {
-        // Validasi data
-        $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'nama' => 'required|string|max:255',
-            'email' => 'required|email',
-            'id_kelas' => 'required|exists:kelas,id_kelas',
-            'id_jurusan' => 'required|exists:jurusan,id_jurusan',
-        ]);
-
-        $update = DB::table('siswa')
-            ->where('id_siswa', $id)
-            ->update([
-                'user_id' => $request->user_id,
-                'nama' => $request->nama,
-                'email' => $request->email,
-                'id_kelas' => $request->id_kelas,
-                'id_jurusan' => $request->id_jurusan,
-            ]);
-
-        if ($update) {
-            return redirect()->route('siswaxi')->with('success', 'Data siswa X RPL berhasil diperbarui!');
-        } else {
-            return redirect()->back()->with('error', 'Gagal memperbarui data!');
-        }
-    }
-
-    // Menghapus Data Siswa Kelas X RPL
-    public function destroyxii($id)
-    {
-        DB::table('siswa')->where('id_siswa', operator: $id)->delete();
-        return redirect('/siswaxii');
-    }
     // Siswa XII Section End
 
+    // Aksi Cepat
+    public function create()
+    {
+        $users = \App\Models\User::where('role', 'user')->select('id', 'name', 'email')->get();
+        $kelas = \App\Models\kelas::all(['id_kelas', 'nama_kelas']);
+        $jurusan = \App\Models\Jurusan::all(['id_jurusan', 'nama_jurusan']);
+        return inertia('Admin/tambahsiswa', [
+            'users' => $users,
+            'kelas' => $kelas,
+            'jurusan' => $jurusan,
+        ]);
+    }
     // Mapel section Start
     // Menampilkan Data Mapel
     public function indexm()
