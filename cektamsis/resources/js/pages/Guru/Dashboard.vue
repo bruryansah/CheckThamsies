@@ -314,16 +314,7 @@
                                         <p class="text-xs text-gray-500">{{ attendance.time }}</p>
                                     </div>
                                 </div>
-                                <span
-                                    class="rounded-full px-2 py-1 text-xs font-medium"
-                                    :class="
-                                        attendance.status === 'Hadir'
-                                            ? 'bg-green-100 text-green-800'
-                                            : attendance.status === 'Terlambat'
-                                              ? 'bg-yellow-100 text-yellow-800'
-                                              : 'bg-red-100 text-red-800'
-                                    "
-                                >
+                                <span class="rounded-full px-2 py-1 text-xs font-medium" :class="getAttendanceStatusClass(attendance)">
                                     {{ attendance.status }}
                                 </span>
                             </div>
@@ -358,18 +349,18 @@
                                 <span class="text-gray-600">Siswa Terlambat</span>
                                 <div class="flex items-center">
                                     <div class="mr-2 h-2 w-16 rounded-full bg-gray-200">
-                                        <div class="h-2 rounded-full bg-yellow-500" :style="{ width: attendanceStats.terlambatPct + '%' }"></div>
+                                        <div class="h-2 rounded-full bg-red-500" :style="{ width: attendanceStats.terlambatPct + '%' }"></div>
                                     </div>
                                     <span class="text-sm font-semibold text-gray-900">{{ attendanceStats.terlambatPct }}%</span>
                                 </div>
                             </div>
                             <div class="flex items-center justify-between">
-                                <span class="text-gray-600">Tidak Hadir</span>
+                                <span class="text-gray-600">Alpha/Izin/Sakit</span>
                                 <div class="flex items-center">
                                     <div class="mr-2 h-2 w-16 rounded-full bg-gray-200">
-                                        <div class="h-2 rounded-full bg-red-500" :style="{ width: attendanceStats.tidakHadirPct + '%' }"></div>
+                                        <div class="h-2 rounded-full bg-yellow-500" :style="{ width: attendanceStats.alphaIzinSakitPct + '%' }"></div>
                                     </div>
-                                    <span class="text-sm font-semibold text-gray-900">{{ attendanceStats.tidakHadirPct }}%</span>
+                                    <span class="text-sm font-semibold text-gray-900">{{ attendanceStats.alphaIzinSakitPct }}%</span>
                                 </div>
                             </div>
 
@@ -401,18 +392,19 @@
             <div class="max-h-[80vh] w-full max-w-6xl overflow-y-auto rounded-2xl bg-white p-6" @click.stop>
                 <div class="mb-6 flex items-center justify-between">
                     <h2 class="text-2xl font-bold text-gray-900">Data Absensi</h2>
-                    <button
-                        @click="showAttendanceModal = false"
-                        class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 transition-colors duration-300 hover:bg-gray-200"
-                    >
-                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-
-                    <button @click="exportToPDF" class="rounded-lg bg-red-500 px-4 py-2 text-white shadow transition hover:bg-red-600">
-                        Export PDF
-                    </button>
+                    <div class="flex items-center space-x-4">
+                        <button @click="exportToPDF" class="rounded-lg bg-red-500 px-4 py-2 text-white shadow transition hover:bg-red-600">
+                            Export PDF
+                        </button>
+                        <button
+                            @click="showAttendanceModal = false"
+                            class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 transition-colors duration-300 hover:bg-gray-200"
+                        >
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="mb-6 flex flex-wrap gap-4">
@@ -463,16 +455,7 @@
                                 <td class="px-4 py-3">{{ student.date }}</td>
                                 <td class="px-4 py-3">{{ student.time }}</td>
                                 <td class="px-4 py-3">
-                                    <span
-                                        class="rounded-full px-3 py-1 text-xs font-medium"
-                                        :class="
-                                            student.status === 'Hadir'
-                                                ? 'bg-green-100 text-green-800'
-                                                : student.status === 'Terlambat'
-                                                  ? 'bg-yellow-100 text-yellow-800'
-                                                  : 'bg-red-100 text-red-800'
-                                        "
-                                    >
+                                    <span class="rounded-full px-3 py-1 text-xs font-medium" :class="getAttendanceStatusClass(student)">
                                         {{ student.status }}
                                     </span>
                                 </td>
@@ -546,6 +529,54 @@ function handleScroll() {
 }
 
 /**
+ * 🔹 Attendance Status Classification
+ */
+const LATE_TIME_THRESHOLD = '06:45';
+
+const getAttendanceStatusClass = (student) => {
+    // Normalize status to handle case sensitivity
+    const status = (student.status || '').toLowerCase();
+    const attendanceTime = student.time || student.waktu;
+
+    console.log('Processing student:', student.name, 'Status:', status, 'Time:', attendanceTime);
+
+    if (status === 'hadir') {
+        // Check if attendance time is after 06:45
+        if (attendanceTime && attendanceTime > LATE_TIME_THRESHOLD) {
+            console.log('Status: LATE (Red)');
+            return 'bg-red-100 text-red-800 border border-red-300'; // Late but present - RED
+        } else {
+            console.log('Status: ON TIME (Green)');
+            return 'bg-green-100 text-green-800 border border-green-300'; // On time - GREEN
+        }
+    } else if (status === 'terlambat') {
+        console.log('Status: EXPLICITLY LATE (Red)');
+        return 'bg-red-100 text-red-800 border border-red-300'; // Explicitly late - RED
+    } else if (['alpha', 'izin', 'sakit', 'tidak hadir', 'alpa'].includes(status)) {
+        console.log('Status: ABSENT (Yellow)');
+        return 'bg-yellow-100 text-yellow-800 border border-yellow-300'; // Absent with reason - YELLOW
+    } else {
+        console.log('Status: DEFAULT (Gray) for status:', status);
+        return 'bg-gray-100 text-gray-800 border border-gray-300';
+    }
+};
+
+const processAttendanceStatus = (attendance) => {
+    if (attendance.status === 'Hadir' && attendance.time > LATE_TIME_THRESHOLD) {
+        return {
+            ...attendance,
+            displayStatus: 'Terlambat',
+            originalStatus: attendance.status,
+        };
+    }
+    return {
+        ...attendance,
+        displayStatus: attendance.status,
+        originalStatus: attendance.status,
+    };
+};
+
+/**
  * 🔹 QR Code Absensi
  */
 const qrImage = ref('');
@@ -614,26 +645,37 @@ const exportToPDF = () => {
     doc.text(`Kelas: ${attendanceFilter.value.class || 'Semua'}`, 14, 22);
     doc.text(`Mata Pelajaran: ${attendanceFilter.value.subject || 'Semua'}`, 14, 28);
 
-    const tableData = (filteredAttendanceData.value || []).map((a, index) => [
-        index + 1,
-        a.name || '-',
-        a.class || '-',
-        a.subject || '-',
-        a.time || '-',
-        a.date || '-',
-        a.status || '-',
-    ]);
+    const tableData = (filteredAttendanceData.value || []).map((a, index) => {
+        // Determine the correct status for PDF export
+        let pdfStatus = a.status || '-';
+        const status = (a.status || '').toLowerCase();
+        const time = a.time || a.waktu;
+
+        // If student is present but late, change status to "Terlambat"
+        if (status === 'hadir' && time && time > LATE_TIME_THRESHOLD) {
+            pdfStatus = 'Terlambat';
+        }
+
+        return [index + 1, a.name || '-', a.class || '-', a.subject || '-', a.date || '-', a.time || '-', pdfStatus];
+    });
 
     if (tableData.length === 0) {
         doc.text('Tidak ada data absensi untuk filter ini.', 14, 40);
     } else {
         autoTable(doc, {
             startY: 35,
-            head: [['No', 'Nama Siswa', 'Kelas', 'Mata Pelajaran', 'Tanggal', 'Status']],
+            head: [['No', 'Nama Siswa', 'Kelas', 'Mata Pelajaran', 'Tanggal', 'Waktu', 'Status']],
             body: tableData,
             theme: 'grid',
             styles: { fontSize: 9, cellPadding: 3 },
             headStyles: { fillColor: [41, 128, 185] },
+            // Add conditional styling for late students
+            didParseCell: function (data) {
+                if (data.column.index === 6 && data.cell.text[0] === 'Terlambat') {
+                    data.cell.styles.textColor = [220, 38, 38]; // Red color for late status
+                    data.cell.styles.fontStyle = 'bold';
+                }
+            },
         });
     }
     doc.save(`Absensi_${attendanceFilter.value.class || 'Semua'}_${Date.now()}.pdf`);
@@ -677,34 +719,97 @@ const stats = ref([
 ]);
 
 const recentAttendance = computed(() => {
-    return [...localAbsensiData.value].sort((a, b) => new Date(b.tanggal + ' ' + b.waktu) - new Date(a.tanggal + ' ' + a.waktu)).slice(0, 5);
+    return [...localAbsensiData.value]
+        .sort((a, b) => new Date(b.tanggal + ' ' + b.waktu) - new Date(a.tanggal + ' ' + a.waktu))
+        .slice(0, 5)
+        .map((attendance) => processAttendanceStatus(attendance));
 });
 
 const today = new Date().toISOString().split('T')[0];
 
 const attendanceStats = computed(() => {
-    const todayData = localAbsensiData.value.filter((a) => a.tanggal === today);
-    const total = todayData.length || 1; // agar tidak error 0/0
+    // Debug: log semua data absensi
+    console.log('All attendance data:', localAbsensiData.value);
+    console.log('Today date:', today);
 
-    const hadirCount = todayData.filter((a) => a.status === 'Hadir').length;
-    const terlambatCount = todayData.filter((a) => a.status === 'Terlambat').length;
-    const tidakHadirCount = todayData.filter((a) => a.status === 'Tidak Hadir').length;
-
-    // Top siswa terlambat
-    const lateMap = {};
-    todayData.forEach((a) => {
-        if (a.status === 'Terlambat') lateMap[a.name] = (lateMap[a.name] || 0) + 1;
+    // Coba filter dengan berbagai format tanggal
+    const todayData = localAbsensiData.value.filter((a) => {
+        const recordDate = a.tanggal || a.date;
+        console.log('Comparing dates - Record:', recordDate, 'Today:', today);
+        return recordDate === today || recordDate === new Date().toLocaleDateString('en-CA');
     });
+
+    console.log('Today filtered data:', todayData);
+
+    // Jika tidak ada data hari ini, gunakan semua data untuk testing
+    const dataToProcess = todayData.length > 0 ? todayData : localAbsensiData.value;
+    console.log('Data to process:', dataToProcess);
+
+    const total = dataToProcess.length || 1;
+
+    // Normalisasi status dan waktu
+    const hadirCount = dataToProcess.filter((a) => {
+        const status = (a.status || '').toLowerCase();
+        const time = a.time || a.waktu;
+        const isOnTime = status === 'hadir' && time && time <= LATE_TIME_THRESHOLD;
+        console.log(`Student: ${a.name || a.nama_siswa}, Status: ${status}, Time: ${time}, On time: ${isOnTime}`);
+        return isOnTime;
+    }).length;
+
+    const terlambatCount = dataToProcess.filter((a) => {
+        const status = (a.status || '').toLowerCase();
+        const time = a.time || a.waktu;
+        const isLate = (status === 'hadir' && time && time > LATE_TIME_THRESHOLD) || status === 'terlambat';
+        console.log(`Student: ${a.name || a.nama_siswa}, Status: ${status}, Time: ${time}, Late: ${isLate}`);
+        return isLate;
+    }).length;
+
+    const alphaIzinSakitCount = dataToProcess.filter((a) => {
+        const status = (a.status || '').toLowerCase();
+        const isAbsent = ['alpha', 'izin', 'sakit', 'tidak hadir', 'alpa'].includes(status);
+        console.log(`Student: ${a.name || a.nama_siswa}, Status: ${status}, Absent: ${isAbsent}`);
+        return isAbsent;
+    }).length;
+
+    // Top siswa terlambat - dengan data yang lebih akurat
+    const lateMap = {};
+    dataToProcess.forEach((a) => {
+        const status = (a.status || '').toLowerCase();
+        const time = a.time || a.waktu;
+        const studentName = a.name || a.nama_siswa || 'Unknown';
+
+        if ((status === 'hadir' && time && time > LATE_TIME_THRESHOLD) || status === 'terlambat') {
+            lateMap[studentName] = (lateMap[studentName] || 0) + 1;
+        }
+    });
+
     const topLateStudents = Object.entries(lateMap)
-        .map(([name, count]) => ({ name, count }))
-        .sort((a, b) => b.count - a.count)
+        .map(([name, count]) => ({ name, lateCount: count }))
+        .sort((a, b) => b.lateCount - a.lateCount)
         .slice(0, 5);
+
+    console.log('Final statistics:', {
+        total,
+        hadirCount,
+        terlambatCount,
+        alphaIzinSakitCount,
+        topLateStudents,
+        hadirPct: Math.round((hadirCount / total) * 100),
+        terlambatPct: Math.round((terlambatCount / total) * 100),
+        alphaIzinSakitPct: Math.round((alphaIzinSakitCount / total) * 100),
+    });
 
     return {
         hadirPct: Math.round((hadirCount / total) * 100),
         terlambatPct: Math.round((terlambatCount / total) * 100),
-        tidakHadirPct: Math.round((tidakHadirCount / total) * 100),
+        alphaIzinSakitPct: Math.round((alphaIzinSakitCount / total) * 100),
         topLateStudents,
+        counts: {
+            hadir: hadirCount,
+            terlambat: terlambatCount,
+            alphaIzinSakit: alphaIzinSakitCount,
+            total,
+        },
     };
 });
 
@@ -820,7 +925,7 @@ onMounted(() => {
 
     qrInterval = setInterval(
         () => {
-            if (qrCodeData.value) {
+            if (qrImage.value) {
                 refreshQRCode();
             }
         },
