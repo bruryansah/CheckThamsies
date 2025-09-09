@@ -95,6 +95,9 @@ class AbsenController extends Controller
         return back()->with('success', 'Absen pulang berhasil');
     }
 
+
+    // poiuew
+    
     public function status()
     {
         $siswa = Siswa::where('user_id', Auth::id())->first();
