@@ -110,10 +110,9 @@
     const stats = computed(() => ({
         totalkehadiran: props.kehadiransekolah || 0,
         totalpresentase: props.persentaseKehadiran || 0,
-        totalPelajaranHariIni: props.totalPelajaranHariIni || 0,
+        // Removed totalPelajaranHariIni
         absenHariIni: 'Belum Absen',
         waktuAbsen: '',
-
     }));
 
     // Recent Attendance
@@ -147,7 +146,6 @@
     const selectedStatus = ref('hadir');
 
     onMounted(() => {
-
         const changePassword = () => {
             // Open change password modal
             showChangePasswordModal.value = true;
@@ -168,6 +166,10 @@
                 } else if (data.status === 'sudah_pulang') {
                     checkinStatus.value = 'Sudah Absen';
                     checkoutStatus.value = 'Sudah Pulang';
+                    canCheckout.value = false;
+                } else if (data.status === 'izin' || data.status === 'sakit') {
+                    checkinStatus.value = `Sudah Absen (${data.status.charAt(0).toUpperCase() + data.status.slice(1)})`;
+                    checkoutStatus.value = 'Tidak Perlu Pulang';
                     canCheckout.value = false;
                 }
             });
@@ -213,8 +215,14 @@
                         onSuccess: () => {
                             checkinStatus.value = 'Sudah Absen (' + status + ')';
                             stats.value.absenHariIni = status;
-                            canCheckout.value = true;
-                            showNotification('✅ Absen masuk berhasil!', 'success');
+                            if (status === 'izin' || status === 'sakit') {
+                                canCheckout.value = false;
+                                checkoutStatus.value = 'Tidak Perlu Pulang';
+                                showNotification(`✅ Absen ${status.charAt(0).toUpperCase() + status.slice(1)} berhasil! Anda tidak perlu absen pulang.`, 'success');
+                            } else {
+                                canCheckout.value = true;
+                                showNotification('✅ Absen masuk berhasil!', 'success');
+                            }
                         },
                         onError: () => showNotification('❌ Gagal absen masuk!', 'error'),
                         onFinish: () => (processingIn.value = false),
@@ -328,7 +336,6 @@
 </script>
 
 <template>
-
     <Head title="Dashboard Siswa" />
     <div class="min-h-screen bg-gray-50 p-6">
         <!-- Header -->
@@ -373,11 +380,11 @@
         </div>
 
         <!-- Stats Grid -->
-        <div class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-4">
+        <div class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2">
             <div v-for="(stat, i) in [
                     { icon: Users, value: stats.totalkehadiran, label: 'Total Kehadiran', color: 'blue',  },
                     { icon: CheckCircle, value: stats.totalpresentase + '%', label: 'Persentase Hadir', color: 'green',},
-                    { icon: Calendar, value: stats.totalPelajaranHariIni, label: 'Pelajaran', color: 'orange',},
+                    
                 ]"
                 :key="i"
                 class="rounded-2xl border border-gray-200 bg-white p-6 shadow-md hover:-translate-y-1 hover:shadow-lg">
@@ -389,8 +396,8 @@
 
                 </div>
                 <div class="mt-4">
-                    <p class="text-3xl font-bold text-gray-900">{{ stat . value }}</p>
-                    <p class="text-sm text-gray-600">{{ stat . label }}</p>
+                    <p class="text-3xl font-bold text-gray-900">{{ stat.value }}</p>
+                    <p class="text-sm text-gray-600">{{ stat.label }}</p>
                 </div>
             </div>
         </div>
@@ -411,9 +418,9 @@
                         <h4 class="mb-3 font-medium text-gray-900">Absen Masuk</h4>
                         <select v-model="selectedStatus"
                             class="mb-3 font-medium text-gray-900 w-full rounded-lg border border-gray-300 p-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500">
-                            <option class="mb-3 font-medium text-gray-900" value="Hadir">Hadir</option>
-                            <option class="mb-3 font-medium text-gray-900" value="Izin">Izin</option>
-                            <option class="mb-3 font-medium text-gray-900" value="Sakit">Sakit</option>
+                            <option class="mb-3 font-medium text-gray-900" value="hadir">Hadir</option>
+                            <option class="mb-3 font-medium text-gray-900" value="izin">Izin</option>
+                            <option class="mb-3 font-medium text-gray-900" value="sakit">Sakit</option>
                         </select>
                         <p class="text-sm font-medium text-gray-900">
                             Status:
@@ -473,17 +480,17 @@
                     <div v-for="(item, index) in recentAttendance" :key="index"
                         class="flex items-center gap-4 rounded-2xl p-2 hover:bg-gray-50">
                         <div class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
-                            <span class="text-sm font-medium text-blue-600">{{ item . name . charAt(0) }}</span>
+                            <span class="text-sm font-medium text-blue-600">{{ item.name.charAt(0) }}</span>
                         </div>
                         <div class="flex-1">
-                            <h4 class="font-medium text-gray-900">{{ item . name }}</h4>
-                            <p class="text-sm text-gray-500">{{ item . time }}</p>
+                            <h4 class="font-medium text-gray-900">{{ item.name }}</h4>
+                            <p class="text-sm text-gray-500">{{ item.time }}</p>
                         </div>
                         <div class="flex items-center gap-2">
                             <div :class="`h-2 w-2 rounded-full ${item.color}`"></div>
                             <span class="text-sm font-medium"
                                 :class="item.status === 'Hadir' ? 'text-green-600' : item.status === 'Terlambat' ?
-                                    'text-yellow-600' : 'text-red-600'">{{ item . status }}</span>
+                                    'text-yellow-600' : 'text-red-600'">{{ item.status }}</span>
                         </div>
                     </div>
                 </div>
@@ -565,7 +572,7 @@
                             :class="{ 'border-red-500': passwordErrors.current_password }"
                             placeholder="Masukkan password saat ini" autocomplete="current-password" required />
                         <p v-if="passwordErrors.current_password" class="text-red-500 text-sm mt-1">
-                            {{ passwordErrors . current_password[0] }}
+                            {{ passwordErrors.current_password[0] }}
                         </p>
                     </div>
 
@@ -580,7 +587,7 @@
                             :class="{ 'border-red-500': passwordErrors.new_password }"
                             placeholder="Masukkan password baru" autocomplete="new-password" required />
                         <p v-if="passwordErrors.new_password" class="text-red-500 text-sm mt-1">
-                            {{ passwordErrors . new_password[0] }}
+                            {{ passwordErrors.new_password[0] }}
                         </p>
                     </div>
 
@@ -596,7 +603,7 @@
                             :class="{ 'border-red-500': passwordErrors.new_password_confirmation }"
                             placeholder="Konfirmasi password baru" autocomplete="new-password" required />
                         <p v-if="passwordErrors.new_password_confirmation" class="text-red-500 text-sm mt-1">
-                            {{ passwordErrors . new_password_confirmation[0] }}
+                            {{ passwordErrors.new_password_confirmation[0] }}
                         </p>
                     </div>
 
