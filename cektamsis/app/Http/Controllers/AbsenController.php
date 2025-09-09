@@ -7,12 +7,11 @@ use Illuminate\Support\Facades\Auth;
 use App\Enums\UserRole;
 use Illuminate\Support\Facades\DB;
 use App\Models\Siswa;
-use App\Models\AbsensiSekolah;
+use App\Models\AbsensiSekolah; // Verify this model matches your table (e.g., absensi_sekolah)
 use Carbon\Carbon;
 
 class AbsenController extends Controller
 {
-    // CONTROLLER LENGKAP - SIMPLE & CLEAN
     public function index()
     {
         $user = auth()->user();
@@ -122,16 +121,16 @@ class AbsenController extends Controller
     }
 
     public function latestStatus()
-{
-    $siswa = Siswa::where('user_id', Auth::id())->first();
-    $absensi = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)
-        ->whereDate('tanggal', Carbon::today())
-        ->first();
+    {
+        $siswa = Siswa::where('user_id', Auth::id())->first();
+        $absensi = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)
+            ->whereDate('tanggal', Carbon::today())
+            ->first();
 
-    if ($absensi) {
-        return response()->json(['status' => $absensi->status]);
+        if ($absensi) {
+            return response()->json(['status' => $absensi->status]);
+        }
+
+        return response()->json(['status' => null]);
     }
-
-    return response()->json(['status' => null]);
-}
 }

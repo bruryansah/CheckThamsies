@@ -214,3 +214,4 @@ Route::post('/absensi-pelajaran/checkin', [\App\Http\Controllers\AbsenPelajaranC
     ->middleware(['auth', 'verified']);
 
 Route::get('/absen/latest-status', [AbsenController::class, 'latestStatus'])->name('absen.latest-status');
+
