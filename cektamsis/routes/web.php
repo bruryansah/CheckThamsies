@@ -159,6 +159,7 @@ Route::middleware(['auth', 'role:user'])->group(function () {
 
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\NewPasswordController;
+use App\Http\Controllers\GuruPasswordController;
 
 // Halaman form lupa password
 Route::get('/forgot-password', fn() => Inertia::render('auth/ForgotPassword'))->middleware('guest')->name('password.request');
@@ -208,6 +209,11 @@ use App\Http\Controllers\StudentPasswordController;
 Route::middleware(['auth'])->group(function () {
     Route::put('/student/password', [StudentPasswordController::class, 'update'])
         ->name('student.password.update');
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::put('/guru/password', [GuruPasswordController::class, 'update'])
+        ->name('guru.password.update');
 });
 
 Route::post('/absensi-pelajaran/checkin', [\App\Http\Controllers\AbsenPelajaranController::class, 'checkIn'])
