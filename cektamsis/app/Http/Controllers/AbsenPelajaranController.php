@@ -20,7 +20,10 @@ class AbsenPelajaranController extends Controller
         $siswa = Siswa::where('user_id', Auth::id())->first();
         if (!$siswa) {
             Log::warning('❌ Siswa tidak ditemukan', ['user_id' => Auth::id()]);
-            return response()->json(['success' => false, 'message' => 'Siswa tidak ditemukan'], 422);
+            return redirect()->back()->with('flash', [
+                'success' => false,
+                'message' => 'Siswa tidak ditemukan'
+            ]);
         }
         Log::info('✅ Siswa ditemukan', ['id_siswa' => $siswa->id_siswa]);
 
@@ -32,9 +35,15 @@ class AbsenPelajaranController extends Controller
         $jadwal = Jadwal::find($id_jadwal);
         if (!$jadwal) {
             Log::warning('❌ Jadwal tidak ditemukan', ['id_jadwal' => $id_jadwal]);
-            return response()->json(['success' => false, 'message' => 'Jadwal tidak ditemukan'], 422);
+            return redirect()->back()->with('flash', [
+                'success' => false,
+                'message' => 'Jadwal tidak ditemukan'
+            ]);
         }
-        Log::info('✅ Jadwal ditemukan', ['mapel' => $jadwal->mapel->nama_mapel ?? '-', 'kelas' => $jadwal->kelas->nama_kelas ?? '-']);
+        Log::info('✅ Jadwal ditemukan', [
+            'mapel' => $jadwal->mapel->nama_mapel ?? '-', 
+            'kelas' => $jadwal->kelas->nama_kelas ?? '-'
+        ]);
 
         // 4. Cek apakah sudah absen
         $sudahAbsen = AbsensiPelajaran::where('id_siswa', $siswa->id_siswa)
@@ -42,20 +51,29 @@ class AbsenPelajaranController extends Controller
             ->exists();
 
         if ($sudahAbsen) {
-            Log::warning('⚠️ Sudah absen sebelumnya', ['id_siswa' => $siswa->id_siswa, 'id_jadwal' => $id_jadwal]);
-            return response()->json(['success' => false, 'message' => 'Kamu sudah absen di jadwal ini!'], 422);
+            Log::warning('⚠️ Sudah absen sebelumnya', [
+                'id_siswa' => $siswa->id_siswa, 
+                'id_jadwal' => $id_jadwal
+            ]);
+            return redirect()->back()->with('flash', [
+                'success' => false,
+                'message' => 'Kamu sudah absen di jadwal ini!'
+            ]);
         }
 
         // 5. Simpan absensi
         $absen = AbsensiPelajaran::create([
-            'id_siswa'  => $siswa->id_siswa,
-            'id_jadwal' => $id_jadwal,
-            'status'    => 'hadir',
+            'id_siswa'   => $siswa->id_siswa,
+            'id_jadwal'  => $id_jadwal,
+            'status'     => 'hadir',
             'waktu_scan' => Carbon::now('Asia/Jakarta'),
         ]);
 
         Log::info('✅ Absensi berhasil dicatat', ['id_absensi_pelajaran' => $absen->id_absensi_pelajaran]);
 
-        return response()->json(['success' => true, 'message' => 'Absensi berhasil!']);
+        return redirect()->back()->with('flash', [
+            'success' => true,
+            'message' => 'Absensi berhasil!'
+        ]);
     }
 }
