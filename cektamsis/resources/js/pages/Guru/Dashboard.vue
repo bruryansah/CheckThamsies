@@ -111,6 +111,8 @@
                             >
                                 <option disabled value="">-- Pilih Jadwal --</option>
 
+                                <!-- revisi  -->
+
                                 <option v-for="j in localJadwalData" :key="j.id_jadwal" :value="j.idenc">
                                     {{ j.mata_pelajaran }} - {{ j.nama_kelas }} 
                                     ({{ formatScheduleDate(j.tanggal) }} {{ j.jam_mulai }} - {{ j.jam_selesai }})

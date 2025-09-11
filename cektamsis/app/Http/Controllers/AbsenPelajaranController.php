@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Inertia\Inertia;
 
+// revisi
+
 
 class AbsenPelajaranController extends Controller
 {
