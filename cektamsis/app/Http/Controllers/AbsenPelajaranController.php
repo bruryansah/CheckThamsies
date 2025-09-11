@@ -10,6 +10,8 @@ use App\Models\AbsensiPelajaran;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
+use Inertia\Inertia;
+
 
 class AbsenPelajaranController extends Controller
 {
