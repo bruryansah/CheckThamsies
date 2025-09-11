@@ -40,6 +40,8 @@ Route::get('/user/tambah', [AdminCon::class, 'tambahs'])->name('user.tambah');
 Route::post('/user/tambahstore', [AdminCon::class, 'stores']);
 Route::get('/user/edit/{id}', [AdminCon::class, 'edits'])->name('user.edit');
 Route::put('/user/update/{id}', [AdminCon::class, 'updates']);
+Route::get('/user/password', [AdminCon::class, 'password'])->name('user.password');
+Route::post('/user/updatepass', [AdminCon::class, 'updatepass'])->name('user.updatepass');
 Route::get('/user/delete/{id}', [AdminCon::class, 'destroys'])->name('user.hapus');
 // Users Route End
 

@@ -141,6 +141,30 @@ class AdminCon extends Controller
         }
     }
 
+    public function password()
+    {
+        $users = User::all();
+        return inertia('Admin/gantipassword', [
+            'users' => $users,
+        ]);
+    }
+
+    public function updatepass(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|exists:users,id',
+            'new_password' => 'required|min:6|confirmed',
+        ]);
+
+        $user = User::findOrFail($request->id);
+
+        $user->update([
+            'password' => Hash::make($request->new_password),
+        ]);
+
+        return redirect('/user')->with('success', 'Password user berhasil diubah!');
+    }
+
     // Menghapus Data users
     public function destroys($id)
     {
@@ -562,7 +586,7 @@ class AdminCon extends Controller
             'jurusan' => $jurusan,
         ]);
     }
-        public function updatexii(Request $request, $id)
+    public function updatexii(Request $request, $id)
     {
         // Validasi data
         $validated = $request->validate([
@@ -590,7 +614,7 @@ class AdminCon extends Controller
         }
     }
 
-        public function destroyxii($id)
+    public function destroyxii($id)
     {
         DB::table('siswa')->where('id_siswa', operator: $id)->delete();
         return redirect('/siswaxii');
