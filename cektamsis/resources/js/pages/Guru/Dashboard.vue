@@ -147,8 +147,9 @@
                                 class="w-full rounded-lg border border-gray-300 px-4 py-2 transition-all duration-300 focus:border-transparent focus:ring-2 focus:ring-blue-500"
                             >
                                 <option disabled value="">-- Pilih Jadwal --</option>
-                                <option v-for="j in localJadwalData" :key="j.id_jadwal" :value="j.id_jadwal">
-                                    {{ j.mata_pelajaran }} - {{ j.nama_kelas }}
+                                <option v-for="j in localJadwalData" :key="j.id_jadwal" :value="j.idenc">
+                                    {{ j.mata_pelajaran }} - {{ j.nama_kelas }} 
+                                    ({{ formatScheduleDate(j.tanggal) }} {{ j.jam_mulai }} - {{ j.jam_selesai }})
                                 </option>
                             </select>
                         </div>

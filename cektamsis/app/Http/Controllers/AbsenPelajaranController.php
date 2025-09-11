@@ -9,12 +9,14 @@ use App\Models\AbsensiPelajaran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use Inertia\Inertia;
 
 class AbsenPelajaranController extends Controller
 {
     public function checkIn(Request $request)
     {
+        // dd($request->all());
         Log::info('🔹 Absensi attempt', ['request' => $request->all(), 'user_id' => Auth::id()]);
 
         // 1. Cek siswa
@@ -29,7 +31,20 @@ class AbsenPelajaranController extends Controller
         Log::info('✅ Siswa ditemukan', ['id_siswa' => $siswa->id_siswa]);
 
         // 2. Ambil ID jadwal dari request
-        $id_jadwal = (int) $request->id_jadwal;
+        $decode = explode('|', Crypt::decryptString($request->id_jadwal));
+
+        $id_jadwal = (int) $decode[0];
+        $id_guru   = (int) $decode[1];
+        $id_qr     = (int) $decode[2];
+        $expiredAt = $decode[3];
+
+        if (now()->gt($expiredAt)) {
+            return back()->with('flash', [
+                'success' => false,
+                'message' => 'QR Code expired'
+            ]);
+        }
+
         Log::info('📌 ID Jadwal diterima', ['id_jadwal' => $id_jadwal]);
 
         // 3. Validasi jadwal
@@ -61,13 +76,17 @@ class AbsenPelajaranController extends Controller
                 'message' => 'Kamu sudah absen di jadwal ini!'
             ]);
         }
+        
 
         // 5. Simpan absensi
         $absen = AbsensiPelajaran::create([
+            'id_qr'      => $id_qr,
             'id_siswa'   => $siswa->id_siswa,
             'id_jadwal'  => $id_jadwal,
+            'id_guru'    => $id_guru,
             'status'     => 'hadir',
-            'waktu_scan' => Carbon::now('Asia/Jakarta'),
+            'waktu_scan' => now('Asia/Jakarta'),
+            'keterangan' => null,
         ]);
 
         Log::info('✅ Absensi berhasil dicatat', ['id_absensi_pelajaran' => $absen->id_absensi_pelajaran]);

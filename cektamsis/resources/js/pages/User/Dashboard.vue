@@ -242,8 +242,8 @@ const onDetect = (detectedCodes: QrCodeResult[]) => {
         scanResult.value = detectedCodes[0].rawValue;
         isScanning.value = false;
 
-        const id_jadwal = parseInt(scanResult.value.replace('jadwal:', ''));
-        if (isNaN(id_jadwal)) {
+        const id_jadwal = scanResult.value.replace('jadwal:', '');
+        if (!id_jadwal) {
             errorMessage.value = '❌ Format QR Code tidak valid!';
             showNotification(errorMessage.value, 'error');
             return;
