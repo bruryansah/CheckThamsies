@@ -141,6 +141,30 @@ class AdminCon extends Controller
         }
     }
 
+    public function password()
+    {
+        $users = User::all();
+        return inertia('Admin/gantipassword', [
+            'users' => $users,
+        ]);
+    }
+
+    public function updatepass(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|exists:users,id',
+            'new_password' => 'required|min:6|confirmed',
+        ]);
+
+        $user = User::findOrFail($request->id);
+
+        $user->update([
+            'password' => Hash::make($request->new_password),
+        ]);
+
+        return redirect('/user')->with('success', 'Password user berhasil diubah!');
+    }
+
     // Menghapus Data users
     public function destroys($id)
     {
@@ -326,16 +350,36 @@ class AdminCon extends Controller
 
     // Siswa X Section Start
     // Menampilkan Data Siswa Kelas X RPL
-    public function siswax()
+    public function siswax(Request $request)
     {
+        // Ambil daftar kelas unik di tingkat X RPL
+        $kelasList = DB::table('siswa')
+            ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
+            ->where('kelas.tingkat_kelas', 'like', '1%')
+            ->pluck('kelas.nama_kelas')
+            ->unique()
+            ->values();
+
+        // Ambil filter kelas dari query string
+        $selectedKelas = $request->input('kelas');
+
+        // Query siswa
         $siswax = DB::table('siswa')
             ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
             ->join('jurusan', 'siswa.id_jurusan', '=', 'jurusan.id_jurusan')
             ->select('siswa.id_siswa', 'siswa.nama', 'siswa.email', 'kelas.nama_kelas as kelas', 'jurusan.nama_jurusan as jurusan')
-            ->where('kelas.nama_kelas', '=', 'X RPL') // Filter hanya kelas X RPL
-            ->paginate(5);
+            ->where('kelas.tingkat_kelas', 'like', '1%')
+            ->when($selectedKelas, function ($query, $kelas) {
+                return $query->where('kelas.nama_kelas', $kelas);
+            })
+            ->paginate(5)
+            ->appends($request->query());
 
-        return Inertia::render('Admin/xrpl', ['siswa' => $siswax]);
+        return Inertia::render('Admin/xrpl', [
+            'siswa' => $siswax,
+            'kelasList' => $kelasList,
+            'selectedKelas' => $selectedKelas,
+        ]);
     }
 
     // Menampilkan Form Tambah Siswa Kelas X RPL
@@ -424,16 +468,36 @@ class AdminCon extends Controller
 
     // Siswa XI Section Start
     // Menampilkan Data Siswa Kelas X RPL
-    public function siswaxi()
+public function siswaxi(Request $request)
     {
-        $siswa = DB::table('siswa')
+        // Ambil daftar kelas unik di tingkat X RPL
+        $kelasList = DB::table('siswa')
+            ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
+            ->where('kelas.tingkat_kelas', 'like', '2%')
+            ->pluck('kelas.nama_kelas')
+            ->unique()
+            ->values();
+
+        // Ambil filter kelas dari query string
+        $selectedKelas = $request->input('kelas');
+
+        // Query siswa
+        $siswaxi = DB::table('siswa')
             ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
             ->join('jurusan', 'siswa.id_jurusan', '=', 'jurusan.id_jurusan')
             ->select('siswa.id_siswa', 'siswa.nama', 'siswa.email', 'kelas.nama_kelas as kelas', 'jurusan.nama_jurusan as jurusan')
-            ->where('kelas.nama_kelas', '=', 'XI RPL') // Filter hanya kelas X RPL
-            ->paginate(5);
+            ->where('kelas.tingkat_kelas', 'like', '2%')
+            ->when($selectedKelas, function ($query, $kelas) {
+                return $query->where('kelas.nama_kelas', $kelas);
+            })
+            ->paginate(5)
+            ->appends($request->query());
 
-        return Inertia::render('Admin/xirpl', ['siswa' => $siswa]);
+        return Inertia::render('Admin/xirpl', [
+            'siswa' => $siswaxi,
+            'kelasList' => $kelasList,
+            'selectedKelas' => $selectedKelas,
+        ]);
     }
 
     // Menampilkan Form Tambah Siswa Kelas X RPL
@@ -523,16 +587,36 @@ class AdminCon extends Controller
 
     // Siswa XII Section Start
     // Menampilkan Data Siswa Kelas X RPL
-    public function siswaxii()
+    public function siswaxii(Request $request)
     {
-        $siswa = DB::table('siswa')
+        // Ambil daftar kelas unik di tingkat X RPL
+        $kelasList = DB::table('siswa')
+            ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
+            ->where('kelas.tingkat_kelas', 'like', '3%')
+            ->pluck('kelas.nama_kelas')
+            ->unique()
+            ->values();
+
+        // Ambil filter kelas dari query string
+        $selectedKelas = $request->input('kelas');
+
+        // Query siswa
+        $siswaxi = DB::table('siswa')
             ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
             ->join('jurusan', 'siswa.id_jurusan', '=', 'jurusan.id_jurusan')
             ->select('siswa.id_siswa', 'siswa.nama', 'siswa.email', 'kelas.nama_kelas as kelas', 'jurusan.nama_jurusan as jurusan')
-            ->where('kelas.nama_kelas', '=', 'XII RPL') // Filter hanya kelas X RPL
-            ->paginate(5);
+            ->where('kelas.tingkat_kelas', 'like', '3%')
+            ->when($selectedKelas, function ($query, $kelas) {
+                return $query->where('kelas.nama_kelas', $kelas);
+            })
+            ->paginate(5)
+            ->appends($request->query());
 
-        return Inertia::render('Admin/xiirpl', ['siswa' => $siswa]);
+        return Inertia::render('Admin/xrpl', [
+            'siswa' => $siswaxi,
+            'kelasList' => $kelasList,
+            'selectedKelas' => $selectedKelas,
+        ]);
     }
 
     // Menampilkan Form Tambah Siswa Kelas X RPL
@@ -562,7 +646,7 @@ class AdminCon extends Controller
             'jurusan' => $jurusan,
         ]);
     }
-        public function updatexii(Request $request, $id)
+    public function updatexii(Request $request, $id)
     {
         // Validasi data
         $validated = $request->validate([
@@ -590,7 +674,7 @@ class AdminCon extends Controller
         }
     }
 
-        public function destroyxii($id)
+    public function destroyxii($id)
     {
         DB::table('siswa')->where('id_siswa', operator: $id)->delete();
         return redirect('/siswaxii');

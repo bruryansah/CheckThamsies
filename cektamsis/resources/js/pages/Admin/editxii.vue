@@ -55,8 +55,8 @@
         user_id: '',
         nama: '',
         email: '',
-        id_kelas: '3',
-        id_jurusan: '1',
+        id_kelas: '',
+        id_jurusan: '',
     })
 
     // Isi form dengan data siswa X RPL saat component dimount
@@ -65,8 +65,8 @@
             form.user_id = props.siswa.user_id?.toString() || '';
             form.nama = props.siswa.nama || '';
             form.email = props.siswa.email || '';
-            form.id_kelas = props.siswa.id_kelas?.toString() || '1';
-            form.id_jurusan = props.siswa.id_jurusan?.toString() || '1';
+            form.id_kelas = props.siswa.id_kelas?.toString() || '';
+            form.id_jurusan = props.siswa.id_jurusan?.toString() || '   ';
         }
     });
 
@@ -79,8 +79,6 @@
             }
         }
     })
-
-
 </script>
 
 <template>
@@ -104,11 +102,10 @@
                             class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 focus:ring focus:ring-green-500 focus:outline-none">
                             <option value="">-- Pilih User --</option>
                             <option v-for="user in props.users" :key="user.id" :value="user.id">
-                                {{ user.name }}
+                                {{ user . name }}
                             </option>
                         </select>
-                        <span v-if="form.errors.user_id"
-                            class="text-red-500 text-sm">{{ form.errors.user_id }}</span>
+                        <span v-if="form.errors.user_id" class="text-red-500 text-sm">{{ form . errors . user_id }}</span>
                     </div>
 
                     <!-- Nama -->
@@ -117,7 +114,7 @@
                         <input v-model="form.nama" type="text"
                             class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 focus:ring focus:ring-green-500 focus:outline-none disabled:opacity-50"
                             placeholder="Masukkan nama siswa" />
-                        <span v-if="form.errors.nama" class="text-red-500 text-sm">{{ form.errors.nama }}</span>
+                        <span v-if="form.errors.nama" class="text-red-500 text-sm">{{ form . errors . nama }}</span>
                     </div>
 
                     <!-- Email -->
@@ -131,27 +128,33 @@
                     <!-- Kelas -->
                     <div>
                         <label class="block text-sm font-medium text-zinc-300 mb-1">Kelas</label>
-                        <!-- hanya tampilan -->
-                        <input type="text" readonly
-                            class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 opacity-50"
-                            value="X RPL" />
-                        <!-- hidden untuk submit id -->
-                        <input type="hidden" v-model="form.id_kelas" />
-                        <span v-if="form.errors.id_kelas"
-                            class="text-red-500 text-sm">{{ form.errors.id_kelas }}</span>
+                        <select v-model="form.id_kelas"
+                            class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 focus:ring focus:ring-green-500 focus:outline-none">
+                            <option value="">-- Pilih Kelas --</option>
+                            <option v-for="k in props.kelas" :key="k.id_kelas" :value="k.id_kelas">
+                                {{ k . nama_kelas }}
+                            </option>
+                        </select>
+                        <span v-if="form.errors.id_kelas" class="text-red-500 text-sm">
+                            {{ form . errors . id_kelas }}
+                        </span>
                     </div>
+
                     <!-- Jurusan -->
                     <div>
                         <label class="block text-sm font-medium text-zinc-300 mb-1">Jurusan</label>
-                        <!-- hanya tampilan -->
-                        <input type="text" readonly
-                            class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 opacity-50"
-                            value="Rekayasa Perangkat Lunak" />
-                        <!-- hidden untuk submit id -->
-                        <input type="hidden" v-model="form.id_jurusan" />
-                        <span v-if="form.errors.id_jurusan"
-                            class="text-red-500 text-sm">{{ form.errors.id_jurusan }}</span>
+                        <select v-model="form.id_jurusan"
+                            class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 focus:ring focus:ring-green-500 focus:outline-none">
+                            <option value="">-- Pilih Jurusan --</option>
+                            <option v-for="j in props.jurusan" :key="j.id_jurusan" :value="j.id_jurusan">
+                                {{ j . nama_jurusan }}
+                            </option>
+                        </select>
+                        <span v-if="form.errors.id_jurusan" class="text-red-500 text-sm">
+                            {{ form . errors . id_jurusan }}
+                        </span>
                     </div>
+
                     <!-- Tombol -->
                     <div class="flex justify-end gap-3">
                         <Link href="/xiirpl"
