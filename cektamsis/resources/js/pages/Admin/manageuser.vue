@@ -68,17 +68,29 @@ const proceedDelete = () => {
   <AppLayout :breadcrumbs="breadcrumbs">
     <div class="flex h-full flex-1 flex-col gap-6 p-6 overflow-x-auto">
       <div class="rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-lg">
-        <!-- Header -->
-        <div class="flex items-center justify-between mb-6">
-          <h1 class="text-xl font-semibold text-white">Data User</h1>
-          <TextLink
-            :href="route('user.tambah')"
-            class="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 transition"
-          >
-            <Plus class="h-4 w-4" />
-            Tambah User
-          </TextLink>
-        </div>
+<!-- Header -->
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-xl font-semibold text-white">Data User</h1>
+
+  <!-- ✅ Tombol disusun sejajar -->
+  <div class="flex gap-2">
+    <TextLink
+      :href="route('user.password')"
+      class="flex items-center gap-1 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 transition"
+    >
+      <Plus class="h-4 w-4" />
+      Ganti Password
+    </TextLink>
+    <TextLink
+      :href="route('user.tambah')"
+      class="flex items-center gap-1 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 transition"
+    >
+      <Plus class="h-4 w-4" />
+      Tambah User
+    </TextLink>
+  </div>
+</div>
+
 
         <!-- Table -->
         <div class="overflow-hidden rounded-lg border border-zinc-800">

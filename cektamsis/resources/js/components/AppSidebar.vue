@@ -120,9 +120,9 @@ const mainNavItems = [
     title: "Data Siswa",
     icon: GraduationCap,
     children: [
-      { title: "X RPL", href: "/siswax" },
-      { title: "XI RPL", href: "/siswaxi" },
-      { title: "XII RPL", href: "/siswaxii" },
+      { title: "Kelas X", href: "/siswax" },
+      { title: "Kelas XI", href: "/siswaxi" },
+      { title: "Kelas XII", href: "/siswaxii" },
     ],
   },
 ];
