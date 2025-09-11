@@ -426,22 +426,7 @@ onMounted(() => {
                     <h3 class="text-lg font-semibold text-gray-900">Absensi Pelajaran Terbaru</h3>
                 </div>
                 <div class="space-y-4">
-                    <div v-for="(item, index) in recentAttendance" :key="index" class="flex items-center gap-4 rounded-2xl p-2 hover:bg-gray-50">
-                        <div class="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
-                            <span class="text-sm font-medium text-blue-600">{{ item.name.charAt(0) }}</span>
-                        </div>
-                        <div class="flex-1">
-                            <h4 class="font-medium text-gray-900">{{ item.name }}</h4>
-                            <p class="text-sm text-gray-500">{{ item.time }}</p>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <div :class="`h-2 w-2 rounded-full ${item.color}`"></div>
-                            <span class="text-sm font-medium" :class="item.status === 'Hadir' ? 'text-green-600' : item.status === 'Terlambat' ? 'text-yellow-600' : 'text-red-600'">{{ item.status }}</span>
-                        </div>
-                    </div>
-                    <div v-if="recentAttendance.length === 0" class="text-center text-gray-500">
-                        Tidak ada data absensi pelajaran terbaru.
-                    </div>
+                    
                 </div>
             </div>
         </div>
