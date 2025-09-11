@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\DB;
+use App\Models\Guru;
 
 use Inertia\Inertia;
-use App\Models\Guru;
 use App\Models\Jadwal;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 
 class JadwalController extends Controller
 {
@@ -26,18 +28,14 @@ class JadwalController extends Controller
             ]);
         }
 
-        $jadwal = Jadwal::with(['mapel', 'guru.kelas'])
-            ->where('id_guru', $guru->id_guru)
-            ->get();
-
 
         $jadwal = Jadwal::with(['mapel', 'kelas'])
             ->where('id_guru', $guru->id_guru)
             ->get();
 
-        $jadwalFormatted = $jadwal->map(function ($item) {
+       $jadwalFormatted = $jadwal->map(function ($item) {
             return [
-                'id_jadwal'             => $item->id_jadwal,
+                'id_jadwal'      => $item->id_jadwal,
                 'mata_pelajaran' => $item->mapel->nama_mapel ?? '-',
                 'nama_kelas'     => $item->kelas->nama_kelas ?? '-',
                 'kelas_id'       => $item->guru->kelas->id_kelas ?? null,
@@ -45,9 +43,11 @@ class JadwalController extends Controller
                 'jam_mulai'      => $item->jam_mulai,
                 'jam_selesai'    => $item->jam_selesai,
                 'guru_id'        => $item->id_guru,
+                'idenc' => Crypt::encryptString(
+                    $item->id_jadwal.'|'.$item->id_guru.'|'.$item->id_qr.'|'.now()->addMinutes(5)->format('Y-m-d H:i:s')
+                )
             ];
         });
-
 
 
         $kelasList = \App\Models\Kelas::select('id_kelas as id', 'nama_kelas')->get();
