@@ -249,6 +249,26 @@ const onDetect = (detectedCodes: QrCodeResult[]) => {
             return;
         }
 
+       router.post('/absensi-pelajaran/checkin', { id_jadwal }, {
+    onSuccess: () => {
+        fetchStatus();
+        showNotification('✅ Absensi Pelajaran berhasil!', 'success');
+        refreshAttendance();
+    },
+   onError: (errors) => {
+    const msg = errors.message || '❌ Gagal absen, coba lagi!';
+    if (msg.includes('sudah absen')) {
+        errorMessage.value = '❌ Kamu sudah absen untuk jadwal ini.';
+    } else if (msg.includes('expired')) {
+        errorMessage.value = '⏰ QR Code sudah kedaluwarsa.';
+    } else {
+        errorMessage.value = msg;
+    }
+    showNotification(errorMessage.value, 'error');
+},
+
+});
+
         router.post('/absensi-pelajaran/checkin', { id_jadwal }, {
             onSuccess: () => {
                 fetchStatus();
