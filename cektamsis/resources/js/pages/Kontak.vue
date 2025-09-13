@@ -81,19 +81,19 @@ const contactInfo = ref([
     {
         icon: '📍',
         title: 'Alamat Sekolah',
-        content: 'Jl. Taman Siswa No. 18, Kramat\nJakarta Pusat 10450\nDKI Jakarta, Indonesia',
+        content: 'Jl. Garuda No. 44, Kemayoran\nJakarta Pusat 10450\nDKI Jakarta, Indonesia',
         color: 'from-blue-500 to-cyan-500',
     },
     {
         icon: '📞',
         title: 'Telepon',
-        content: '(021) 3190747\n(021) 3190748',
+        content: '(021) 4208347',
         color: 'from-green-500 to-emerald-500',
     },
     {
         icon: '✉️',
         title: 'Email',
-        content: 'info@smktamansiswa2jkt.sch.id\nadmin@smktamansiswa2jkt.sch.id',
+        content: 'info@smktamansiswa2jkt.sch.id',
         color: 'from-purple-500 to-pink-500',
     },
     {
