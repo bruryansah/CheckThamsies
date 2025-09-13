@@ -40,6 +40,8 @@ Route::get('/user/tambah', [AdminCon::class, 'tambahs'])->name('user.tambah');
 Route::post('/user/tambahstore', [AdminCon::class, 'stores']);
 Route::get('/user/edit/{id}', [AdminCon::class, 'edits'])->name('user.edit');
 Route::put('/user/update/{id}', [AdminCon::class, 'updates']);
+Route::get('/user/password', [AdminCon::class, 'password'])->name('user.password');
+Route::post('/user/updatepass', [AdminCon::class, 'updatepass'])->name('user.updatepass');
 Route::get('/user/delete/{id}', [AdminCon::class, 'destroys'])->name('user.hapus');
 // Users Route End
 
@@ -125,12 +127,9 @@ Route::get('/jadwal/delete/{id}', [AdminCon::class, 'destroyd'])->name('jadwal.h
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
-//
 
 // MULTI USERRRRRRRRRRRRRRRRRRRRR
-
 use App\Enums\UserRole;
-
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\JadwalController;
 
@@ -190,10 +189,7 @@ Route::post('/reset-password', [NewPasswordController::class, 'store'])
     ->middleware('guest')
     ->name('password.store');
 
-
-
 Route::middleware(['auth'])->group(function () {
-
     Route::post('/user/dashboard', [AbsenController::class, 'index'])->name('absen');
     // Absen Masuk
     Route::post('/absen/checkin', [AbsenController::class, 'checkIn'])->name('absen.checkin');
@@ -208,7 +204,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/absen/status', [AbsenController::class, 'status'])->name('absen.status');
 });
-
 
 use App\Http\Controllers\StudentPasswordController;
 
@@ -226,4 +221,3 @@ Route::post('/absensi-pelajaran/checkin', [\App\Http\Controllers\AbsenPelajaranC
     ->middleware(['auth', 'verified']);
 
 Route::get('/absen/latest-status', [AbsenController::class, 'latestStatus'])->name('absen.latest-status');
-

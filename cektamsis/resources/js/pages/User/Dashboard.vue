@@ -121,12 +121,6 @@ const stats = computed(() => ({
     waktuAbsen: '',
 }));
 
-// Recent Attendance
-const recentAttendance = computed(() => {
-    console.log('Computed recentAttendance:', props.recentAttendance);
-    return props.recentAttendance || [];
-});
-
 // Status Select
 const selectedStatus = ref('hadir');
 
@@ -170,7 +164,7 @@ const fetchStatus = async () => {
 
 // Refresh attendance data
 const refreshAttendance = async () => {
-    await router.get(route('dashboard'), {}, {
+    await router.get(route('user.dashboard'), {}, {
         onSuccess: (page) => {
             console.log('Attendance data refreshed');
         },
@@ -275,6 +269,20 @@ const onDetect = (detectedCodes: QrCodeResult[]) => {
 
 });
 
+        router.post('/absensi-pelajaran/checkin', { id_jadwal }, {
+            onSuccess: () => {
+                fetchStatus();
+                showNotification('✅ Absensi Pelajaran berhasil!', 'success');
+                refreshAttendance();
+            },
+            onError: (errors) => {
+                errorMessage.value = errors.message || '❌ Gagal absen, coba lagi!';
+                if (errors.message === 'Kamu sudah absen di jadwal ini!') {
+                    errorMessage.value = '❌ Kamu sudah absen untuk jadwal ini.';
+                }
+                showNotification(errorMessage.value, 'error');
+            },
+        });
     }
 };
 
@@ -300,7 +308,7 @@ const submitPasswordChange = () => {
 };
 
 // Lifecycle
-onMounted(() => {
+onMounted(async () => {
     const now = new Date().toLocaleString('id-ID', {
         timeZone: 'Asia/Jakarta',
         weekday: 'long',
@@ -431,7 +439,12 @@ onMounted(() => {
                     <h3 class="text-lg font-semibold text-gray-900">Absensi Pelajaran Terbaru</h3>
                 </div>
                 <div class="space-y-4">
-                    
+                    <div v-for="(attendance, index) in props.recentAttendance" :key="index" class="rounded-2xl border border-gray-200 p-4 hover:bg-gray-50">
+                        <p class="text-sm font-medium text-gray-900">Mata Pelajaran: {{ attendance.name }}</p>
+                        <p class="text-xs text-gray-500">Waktu: {{ attendance.time }}</p>
+                        <p class="text-sm font-medium text-gray-900">Status: <span :class="`text-${attendance.color}-600`">{{ attendance.status }}</span></p>
+                    </div>
+                    <p v-if="props.recentAttendance.length === 0" class="text-center text-gray-500">Tidak ada data absensi pelajaran terbaru.</p>
                 </div>
             </div>
         </div>
@@ -469,7 +482,7 @@ onMounted(() => {
             <div class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white shadow-2xl" @click.stop>
                 <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4">
                     <div class="flex items-center gap-2">
-                        <Lock class="h-5 w-5 text-blue-600" />
+                        <Lock class="h-4 w-4 text-blue-600" />
                         <h2 class="text-lg font-semibold text-gray-900">Ubah Password</h2>
                     </div>
                     <button @click="closePasswordModal" type="button" class="text-gray-400 transition-colors hover:text-gray-600">✕</button>

@@ -27,33 +27,64 @@
 
                     <!-- Settings Dropdown -->
                     <div class="dropdown-container relative">
-                        <button @click="toggleDropdown"
-                            class="flex items-center gap-2 rounded-xl bg-white/80 px-4 py-2 font-medium text-gray-700 shadow-md backdrop-blur-md hover:bg-white/90 transition-all duration-300">
+                        <button
+                            @click="toggleDropdown"
+                            class="flex items-center gap-2 rounded-xl bg-white/80 px-4 py-2 font-medium text-gray-700 shadow-md backdrop-blur-md transition-all duration-300 hover:bg-white/90"
+                        >
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                                ></path>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                            </svg> 
+                            </svg>
                             Pengaturan
-                            <svg class="h-4 w-4 transition-transform duration-300" :class="{ 'rotate-180': dropdownOpen }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg
+                                class="h-4 w-4 transition-transform duration-300"
+                                :class="{ 'rotate-180': dropdownOpen }"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                             </svg>
                         </button>
                         <transition name="dropdown">
-                            <div v-if="dropdownOpen"
-                                class="absolute top-full right-0 z-10 mt-2 w-48 rounded-xl border border-gray-200 bg-white shadow-xl backdrop-blur-md">
+                            <div
+                                v-if="dropdownOpen"
+                                class="absolute top-full right-0 z-10 mt-2 w-48 rounded-xl border border-gray-200 bg-white shadow-xl backdrop-blur-md"
+                            >
                                 <div class="p-2">
                                     <button
-                                        @click="showChangePasswordModal = true; closeDropdown();"
-                                        class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-gray-700 hover:bg-gray-100 transition-colors duration-200">
+                                        @click="
+                                            showChangePasswordModal = true;
+                                            closeDropdown();
+                                        "
+                                        class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-gray-700 transition-colors duration-200 hover:bg-gray-100"
+                                    >
                                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                                            ></path>
                                         </svg>
                                         Ubah Password
                                     </button>
-                                    <button @click="logout"
-                                        class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-red-600 hover:bg-red-50 transition-colors duration-200">
+                                    <button
+                                        @click="logout"
+                                        class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-red-600 transition-colors duration-200 hover:bg-red-50"
+                                    >
                                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                                            ></path>
                                         </svg>
                                         Logout
                                     </button>
@@ -65,11 +96,11 @@
             </div>
         </header>
 
-        <main class="mx-auto max-w-7xl px-4 py-8 pt-25 sm:px-6 lg:px-8">
-            <!-- Stats cards remain the same -->
+        <main class="mx-auto max-w-7xl px-4 py-8 pt-38 sm:px-6 lg:px-8">
+            <!-- Stats cards -->
             <div class="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
                 <div
-                    v-for="(stat, index) in stats"
+                    v-for="(stat, index) in dynamicStats"
                     :key="index"
                     class="group transform rounded-2xl border border-white/30 bg-white/80 p-6 shadow-lg backdrop-blur-md transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl"
                     :style="{ animationDelay: `${index * 100}ms` }"
@@ -83,14 +114,20 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="stat.icon"></path>
                             </svg>
                         </div>
-                        <span :class="stat.textColor" class="text-sm font-medium">{{ stat.change }}</span>
+                        <span :class="stat.textColor" class="text-sm font-medium">
+                            {{ stat.change }}
+                        </span>
                     </div>
-                    <h3 class="mb-1 text-2xl font-bold text-gray-900">{{ stat.value }}</h3>
-                    <p class="text-sm text-gray-600">{{ stat.label }}</p>
+                    <h3 class="mb-1 text-2xl font-bold text-gray-900">
+                        {{ stat.value }}
+                    </h3>
+                    <p class="text-sm text-gray-600">
+                        {{ stat.label }}
+                    </p>
                 </div>
             </div>
 
-            <!-- Rest of the dashboard content remains the same -->
+            <!-- Rest of the dashboard content -->
             <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
                 <div class="space-y-8 lg:col-span-2">
                     <!-- Quick Actions Card -->
@@ -329,15 +366,17 @@
                             >
                                 <div class="flex items-center space-x-3">
                                     <div class="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-blue-400 to-blue-600">
-                                        <span class="text-xs font-bold text-white">{{ attendance.name.charAt(0) }}</span>
+                                        <span class="text-xs font-bold text-white">{{
+                                            (attendance.name || attendance.nama_siswa || 'U').charAt(0)
+                                        }}</span>
                                     </div>
                                     <div>
-                                        <p class="text-sm font-medium text-gray-900">{{ attendance.name }}</p>
-                                        <p class="text-xs text-gray-500">{{ attendance.time }}</p>
+                                        <p class="text-sm font-medium text-gray-900">{{ attendance.name || attendance.nama_siswa }}</p>
+                                        <p class="text-xs text-gray-500">{{ attendance.time || attendance.waktu }}</p>
                                     </div>
                                 </div>
                                 <span class="rounded-full px-2 py-1 text-xs font-medium" :class="getAttendanceStatusClass(attendance)">
-                                    {{ attendance.status }}
+                                    {{ attendance.displayStatus }}
                                 </span>
                             </div>
                         </div>
@@ -434,8 +473,8 @@
                         @change="filterAttendanceData"
                         class="rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
                     >
-                        <option value="">Semua Kelas</option>
-                        <option v-for="kelas in kelasData" :key="kelas.id" :value="kelas.nama_kelas">
+                        <option value="">Semua Kelas (yang diajar)</option>
+                        <option v-for="kelas in filteredKelasData" :key="kelas.id" :value="kelas.nama_kelas">
                             {{ kelas.nama_kelas }}
                         </option>
                     </select>
@@ -445,7 +484,7 @@
                         @change="filterAttendanceData"
                         class="rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
                     >
-                        <option value="">Semua Mata Pelajaran</option>
+                        <option value="">Semua Mata Pelajaran (yang diajar)</option>
                         <option v-for="subject in availableSubjects" :key="subject" :value="subject">
                             {{ subject }}
                         </option>
@@ -470,93 +509,128 @@
                                 :key="index"
                                 class="border-b transition-colors duration-200 hover:bg-gray-50"
                             >
-                                <td class="px-4 py-3">{{ student.name }}</td>
-                                <td class="px-4 py-3">{{ student.class }}</td>
-                                <td class="px-4 py-3">{{ student.subject }}</td>
-                                <td class="px-4 py-3">{{ student.date }}</td>
-                                <td class="px-4 py-3">{{ student.time }}</td>
+                                <td class="px-4 py-3">{{ student.name || student.nama_siswa }}</td>
+                                <td class="px-4 py-3">{{ student.class || student.nama_kelas }}</td>
+                                <td class="px-4 py-3">{{ student.subject || student.mata_pelajaran }}</td>
+                                <td class="px-4 py-3">{{ student.date || student.tanggal }}</td>
+                                <td class="px-4 py-3">{{ student.time || student.waktu }}</td>
                                 <td class="px-4 py-3">
-                                    <span class="rounded-full px-3 py-1 text-xs font-medium" :class="getAttendanceStatusClass(student)">
-                                        {{ student.status }}
+                                    <span
+                                        class="rounded px-2 py-1 text-xs font-semibold"
+                                        :class="getAttendanceStatusClass(processAttendanceStatus(student))"
+                                    >
+                                        {{ processAttendanceStatus(student).displayStatus }}
                                     </span>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
+
+                    <div v-if="filteredAttendanceData.length === 0" class="py-8 text-center">
+                        <svg class="mx-auto mb-4 h-16 w-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2"
+                            ></path>
+                        </svg>
+                        <p class="text-gray-500">Tidak ada data absensi untuk kelas dan mata pelajaran yang Anda ajar</p>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Change Password Modal -->
-        <div v-if="showChangePasswordModal"
+        <div
+            v-if="showChangePasswordModal"
             class="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
-            @click.self="closePasswordModal">
+            @click.self="closePasswordModal"
+        >
             <div class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white shadow-2xl" @click.stop>
                 <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4">
                     <div class="flex items-center gap-2">
                         <svg class="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                            ></path>
                         </svg>
                         <h2 class="text-lg font-semibold text-gray-900">Ubah Password</h2>
                     </div>
-                    <button @click="closePasswordModal" type="button"
-                        class="text-gray-400 transition-colors hover:text-gray-600">✕</button>
+                    <button @click="closePasswordModal" type="button" class="text-gray-400 transition-colors hover:text-gray-600">✕</button>
                 </div>
-                <form @submit.prevent="submitPasswordChange" class="p-6 space-y-4">
+                <form @submit.prevent="submitPasswordChange" class="space-y-4 p-6">
                     <!-- Current Password -->
                     <div>
-                        <label for="current_password" class="block text-sm font-medium text-gray-700 mb-2">
-                            Password Saat Ini
-                        </label>
-                        <input id="current_password" type="password" v-model="passwordForm.current_password"
-                            class="w-full rounded-lg border border-gray-300 p-3 text-gray-900 placeholder-gray-400
-                   focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        <label for="current_password" class="mb-2 block text-sm font-medium text-gray-700"> Password Saat Ini </label>
+                        <input
+                            id="current_password"
+                            type="password"
+                            v-model="passwordForm.current_password"
+                            class="w-full rounded-lg border border-gray-300 p-3 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                             :class="{ 'border-red-500': passwordErrors.current_password }"
-                            placeholder="Masukkan password saat ini" autocomplete="current-password" required />
-                        <p v-if="passwordErrors.current_password" class="text-red-500 text-sm mt-1">
+                            placeholder="Masukkan password saat ini"
+                            autocomplete="current-password"
+                            required
+                        />
+                        <p v-if="passwordErrors.current_password" class="mt-1 text-sm text-red-500">
                             {{ passwordErrors.current_password[0] }}
                         </p>
                     </div>
 
                     <!-- New Password -->
                     <div>
-                        <label for="new_password" class="block text-sm font-medium text-gray-700 mb-2">
-                            Password Baru
-                        </label>
-                        <input id="new_password" type="password" v-model="passwordForm.new_password"
-                            class="w-full rounded-lg border border-gray-300 p-3 text-gray-900 placeholder-gray-400
-                   focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        <label for="new_password" class="mb-2 block text-sm font-medium text-gray-700"> Password Baru </label>
+                        <input
+                            id="new_password"
+                            type="password"
+                            v-model="passwordForm.new_password"
+                            class="w-full rounded-lg border border-gray-300 p-3 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                             :class="{ 'border-red-500': passwordErrors.new_password }"
-                            placeholder="Masukkan password baru (min. 8 karakter)" autocomplete="new-password" required />
-                        <p v-if="passwordErrors.new_password" class="text-red-500 text-sm mt-1">
+                            placeholder="Masukkan password baru (min. 8 karakter)"
+                            autocomplete="new-password"
+                            required
+                        />
+                        <p v-if="passwordErrors.new_password" class="mt-1 text-sm text-red-500">
                             {{ passwordErrors.new_password[0] }}
                         </p>
                     </div>
 
                     <!-- Confirm New Password -->
                     <div>
-                        <label for="new_password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">
-                            Konfirmasi Password Baru
-                        </label>
-                        <input id="new_password_confirmation" type="password"
+                        <label for="new_password_confirmation" class="mb-2 block text-sm font-medium text-gray-700"> Konfirmasi Password Baru </label>
+                        <input
+                            id="new_password_confirmation"
+                            type="password"
                             v-model="passwordForm.new_password_confirmation"
-                            class="w-full rounded-lg border border-gray-300 p-3 text-gray-900 placeholder-gray-400
-                   focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                            class="w-full rounded-lg border border-gray-300 p-3 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                             :class="{ 'border-red-500': passwordErrors.new_password_confirmation }"
-                            placeholder="Konfirmasi password baru" autocomplete="new-password" required />
-                        <p v-if="passwordErrors.new_password_confirmation" class="text-red-500 text-sm mt-1">
+                            placeholder="Konfirmasi password baru"
+                            autocomplete="new-password"
+                            required
+                        />
+                        <p v-if="passwordErrors.new_password_confirmation" class="mt-1 text-sm text-red-500">
                             {{ passwordErrors.new_password_confirmation[0] }}
                         </p>
                     </div>
 
                     <!-- Action Buttons -->
                     <div class="flex gap-3 pt-4">
-                        <button type="button" @click="closePasswordModal"
-                            class="flex-1 rounded-xl bg-gray-500 py-3 text-white font-medium transition-colors hover:bg-gray-600">
+                        <button
+                            type="button"
+                            @click="closePasswordModal"
+                            class="flex-1 rounded-xl bg-gray-500 py-3 font-medium text-white transition-colors hover:bg-gray-600"
+                        >
                             Batal
                         </button>
-                        <button type="submit" :disabled="processingPassword"
-                            class="flex-1 rounded-xl bg-blue-600 py-3 text-white font-medium transition-colors hover:bg-blue-700 disabled:bg-blue-400">
+                        <button
+                            type="submit"
+                            :disabled="processingPassword"
+                            class="flex-1 rounded-xl bg-blue-600 py-3 font-medium text-white transition-colors hover:bg-blue-700 disabled:bg-blue-400"
+                        >
                             <span v-if="processingPassword">Mengubah...</span>
                             <span v-else>Ubah Password</span>
                         </button>
@@ -566,27 +640,38 @@
         </div>
 
         <!-- Confirmation Modal -->
-        <div v-if="showConfirmationModal"
+        <div
+            v-if="showConfirmationModal"
             class="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
-            @click.self="closeConfirmModal">
+            @click.self="closeConfirmModal"
+        >
             <div class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white shadow-2xl" @click.stop>
                 <div class="p-6">
-                    <div class="flex items-center justify-center mb-4">
+                    <div class="mb-4 flex items-center justify-center">
                         <div class="flex h-12 w-12 items-center justify-center rounded-full bg-yellow-100">
                             <svg class="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+                                ></path>
                             </svg>
                         </div>
                     </div>
-                    <h3 class="text-lg font-semibold text-gray-900 text-center mb-2">Konfirmasi</h3>
-                    <p class="text-gray-600 text-center mb-6">{{ confirmationMessage }}</p>
+                    <h3 class="mb-2 text-center text-lg font-semibold text-gray-900">Konfirmasi</h3>
+                    <p class="mb-6 text-center text-gray-600">{{ confirmationMessage }}</p>
                     <div class="flex gap-3">
-                        <button @click="closeConfirmModal"
-                            class="flex-1 rounded-xl bg-gray-500 py-3 text-white font-medium transition-colors hover:bg-gray-600">
+                        <button
+                            @click="closeConfirmModal"
+                            class="flex-1 rounded-xl bg-gray-500 py-3 font-medium text-white transition-colors hover:bg-gray-600"
+                        >
                             Batal
                         </button>
-                        <button @click="confirmAction"
-                            class="flex-1 rounded-xl bg-blue-600 py-3 text-white font-medium transition-colors hover:bg-blue-700">
+                        <button
+                            @click="confirmAction"
+                            class="flex-1 rounded-xl bg-blue-600 py-3 font-medium text-white transition-colors hover:bg-blue-700"
+                        >
                             Ya, Lanjutkan
                         </button>
                     </div>
@@ -596,8 +681,7 @@
 
         <!-- Toast Notification -->
         <transition name="fade-scale">
-            <div v-if="showToast"
-                class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+            <div v-if="showToast" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
                 <div class="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-2xl">
                     <!-- Success Animation -->
                     <div v-if="toastType === 'success'" class="mx-auto mb-4 h-16 w-16">
@@ -608,12 +692,9 @@
                     </div>
 
                     <!-- Error Icon -->
-                    <div v-else
-                        class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
-                        <svg class="h-10 w-10 text-red-600" fill="none" stroke="currentColor"
-                            viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12" />
+                    <div v-else class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
+                        <svg class="h-10 w-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </div>
 
@@ -626,8 +707,10 @@
                     <p class="mb-6 text-gray-600">{{ toastMessage }}</p>
 
                     <!-- Action -->
-                    <button @click="showToast = false"
-                        class="w-full rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-2 font-medium text-white shadow hover:from-blue-700 hover:to-purple-700">
+                    <button
+                        @click="showToast = false"
+                        class="w-full rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-2 font-medium text-white shadow hover:from-blue-700 hover:to-purple-700"
+                    >
                         Tutup
                     </button>
                 </div>
@@ -653,10 +736,25 @@ const props = defineProps({
     kelasData: { type: Array, default: () => [] },
 });
 
+// Filter attendance data based on teacher's schedule
+const filteredAbsensiData = computed(() => {
+    if (!props.absensiData || !props.jadwalData) return [];
+
+    return props.absensiData.filter((absensi) => {
+        // Check if this attendance record matches any of the teacher's scheduled classes
+        return props.jadwalData.some(
+            (jadwal) =>
+                jadwal.mata_pelajaran === (absensi.subject || absensi.mata_pelajaran) &&
+                jadwal.nama_kelas === (absensi.class || absensi.nama_kelas) &&
+                jadwal.tanggal === (absensi.date || absensi.tanggal),
+        );
+    });
+});
+
 // Reactive data
 const localAbsensiData = ref(props.absensiData ?? []);
-const allAttendanceData = ref(localAbsensiData.value ?? []);
-const filteredAttendanceData = ref([...allAttendanceData.value]);
+const allAttendanceData = ref(filteredAbsensiData.value ?? []);
+const filteredAttendanceData = ref([...filteredAbsensiData.value]);
 const teacherName = ref(props.guru?.nama ?? 'Guru');
 const showAttendanceModal = ref(false);
 const jadwalData = ref(props.jadwalData ?? []);
@@ -748,15 +846,8 @@ const submitPasswordChange = () => {
             closePasswordModal();
         },
         onError: (errors) => {
-            // Handle specific error for wrong current password
-            
-            
             // Set form errors for field highlighting
-            passwordErrors.value = Object.fromEntries(
-                Object.entries(errors).map(([key, val]) => [
-                    key, Array.isArray(val) ? val : [val]
-                ])
-            );
+            passwordErrors.value = Object.fromEntries(Object.entries(errors).map(([key, val]) => [key, Array.isArray(val) ? val : [val]]));
         },
         onFinish: () => (processingPassword.value = false),
     });
@@ -779,21 +870,49 @@ function handleScroll() {
     lastScrollY = window.scrollY;
 }
 
-/**
- * 🔹 Attendance Status Classification
- */
-const LATE_TIME_THRESHOLD = '06:45';
+const processAttendanceStatus = (attendance) => {
+    const mapel = attendance.subject || attendance.mata_pelajaran;
+    const kelas = attendance.class || attendance.nama_kelas;
+    const tanggal = attendance.date || attendance.tanggal;
+
+    // Find matching schedule
+    const jadwal = jadwalData.value.find((j) => j.mata_pelajaran === mapel && j.nama_kelas === kelas && j.tanggal === tanggal);
+
+    let displayStatus = attendance.status;
+
+    if (jadwal && displayStatus.toLowerCase() === 'hadir') {
+        const attendanceTime = attendance.time || attendance.waktu;
+        const scheduleStartTime = jadwal.jam_mulai;
+
+        // Parse time strings
+        const [attendanceHours, attendanceMinutes] = attendanceTime.split(':').map(Number);
+        const [scheduleHours, scheduleMinutes] = scheduleStartTime.split(':').map(Number);
+
+        // Convert to minutes for comparison
+        const attendanceInMinutes = attendanceHours * 60 + attendanceMinutes;
+        const scheduleInMinutes = scheduleHours * 60 + scheduleMinutes;
+
+        // Grace period: 10 minutes after start time
+        const lateThreshold = scheduleInMinutes + 10;
+
+        if (attendanceInMinutes > lateThreshold) {
+            displayStatus = 'Terlambat';
+        }
+    }
+
+    return {
+        ...attendance,
+        displayStatus,
+        originalStatus: attendance.status,
+        scheduleInfo: jadwal || null,
+    };
+};
 
 const getAttendanceStatusClass = (student) => {
-    const status = (student.status || '').toLowerCase();
-    const attendanceTime = student.time || student.waktu;
+    const status = (student.displayStatus || student.status || '').toLowerCase();
 
     if (status === 'hadir') {
-        if (attendanceTime && attendanceTime > LATE_TIME_THRESHOLD) {
-            return 'bg-red-100 text-red-800 border border-red-300';
-        } else {
-            return 'bg-green-100 text-green-800 border border-green-300';
-        }
+        return 'bg-green-100 text-green-800 border border-green-300';
     } else if (status === 'terlambat') {
         return 'bg-red-100 text-red-800 border border-red-300';
     } else if (['alpha', 'izin', 'sakit', 'tidak hadir', 'alpa'].includes(status)) {
@@ -803,20 +922,182 @@ const getAttendanceStatusClass = (student) => {
     }
 };
 
-const processAttendanceStatus = (attendance) => {
-    if (attendance.status === 'Hadir' && attendance.time > LATE_TIME_THRESHOLD) {
-        return {
-            ...attendance,
-            displayStatus: 'Terlambat',
-            originalStatus: attendance.status,
-        };
-    }
+// Computed Properties with Dynamic Data
+const dynamicStats = computed(() => {
+    // Use filtered attendance data instead of all attendance data
+    const attendanceData = filteredAbsensiData.value;
+
+    // Calculate total unique students from filtered attendance data
+    const uniqueStudents = [...new Set(attendanceData.map((a) => a.name || a.nama_siswa))].length;
+
+    // Calculate total unique classes from schedule data
+    const uniqueClasses = [...new Set(props.jadwalData.map((j) => j.nama_kelas))].length;
+
+    // Calculate total unique subjects from schedule data
+    const uniqueSubjects = [...new Set(props.jadwalData.map((j) => j.mata_pelajaran))].length;
+
+    // Calculate today's attendance from filtered data
+    const today = new Date().toISOString().split('T')[0];
+    const todayAttendance = attendanceData.filter((a) => {
+        const recordDate = a.tanggal || a.date;
+        return recordDate === today || recordDate === new Date().toLocaleDateString('en-CA');
+    });
+
+    // Count students present today
+    const presentToday = todayAttendance.filter((a) => {
+        const status = (a.status || '').toLowerCase();
+        return status === 'hadir';
+    }).length;
+
+    return [
+        {
+            label: 'Total Siswa (yang diajar)',
+            value: uniqueStudents || '0',
+            change: uniqueStudents > 0 ? `${uniqueStudents} siswa` : 'Belum ada',
+            icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
+            bgColor: 'bg-gradient-to-r from-blue-500 to-blue-600',
+            textColor: 'text-blue-600',
+        },
+        {
+            label: 'Hadir Hari Ini',
+            value: presentToday || '0',
+            change: todayAttendance.length > 0 ? `${presentToday}/${todayAttendance.length}` : 'Belum ada',
+            icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
+            bgColor: 'bg-gradient-to-r from-green-500 to-green-600',
+            textColor: 'text-green-600',
+        },
+        {
+            label: 'Kelas yang Diajar',
+            value: uniqueClasses || '0',
+            change: uniqueClasses > 0 ? `${uniqueClasses} kelas` : 'Belum ada',
+            icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
+            bgColor: 'bg-gradient-to-r from-purple-500 to-purple-600',
+            textColor: 'text-purple-600',
+        },
+        {
+            label: 'Mata Pelajaran',
+            value: uniqueSubjects || '0',
+            change: uniqueSubjects > 0 ? `${uniqueSubjects} mapel` : 'Belum ada',
+            icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253',
+            bgColor: 'bg-gradient-to-r from-orange-500 to-orange-600',
+            textColor: 'text-orange-600',
+        },
+    ];
+});
+
+const recentAttendance = computed(() => {
+    return [...filteredAbsensiData.value]
+        .sort((a, b) => new Date(b.tanggal + ' ' + b.waktu) - new Date(a.tanggal + ' ' + a.waktu))
+        .slice(0, 5)
+        .map((attendance) => processAttendanceStatus(attendance));
+});
+
+const attendanceStats = computed(() => {
+    const todayData = filteredAbsensiData.value.filter((a) => {
+        const recordDate = a.tanggal || a.date;
+        return recordDate === today || recordDate === new Date().toLocaleDateString('en-CA');
+    });
+
+    const dataToProcess = todayData.length > 0 ? todayData : filteredAbsensiData.value;
+    const total = dataToProcess.length || 1;
+
+    let hadirCount = 0;
+    let terlambatCount = 0;
+    const lateMap = {};
+
+    dataToProcess.forEach((a) => {
+        const processedAttendance = processAttendanceStatus(a);
+        const status = processedAttendance.displayStatus.toLowerCase();
+        const studentName = a.name || a.nama_siswa || 'Unknown';
+
+        if (status === 'hadir') {
+            hadirCount++;
+        } else if (status === 'terlambat') {
+            terlambatCount++;
+            lateMap[studentName] = (lateMap[studentName] || 0) + 1;
+        }
+    });
+
+    const alphaIzinSakitCount = dataToProcess.filter((a) => {
+        const status = (a.status || '').toLowerCase();
+        return ['alpha', 'izin', 'sakit', 'tidak hadir', 'alpa'].includes(status);
+    }).length;
+
+    const topLateStudents = Object.entries(lateMap)
+        .map(([name, count]) => ({ name, lateCount: count }))
+        .slice(0, 5);
+
     return {
-        ...attendance,
-        displayStatus: attendance.status,
-        originalStatus: attendance.status,
+        hadirPct: Math.round((hadirCount / total) * 100),
+        terlambatPct: Math.round((terlambatCount / total) * 100),
+        alphaIzinSakitPct: Math.round((alphaIzinSakitCount / total) * 100),
+        topLateStudents,
+        counts: {
+            hadir: hadirCount,
+            terlambat: terlambatCount,
+            alphaIzinSakit: alphaIzinSakitCount,
+            total,
+        },
     };
-};
+});
+
+const availableSubjects = computed(() => {
+    return [...new Set(props.jadwalData.map((item) => item.mata_pelajaran))];
+});
+
+// Filter kelas data to only show classes that the teacher teaches
+const filteredKelasData = computed(() => {
+    const teacherClasses = [...new Set(props.jadwalData.map((jadwal) => jadwal.nama_kelas))];
+    return props.kelasData.filter((kelas) => teacherClasses.includes(kelas.nama_kelas));
+});
+
+const availableDates = computed(() => {
+    if (!jadwalData.value) return [];
+    return [...new Set(jadwalData.value.map((item) => item.tanggal))].sort();
+});
+
+const availableYears = computed(() => {
+    if (!jadwalData.value) return [];
+    return [...new Set(jadwalData.value.map((item) => new Date(item.tanggal).getFullYear()))].sort();
+});
+
+const filteredSchedule = computed(() => {
+    let filtered = jadwalData.value ?? [];
+
+    if (selectedDate.value) {
+        filtered = filtered.filter((item) => item.tanggal === selectedDate.value);
+    }
+    if (selectedMonth.value) {
+        filtered = filtered.filter((item) => {
+            const itemMonth = new Date(item.tanggal).getMonth() + 1;
+            return itemMonth == selectedMonth.value;
+        });
+    }
+    if (selectedYear.value) {
+        filtered = filtered.filter((item) => {
+            const itemYear = new Date(item.tanggal).getFullYear();
+            return itemYear == selectedYear.value;
+        });
+    }
+
+    return filtered.sort((a, b) => {
+        const dateA = new Date(a.tanggal + ' ' + a.jam_mulai);
+        const dateB = new Date(b.tanggal + ' ' + b.jam_mulai);
+        return dateA - dateB;
+    });
+});
+
+const selectedScheduleTime = computed(() => {
+    if (!selectedJadwal.value) return '';
+    const jadwal = jadwalData.value.find((j) => j.id_jadwal == selectedJadwal.value);
+    return jadwal ? `${jadwal.jam_mulai} - ${jadwal.jam_selesai}` : '';
+});
+
+const selectedJadwalLabel = computed(() => {
+    if (!selectedJadwal.value) return '';
+    const jadwal = jadwalData.value.find((j) => j.id_jadwal == selectedJadwal.value);
+    return jadwal ? `${jadwal.mata_pelajaran} - ${jadwal.nama_kelas}` : '';
+});
 
 /**
  * 🔹 QR Code Absensi
@@ -841,7 +1122,7 @@ const generateQRCode = async () => {
             qrDiv.innerHTML = '';
             const img = document.createElement('img');
             img.src = qrImage.value;
-            img.className = 'h-48 w-48 object-contain';
+            img.className = 'h-32 w-32 sm:h-48 sm:w-48 object-contain';
             img.alt = 'QR Code Absensi';
             qrDiv.appendChild(img);
         }
@@ -859,7 +1140,7 @@ const refreshQRCode = async () => {
         showNotification('Belum ada QR Code untuk direfresh. Silakan generate dulu.', 'error');
         return;
     }
-    
+
     // Show confirmation modal instead of browser confirm
     showConfirmModal('Apakah anda yakin untuk merefresh QR Code?', async () => {
         await generateQRCode();
@@ -883,26 +1164,28 @@ const exportToPDF = () => {
     doc.setFontSize(14);
     doc.text('Laporan Absensi Siswa', 14, 15);
     doc.setFontSize(10);
-    doc.text(`Kelas: ${attendanceFilter.value.class || 'Semua'}`, 14, 22);
-    doc.text(`Mata Pelajaran: ${attendanceFilter.value.subject || 'Semua'}`, 14, 28);
+    doc.text(`Guru: ${teacherName.value}`, 14, 22);
+    doc.text(`Kelas: ${attendanceFilter.value.class || 'Semua (yang diajar)'}`, 14, 28);
+    doc.text(`Mata Pelajaran: ${attendanceFilter.value.subject || 'Semua (yang diajar)'}`, 14, 34);
 
     const tableData = (filteredAttendanceData.value || []).map((a, index) => {
-        let pdfStatus = a.status || '-';
-        const status = (a.status || '').toLowerCase();
-        const time = a.time || a.waktu;
-
-        if (status === 'hadir' && time && time > LATE_TIME_THRESHOLD) {
-            pdfStatus = 'Terlambat';
-        }
-
-        return [index + 1, a.name || '-', a.class || '-', a.subject || '-', a.date || '-', a.time || '-', pdfStatus];
+        const processed = processAttendanceStatus(a);
+        return [
+            index + 1,
+            a.name || a.nama_siswa || '-',
+            a.class || a.nama_kelas || '-',
+            a.subject || a.mata_pelajaran || '-',
+            a.date || a.tanggal || '-',
+            a.time || a.waktu || '-',
+            processed.displayStatus || '-',
+        ];
     });
 
     if (tableData.length === 0) {
-        doc.text('Tidak ada data absensi untuk filter ini.', 14, 40);
+        doc.text('Tidak ada data absensi untuk kelas dan mata pelajaran yang Anda ajar.', 14, 45);
     } else {
         autoTable(doc, {
-            startY: 35,
+            startY: 40,
             head: [['No', 'Nama Siswa', 'Kelas', 'Mata Pelajaran', 'Tanggal', 'Waktu', 'Status']],
             body: tableData,
             theme: 'grid',
@@ -916,160 +1199,12 @@ const exportToPDF = () => {
             },
         });
     }
-    doc.save(`Absensi_${attendanceFilter.value.class || 'Semua'}_${Date.now()}.pdf`);
+    doc.save(`Absensi_${teacherName.value}_${attendanceFilter.value.class || 'Semua'}_${Date.now()}.pdf`);
 };
 
 const months = ref(['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']);
 
-const stats = ref([
-    {
-        label: 'Total Siswa',
-        value: '190',
-        change: '+12%',
-        icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
-        bgColor: 'bg-gradient-to-r from-blue-500 to-blue-600',
-        textColor: 'text-green-600',
-    },
-    {
-        label: 'Hadir Hari Ini',
-        value: '170',
-        change: '+8%',
-        icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
-        bgColor: 'bg-gradient-to-r from-green-500 to-green-600',
-        textColor: 'text-green-600',
-    },
-    {
-        label: 'Total Kelas',
-        value: '6',
-        change: 'Aktif',
-        icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
-        bgColor: 'bg-gradient-to-r from-purple-500 to-purple-600',
-        textColor: 'text-blue-600',
-    },
-    {
-        label: 'Mata Pelajaran',
-        value: '4',
-        change: 'Aktif',
-        icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253',
-        bgColor: 'bg-gradient-to-r from-orange-500 to-orange-600',
-        textColor: 'text-green-600',
-    },
-]);
-
-const recentAttendance = computed(() => {
-    return [...localAbsensiData.value]
-        .sort((a, b) => new Date(b.tanggal + ' ' + b.waktu) - new Date(a.tanggal + ' ' + a.waktu))
-        .slice(0, 5)
-        .map((attendance) => processAttendanceStatus(attendance));
-});
-
 const today = new Date().toISOString().split('T')[0];
-
-const attendanceStats = computed(() => {
-    const todayData = localAbsensiData.value.filter((a) => {
-        const recordDate = a.tanggal || a.date;
-        return recordDate === today || recordDate === new Date().toLocaleDateString('en-CA');
-    });
-
-    const dataToProcess = todayData.length > 0 ? todayData : localAbsensiData.value;
-    const total = dataToProcess.length || 1;
-
-    const hadirCount = dataToProcess.filter((a) => {
-        const status = (a.status || '').toLowerCase();
-        const time = a.time || a.waktu;
-        return status === 'hadir' && time && time <= LATE_TIME_THRESHOLD;
-    }).length;
-
-    const terlambatCount = dataToProcess.filter((a) => {
-        const status = (a.status || '').toLowerCase();
-        const time = a.time || a.waktu;
-        return (status === 'hadir' && time && time > LATE_TIME_THRESHOLD) || status === 'terlambat';
-    }).length;
-
-    const alphaIzinSakitCount = dataToProcess.filter((a) => {
-        const status = (a.status || '').toLowerCase();
-        return ['alpha', 'izin', 'sakit', 'tidak hadir', 'alpa'].includes(status);
-    }).length;
-
-    const lateMap = {};
-    dataToProcess.forEach((a) => {
-        const status = (a.status || '').toLowerCase();
-        const time = a.time || a.waktu;
-        const studentName = a.name || a.nama_siswa || 'Unknown';
-
-        if ((status === 'hadir' && time && time > LATE_TIME_THRESHOLD) || status === 'terlambat') {
-            lateMap[studentName] = (lateMap[studentName] || 0) + 1;
-        }
-    });
-
-    const topLateStudents = Object.entries(lateMap)
-        .map(([name, count]) => ({ name, lateCount: count }))
-        .sort((a, b) => b.lateCount - a.lateCount)
-        .slice(0, 5);
-
-    return {
-        hadirPct: Math.round((hadirCount / total) * 100),
-        terlambatPct: Math.round((terlambatCount / total) * 100),
-        alphaIzinSakitPct: Math.round((alphaIzinSakitCount / total) * 100),
-        topLateStudents,
-        counts: {
-            hadir: hadirCount,
-            terlambat: terlambatCount,
-            alphaIzinSakit: alphaIzinSakitCount,
-            total,
-        },
-    };
-});
-
-const availableSubjects = computed(() => {
-    if (!jadwalData.value) return [];
-    return [...new Set(jadwalData.value.map((item) => item.mata_pelajaran))];
-});
-
-const availableDates = computed(() => {
-    if (!jadwalData.value) return [];
-    return [...new Set(jadwalData.value.map((item) => item.tanggal))].sort();
-});
-
-const availableYears = computed(() => {
-    if (!jadwalData.value) return [];
-    return [...new Set(jadwalData.value.map((item) => new Date(item.tanggal).getFullYear()))].sort();
-});
-
-const filteredSchedule = computed(() => {
-    let filtered = jadwalData.value ?? [];
-
-    if (selectedClass.value) {
-        filtered = filtered.filter((item) => item.kelas_id == selectedClass.value);
-    }
-    if (selectedDate.value) {
-        filtered = filtered.filter((item) => item.tanggal === selectedDate.value);
-    }
-    if (selectedMonth.value) {
-        filtered = filtered.filter((item) => {
-            const itemMonth = new Date(item.tanggal).getMonth() + 1;
-            return itemMonth == selectedMonth.value;
-        });
-    }
-    if (selectedYear.value) {
-        filtered = filtered.filter((item) => {
-            const itemYear = new Date(item.tanggal).getFullYear();
-            return itemYear == selectedYear.value;
-        });
-    }
-
-    return filtered.sort((a, b) => {
-        const dateA = new Date(a.tanggal + ' ' + a.jam_mulai);
-        const dateB = new Date(b.tanggal + ' ' + b.jam_mulai);
-        return dateA - dateB;
-    });
-});
-
-const selectedJadwalLabel = computed(() => {
-    if (!selectedJadwal.value) return '';
-    const jadwal = localJadwalData.value.find(j => j.id_jadwal == selectedJadwal.value);
-    return jadwal ? `${jadwal.mata_pelajaran} - ${jadwal.nama_kelas}` : '';
-});
 
 const logout = () => {
     router.post(route('logout'));
@@ -1080,14 +1215,16 @@ const filterSchedule = () => {
 };
 
 const filterAttendanceData = () => {
-    let filtered = allAttendanceData.value;
+    let filtered = filteredAbsensiData.value; // Use filtered data instead of all data
 
     if (attendanceFilter.value.class) {
-        filtered = filtered.filter((item) => item.class === attendanceFilter.value.class);
+        filtered = filtered.filter((item) => item.class === attendanceFilter.value.class || item.nama_kelas === attendanceFilter.value.class);
     }
 
     if (attendanceFilter.value.subject) {
-        filtered = filtered.filter((item) => item.subject === attendanceFilter.value.subject);
+        filtered = filtered.filter(
+            (item) => item.subject === attendanceFilter.value.subject || item.mata_pelajaran === attendanceFilter.value.subject,
+        );
     }
 
     filteredAttendanceData.value = filtered;
@@ -1122,7 +1259,11 @@ let qrInterval = null;
 
 onMounted(() => {
     window.addEventListener('scroll', handleScroll);
-    
+
+    // Initialize filtered attendance data
+    allAttendanceData.value = filteredAbsensiData.value;
+    filteredAttendanceData.value = [...filteredAbsensiData.value];
+
     // Close dropdown on click outside
     const handleClick = (e) => {
         const dropdown = document.querySelector('.dropdown-container');
@@ -1153,8 +1294,6 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-    document.removeEventListener('click', handleClick);
-    window.removeEventListener('scroll', handleScroll);
     if (qrInterval) {
         clearInterval(qrInterval);
     }
@@ -1163,27 +1302,33 @@ onUnmounted(() => {
 
 <style scoped>
 /* Dropdown Animation */
-.dropdown-enter-active, .dropdown-leave-active {
+.dropdown-enter-active,
+.dropdown-leave-active {
     transition: all 0.3s ease;
 }
-.dropdown-enter-from, .dropdown-leave-to {
+.dropdown-enter-from,
+.dropdown-leave-to {
     opacity: 0;
     transform: translateY(-10px) scale(0.95);
 }
-.dropdown-enter-to, .dropdown-leave-from {
+.dropdown-enter-to,
+.dropdown-leave-from {
     opacity: 1;
     transform: translateY(0) scale(1);
 }
 
 /* Toast Animation */
-.fade-scale-enter-active, .fade-scale-leave-active {
+.fade-scale-enter-active,
+.fade-scale-leave-active {
     transition: all 0.3s ease;
 }
-.fade-scale-enter-from, .fade-scale-leave-to {
+.fade-scale-enter-from,
+.fade-scale-leave-to {
     opacity: 0;
     transform: scale(0.9);
 }
-.fade-scale-enter-to, .fade-scale-leave-from {
+.fade-scale-enter-to,
+.fade-scale-leave-from {
     opacity: 1;
     transform: scale(1);
 }

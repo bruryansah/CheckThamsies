@@ -88,44 +88,4 @@ class AbsenPelajaranController extends Controller
             'message' => 'Absensi berhasil!'
         ]);
     }
-
-    public function dashboard()
-    {
-        $siswa = Siswa::where('user_id', Auth::id())->first();
-        if (!$siswa) {
-            return Inertia::render('Dashboard', [
-                'kehadiransekolah' => 0,
-                'persentaseKehadiran' => 0,
-                'totalSakit' => 0,
-                'totalIzin' => 0,
-                'totalAbsensi' => 0,
-                'recentAttendance' => [],
-                'auth' => ['user' => Auth::user()],
-            ]);
-        }
-
-        $recentAttendance = AbsensiPelajaran::with('jadwal.mapel')
-            ->where('id_siswa', $siswa->id_siswa)
-            ->orderBy('waktu_scan', 'desc')
-            ->limit(5)
-            ->get()
-            ->map(function ($attendance) {
-                return [
-                    'name' => $attendance->jadwal->mapel->nama_mapel ?? 'Unknown',
-                    'time' => $attendance->waktu_scan->format('d-M-Y H:i'),
-                    'status' => $attendance->status,
-                    'color' => $attendance->status === 'hadir' ? 'green' : ($attendance->status === 'izin' ? 'purple' : 'orange'),
-                ];
-            });
-
-        return Inertia::render('Dashboard', [
-            'kehadiransekolah' => AbsensiPelajaran::where('id_siswa', $siswa->id_siswa)->where('status', 'hadir')->count(),
-            'persentaseKehadiran' => 0, // TODO: hitung persentase sesuai logika
-            'totalSakit' => AbsensiPelajaran::where('id_siswa', $siswa->id_siswa)->where('status', 'sakit')->count(),
-            'totalIzin' => AbsensiPelajaran::where('id_siswa', $siswa->id_siswa)->where('status', 'izin')->count(),
-            'totalAbsensi' => AbsensiPelajaran::where('id_siswa', $siswa->id_siswa)->count(),
-            'recentAttendance' => $recentAttendance,
-            'auth' => ['user' => Auth::user()],
-        ]);
-    }
 }
