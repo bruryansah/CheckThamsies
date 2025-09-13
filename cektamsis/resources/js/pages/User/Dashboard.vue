@@ -261,13 +261,18 @@ const onDetect = (detectedCodes: QrCodeResult[]) => {
         showNotification('✅ Absensi Pelajaran berhasil!', 'success');
         refreshAttendance();
     },
-    onError: (errors) => {
-        errorMessage.value = errors.message || '❌ Gagal absen, coba lagi!';
-        if (errors.message === 'Kamu sudah absen di jadwal ini!') {
-            errorMessage.value = '❌ Kamu sudah absen untuk jadwal ini.';
-        }
-        showNotification(errorMessage.value, 'error');
-    },
+   onError: (errors) => {
+    const msg = errors.message || '❌ Gagal absen, coba lagi!';
+    if (msg.includes('sudah absen')) {
+        errorMessage.value = '❌ Kamu sudah absen untuk jadwal ini.';
+    } else if (msg.includes('expired')) {
+        errorMessage.value = '⏰ QR Code sudah kedaluwarsa.';
+    } else {
+        errorMessage.value = msg;
+    }
+    showNotification(errorMessage.value, 'error');
+},
+
 });
 
     }

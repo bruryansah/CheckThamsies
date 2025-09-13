@@ -35,11 +35,14 @@ class AbsenPelajaranController extends Controller
         $id_qr     = (int) $decode[2];
         $expiredAt = $decode[3];
 
-        if (now()->gt($expiredAt)) {
-            return back()->with('flash', [
-                'success' => false,
-                'message' => 'QR Code expired'
-            ]);
+        $expiredAt = Carbon::parse($decode[3]);
+
+                if (now()->gt(Carbon::parse($expiredAt))) {
+            return response()->json([
+                'errors' => [
+                    'message' => 'QR Code expired'
+                ]
+            ], 422);
         }
 
         // 3. Validasi jadwal
@@ -56,12 +59,18 @@ class AbsenPelajaranController extends Controller
             ->where('id_jadwal', $id_jadwal)
             ->exists();
 
-        if ($sudahAbsen) {
-            return redirect()->back()->with('flash', [
-                'success' => false,
-                'message' => 'Kamu sudah absen di jadwal ini!'
-            ]);
-        }
+                if ($sudahAbsen) {
+        return back()->withErrors([
+            'message' => 'Kamu sudah absen di jadwal ini!',
+        ]);
+    }
+
+    if (now()->gt(Carbon::parse($expiredAt))) {
+        return back()->withErrors([
+            'message' => 'QR Code expired',
+        ]);
+    }
+
 
         // 5. Simpan absensi
         AbsensiPelajaran::create([
