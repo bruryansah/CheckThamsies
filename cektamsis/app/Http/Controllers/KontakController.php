@@ -4,8 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Kontak;
 use Illuminate\Http\Request;
+use App\Models\user;
+use App\Models\kelas;
+use App\Models\jurusan;
 use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
+use function Termwind\render;
 
 class KontakController extends Controller
 {
@@ -76,7 +80,7 @@ class KontakController extends Controller
     public function admin()
     {
         $kontaks = Kontak::orderBy('created_at', 'desc')->paginate(10);
-        
+
         return Inertia::render('Admin/Kontak', [
             'kontaks' => $kontaks
         ]);
@@ -88,7 +92,7 @@ class KontakController extends Controller
     public function markAsRead(Kontak $kontak)
     {
         $kontak->update(['is_read' => true]);
-        
+
         return response()->json([
             'success' => true,
             'message' => 'Pesan telah ditandai sebagai dibaca.'
@@ -101,10 +105,20 @@ class KontakController extends Controller
     public function destroy(Kontak $kontak)
     {
         $kontak->delete();
-        
+
         return response()->json([
             'success' => true,
             'message' => 'Pesan berhasil dihapus.'
+        ]);
+    }
+
+    public function total()
+    {
+        return Inertia::render('Tentang', [
+            'totalSiswa' => user::where('role', 'siswa')->count(),
+            'totalGuru' => user::where('role', 'guru')->count(),
+            'totalKelas' => kelas::count(),
+            'totalJurusan' => jurusan::count(),
         ]);
     }
 }

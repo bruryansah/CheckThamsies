@@ -193,7 +193,6 @@ const stats = computed(() => ({
   warning: props.warning || 0,
   telat: props.telat || 0,
   alfa: props.alfa || 0,
-
 }));
 
 // Ambil langsung dari props
