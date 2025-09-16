@@ -15,9 +15,8 @@ use App\Http\Controllers\AbsenController;
 // Halaman umum
 Route::get('/', fn() => Inertia::render('Welcome'))->name('home');
 
-Route::get('/tentang', function () {
-    return Inertia::render('Tentang');
-});
+Route::get('/tentang', [KontakController::class, 'total'])->name('tentang');
+
 Route::get('/fitur', function () {
     return Inertia::render('Fitur');
 });
@@ -208,16 +207,13 @@ Route::middleware(['auth'])->group(function () {
 use App\Http\Controllers\StudentPasswordController;
 
 Route::middleware(['auth'])->group(function () {
-    Route::put('/student/password', [StudentPasswordController::class, 'update'])
-        ->name('student.password.update');
+    Route::put('/student/password', [StudentPasswordController::class, 'update'])->name('student.password.update');
 });
 
 Route::middleware(['auth'])->group(function () {
-    Route::put('/guru/password', [GuruPasswordController::class, 'update'])
-        ->name('guru.password.update');
+    Route::put('/guru/password', [GuruPasswordController::class, 'update'])->name('guru.password.update');
 });
 
-Route::post('/absensi-pelajaran/checkin', [\App\Http\Controllers\AbsenPelajaranController::class, 'checkIn'])
-    ->middleware(['auth', 'verified']);
+Route::post('/absensi-pelajaran/checkin', [\App\Http\Controllers\AbsenPelajaranController::class, 'checkIn'])->middleware(['auth', 'verified']);
 
 Route::get('/absen/latest-status', [AbsenController::class, 'latestStatus'])->name('absen.latest-status');
