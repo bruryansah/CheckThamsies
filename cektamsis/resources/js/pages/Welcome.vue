@@ -183,33 +183,34 @@ const features = ref([
                             <div class="floating-icon float-5">🔒</div>
                         </div>
 
-                        <div class="phone-mockup">
-                            <div class="phone-screen">
-                                <div class="qr-scanner-ui">
-                                    <div class="scanner-header">
-                                        <div class="scanner-title">QR Scanner</div>
-                                        <div class="scanner-status">Ready</div>
-                                    </div>
-                                    <div class="scanner-area">
-                                        <div class="scanner-frame">
-                                            <div class="corner tl"></div>
-                                            <div class="corner tr"></div>
-                                            <div class="corner bl"></div>
-                                            <div class="corner br"></div>
-                                            <div class="scan-line"></div>
-                                        </div>
-                                        <div class="qr-code">
-                                            <div class="qr-pattern"></div>
-                                        </div>
-                                    </div>
-                                    <div class="scanner-info">
-                                        <div class="location-indicator">
-                                            <span class="location-icon">📍</span>
-                                            <span>SMK Tamansiswa 2 Jakarta</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="phone-mockup">                             
+                        <div class="phone-screen">                                 
+                            <div class="qr-scanner-ui">                                     
+                                <div class="scanner-header">                                         
+                                    <div class="scanner-title">QR Scanner</div>                                         
+                                    <div class="scanner-status">Ready</div>                                     
+                                </div>                                     
+                                <div class="scanner-area">                                         
+                                    <div class="scanner-frame">                                             
+                                        <div class="corner tl"></div>                                             
+                                        <div class="corner tr"></div>                                             
+                                        <div class="corner bl"></div>                                             
+                                        <div class="corner br"></div>                                             
+                                        <div class="scan-line"></div>                                         
+                                    </div>                                         
+                                    <div class="qr-code">
+                                        <!-- Ganti div qr-pattern dengan img -->
+                                        <img src="/rickroll.png" alt="QR Code" class="qr-image" />
+                                    </div>                                     
+                                </div>                                     
+                                <div class="scanner-info">                                         
+                                    <div class="location-indicator">                                             
+                                        <span class="location-icon">📍</span>                                             
+                                        <span>SMK Tamansiswa 2 Jakarta</span>                                         
+                                    </div>                                     
+                                    </div>                                 
+                                </div>                             
+                            </div>                         
                         </div>
                     </div>
                 </div>
