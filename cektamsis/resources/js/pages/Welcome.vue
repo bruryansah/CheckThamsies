@@ -24,26 +24,56 @@ onMounted(() => {
                 }
             });
         },
-        { threshold: 0.1 },
+        {
+            threshold: 0.1,
+        },
     );
 
     document.querySelectorAll('.animate-on-scroll').forEach((el) => {
         observer.observe(el);
     });
 
-    // Navbar scroll effect
-    const navbar = document.querySelector('.navbar') as HTMLElement;
+    // Navbar scroll effect with show/hide functionality
+    const navbar = document.querySelector('.navbar');
     if (navbar) {
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 50) {
-                navbar.classList.add('scrolled');
-            } else {
+        let lastScrollY = window.scrollY;
+        let ticking = false;
+
+        const updateNavbar = () => {
+            const scrollY = window.scrollY;
+
+            if (scrollY < 10) {
+                // Always show navbar at top
+                navbar.classList.remove('navbar-hidden');
                 navbar.classList.remove('scrolled');
+            } else if (scrollY < 80) {
+                // Show navbar but add scrolled effect
+                navbar.classList.remove('navbar-hidden');
+                navbar.classList.add('scrolled');
+            } else if (scrollY > lastScrollY && scrollY > 100) {
+                // Scrolling down - hide navbar
+                navbar.classList.add('navbar-hidden');
+                navbar.classList.add('scrolled');
+            } else if (scrollY < lastScrollY) {
+                // Scrolling up - show navbar
+                navbar.classList.remove('navbar-hidden');
+                navbar.classList.add('scrolled');
             }
-        });
+
+            lastScrollY = scrollY;
+            ticking = false;
+        };
+
+        const onScroll = () => {
+            if (!ticking) {
+                requestAnimationFrame(updateNavbar);
+                ticking = true;
+            }
+        };
+
+        window.addEventListener('scroll', onScroll, { passive: true });
     }
 });
-
 // Real-time clock
 const currentTime = ref(new Date());
 onMounted(() => {
@@ -183,34 +213,34 @@ const features = ref([
                             <div class="floating-icon float-5">🔒</div>
                         </div>
 
-                        <div class="phone-mockup">                             
-                        <div class="phone-screen">                                 
-                            <div class="qr-scanner-ui">                                     
-                                <div class="scanner-header">                                         
-                                    <div class="scanner-title">QR Scanner</div>                                         
-                                    <div class="scanner-status">Ready</div>                                     
-                                </div>                                     
-                                <div class="scanner-area">                                         
-                                    <div class="scanner-frame">                                             
-                                        <div class="corner tl"></div>                                             
-                                        <div class="corner tr"></div>                                             
-                                        <div class="corner bl"></div>                                             
-                                        <div class="corner br"></div>                                             
-                                        <div class="scan-line"></div>                                         
-                                    </div>                                         
-                                    <div class="qr-code">
-                                        <!-- Ganti div qr-pattern dengan img -->
-                                        <img src="/rickroll.png" alt="QR Code" class="qr-image" />
-                                    </div>                                     
-                                </div>                                     
-                                <div class="scanner-info">                                         
-                                    <div class="location-indicator">                                             
-                                        <span class="location-icon">📍</span>                                             
-                                        <span>SMK Tamansiswa 2 Jakarta</span>                                         
-                                    </div>                                     
-                                    </div>                                 
-                                </div>                             
-                            </div>                         
+                        <div class="phone-mockup">
+                            <div class="phone-screen">
+                                <div class="qr-scanner-ui">
+                                    <div class="scanner-header">
+                                        <div class="scanner-title">QR Scanner</div>
+                                        <div class="scanner-status">Ready</div>
+                                    </div>
+                                    <div class="scanner-area">
+                                        <div class="scanner-frame">
+                                            <div class="corner tl"></div>
+                                            <div class="corner tr"></div>
+                                            <div class="corner bl"></div>
+                                            <div class="corner br"></div>
+                                            <div class="scan-line"></div>
+                                        </div>
+                                        <div class="qr-code">
+                                            <!-- Ganti div qr-pattern dengan img -->
+                                            <img src="/rickroll.png" alt="QR Code" class="qr-image" />
+                                        </div>
+                                    </div>
+                                    <div class="scanner-info">
+                                        <div class="location-indicator">
+                                            <span class="location-icon">📍</span>
+                                            <span>SMK Tamansiswa 2 Jakarta</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -444,12 +474,17 @@ body {
     backdrop-filter: blur(20px);
     border-bottom: 1px solid rgba(229, 231, 235, 0.5);
     z-index: 1000;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateY(0);
 }
 
 .navbar.scrolled {
     background: rgba(255, 255, 255, 0.95);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.navbar.navbar-hidden {
+    transform: translateY(-100%);
 }
 
 .navbar-container {
