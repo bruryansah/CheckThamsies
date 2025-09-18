@@ -11,6 +11,10 @@
     import {
         usePage
     } from '@inertiajs/vue3'
+    import type {
+        User as UserType
+    } from '@/types'
+
 
     const activeMenu = ref('tentang');
     const isMobileMenuOpen = ref(false);
@@ -22,15 +26,15 @@
         totalJurusan: number;
     }
 
-    const props = defineProps < Props > ();
+const props = defineProps<Props>();
 
 
-    const stats = computed(() => [{
+    const stats = computed(() => ({
         totalsiswa: props.totalSiswa || 0,
         totalguru: props.totalGuru || 0,
         totalkelas: props.totalKelas || 0,
         totaljurusan: props.totalJurusan || 0,
-    }]);
+    }));
 
     function setActiveMenu(menu: string) {
         activeMenu.value = menu;
@@ -243,7 +247,7 @@
                                 👥
                             </div>
                             <div class="stat-info">
-                                <div class="stat-number">{{ stats[0] . totalsiswa }}</div>
+                                <div class="stat-number">{{ stats.totalsiswa }}</div>
                                 <div class="stat-label">Total Siswa</div>
                             </div>
                         </div>
@@ -254,7 +258,7 @@
                                 👨‍🏫
                             </div>
                             <div class="stat-info">
-                                <div class="stat-number">{{ stats[0] . totalguru }}</div>
+                                <div class="stat-number">{{ stats.totalguru }}</div>
                                 <div class="stat-label">Guru Profesional</div>
                             </div>
                         </div>
@@ -265,7 +269,7 @@
                                 🏫
                             </div>
                             <div class="stat-info">
-                                <div class="stat-number">{{ stats[0] . totalkelas }}</div>
+                                <div class="stat-number">{{ stats.totalkelas }}</div>
                                 <div class="stat-label">Ruang Kelas</div>
                             </div>
                         </div>
@@ -276,7 +280,7 @@
                                 📚
                             </div>
                             <div class="stat-info">
-                                <div class="stat-number">{{ stats[0] . totaljurusan }}</div>
+                                <div class="stat-number">{{ stats.totaljurusan }}</div>
                                 <div class="stat-label">Program Keahlian</div>
                             </div>
                         </div>
