@@ -12,7 +12,7 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\AbsenController;
 
-// Halaman umum
+// Halaman umum mm
 Route::get('/', fn() => Inertia::render('Welcome'))->name('home');
 
 Route::get('/kontak', function () {
