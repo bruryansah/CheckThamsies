@@ -473,7 +473,7 @@
                         @change="filterAttendanceData"
                         class="rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
                     >
-                        <option value="">Semua Kelas (yang diajar)</option>
+                        <option value="">Semua Kelas</option>
                         <option v-for="kelas in filteredKelasData" :key="kelas.id" :value="kelas.nama_kelas">
                             {{ kelas.nama_kelas }}
                         </option>
@@ -484,7 +484,7 @@
                         @change="filterAttendanceData"
                         class="rounded-lg border border-gray-300 px-4 py-2 focus:border-transparent focus:ring-2 focus:ring-blue-500"
                     >
-                        <option value="">Semua Mata Pelajaran (yang diajar)</option>
+                        <option value="">Semua Mata Pelajaran</option>
                         <option v-for="subject in availableSubjects" :key="subject" :value="subject">
                             {{ subject }}
                         </option>
@@ -951,7 +951,7 @@ const dynamicStats = computed(() => {
 
     return [
         {
-            label: 'Total Siswa (yang diajar)',
+            label: 'Total Siswa',
             value: uniqueStudents || '0',
             change: uniqueStudents > 0 ? `${uniqueStudents} siswa` : 'Belum ada',
             icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
@@ -1165,8 +1165,8 @@ const exportToPDF = () => {
     doc.text('Laporan Absensi Siswa', 14, 15);
     doc.setFontSize(10);
     doc.text(`Guru: ${teacherName.value}`, 14, 22);
-    doc.text(`Kelas: ${attendanceFilter.value.class || 'Semua (yang diajar)'}`, 14, 28);
-    doc.text(`Mata Pelajaran: ${attendanceFilter.value.subject || 'Semua (yang diajar)'}`, 14, 34);
+    doc.text(`Kelas: ${attendanceFilter.value.class || 'Semua'}`, 14, 28);
+    doc.text(`Mata Pelajaran: ${attendanceFilter.value.subject || 'Semua'}`, 14, 34);
 
     const tableData = (filteredAttendanceData.value || []).map((a, index) => {
         const processed = processAttendanceStatus(a);
