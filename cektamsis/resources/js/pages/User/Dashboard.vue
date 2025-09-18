@@ -1,51 +1,25 @@
 <script setup lang="ts">
-import {
-    Head,
-    router,
-    usePage
-} from '@inertiajs/vue3';
-import {
-    BookOpen,
-    Calendar,
-    CheckCircle,
-    ChevronDown,
-    Lock,
-    LogOut,
-    QrCode,
-    Settings,
-    Users
-} from 'lucide-vue-next';
-import {
-    onMounted,
-    onUnmounted,
-    ref,
-    computed
-} from 'vue';
-import {
-    QrcodeStream
-} from 'vue-qrcode-reader';
-import type {
-    User as UserType
-} from '@/types';
+import { Head, router, usePage } from '@inertiajs/vue3';
+import { BookOpen, Calendar, CheckCircle, ChevronDown, Lock, LogOut, QrCode, Settings, Users } from 'lucide-vue-next';
+import { onMounted, onUnmounted, ref, computed } from 'vue';
+import { QrcodeStream } from 'vue-qrcode-reader';
+import type { User as UserType } from '@/types';
 
 // Props dari Inertia
-interface props {
+interface Props {
     kehadiransekolah: number;
     persentaseKehadiran: number;
     totalSakit: number;
     totalIzin: number;
     totalAbsensi: number;
     recentAttendance: Array<{ name: string; time: string; status: string; color: string }>;
-    auth: {
-        user: UserType;
-    };
+    auth: { user: UserType };
 }
-const props = defineProps<props>();
+const props = defineProps<Props>();
 
 const page = usePage();
 const studentName = ref(page.props.auth?.user?.name ?? 'siswa');
 
-// Debug: Log the received props
 console.log('Received Props:', props);
 
 const currentDate = ref('');
@@ -54,6 +28,11 @@ const checkoutStatus = ref('Belum Pulang');
 const canCheckout = ref(false);
 const processingIn = ref(false);
 const processingOut = ref(false);
+const checkinDescription = ref(''); // Renamed for clarity (used for check-in)
+const checkinDescriptionError = ref(''); // Error message for check-in description
+const checkoutDescription = ref(''); // New field for early checkout reason
+const showEarlyCheckoutModal = ref(false); // New state for early checkout modal
+const checkoutDescriptionError = ref(''); // Error message for early checkout reason
 
 // QR Scanner
 const isScanning = ref(false);
@@ -98,6 +77,13 @@ const closePasswordModal = () => {
         new_password_confirmation: '',
     };
     passwordErrors.value = {};
+};
+
+// Close Early Checkout Modal
+const closeEarlyCheckoutModal = () => {
+    showEarlyCheckoutModal.value = false;
+    checkoutDescription.value = '';
+    checkoutDescriptionError.value = '';
 };
 
 // Toast Notification
@@ -165,7 +151,7 @@ const fetchStatus = async () => {
 // Refresh attendance data
 const refreshAttendance = async () => {
     await router.get(route('user.dashboard'), {}, {
-        onSuccess: (page) => {
+        onSuccess: () => {
             console.log('Attendance data refreshed');
         },
     });
@@ -174,6 +160,14 @@ const refreshAttendance = async () => {
 // Absen Masuk
 const checkIn = () => {
     if (processingIn.value) return;
+
+    // Validate description for izin or sakit
+    if (['izin', 'sakit'].includes(selectedStatus.value) && !checkinDescription.value.trim()) {
+        checkinDescriptionError.value = 'Keterangan diperlukan untuk status Izin atau Sakit';
+        showNotification(checkinDescriptionError.value, 'error');
+        return;
+    }
+
     processingIn.value = true;
 
     navigator.geolocation.getCurrentPosition(
@@ -182,6 +176,7 @@ const checkIn = () => {
                 latitude: pos.coords.latitude,
                 longitude: pos.coords.longitude,
                 status: selectedStatus.value,
+                description: checkinDescription.value,
             }, {
                 onSuccess: () => {
                     fetchStatus();
@@ -194,7 +189,9 @@ const checkIn = () => {
                         canCheckout.value = true;
                         showNotification('✅ Absen masuk berhasil!', 'success');
                     }
-                    refreshAttendance(); // Refresh data
+                    checkinDescription.value = '';
+                    checkinDescriptionError.value = '';
+                    refreshAttendance();
                 },
                 onError: () => showNotification('❌ Gagal absen masuk!', 'error'),
                 onFinish: () => (processingIn.value = false),
@@ -210,19 +207,57 @@ const checkIn = () => {
 // Absen Pulang
 const checkOut = () => {
     if (processingOut.value) return;
+
+    // Check if current time is before 15:10 (WIB)
+    const now = new Date();
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    const isEarlyCheckout = hours < 15 || (hours === 15 && minutes < 10);
+
+    if (isEarlyCheckout) {
+        showEarlyCheckoutModal.value = true; // Show the early checkout modal
+        return;
+    }
+
+    // Proceed with normal checkout
+    performCheckout();
+};
+
+// Perform Checkout with or without keterangan
+const performCheckout = () => {
+    if (processingOut.value) return;
+
+    // Validate keterangan if modal is open
+    if (showEarlyCheckoutModal.value && !checkoutDescription.value.trim()) {
+        checkoutDescriptionError.value = 'Keterangan diperlukan untuk pulang cepat';
+        showNotification(checkoutDescriptionError.value, 'error');
+        return;
+    }
+
     processingOut.value = true;
 
     navigator.geolocation.getCurrentPosition(
         (pos) => {
-            router.post(route('absen.checkout'), {
+            const payload = {
                 latitude: pos.coords.latitude,
                 longitude: pos.coords.longitude,
-            }, {
+            };
+
+            // Include keterangan if provided
+            if (showEarlyCheckoutModal.value) {
+                payload.keterangan = checkoutDescription.value;
+            }
+
+            router.post(route('absen.checkout'), payload, {
                 onSuccess: () => {
                     fetchStatus();
                     showNotification('✅ Absen pulang berhasil!', 'success');
+                    closeEarlyCheckoutModal();
+                    refreshAttendance();
                 },
-                onError: () => showNotification('❌ Gagal absen pulang!', 'error'),
+                onError: (errors) => {
+                    showNotification('❌ Gagal absen pulang! ' + (errors.error || errors.keterangan || ''), 'error');
+                },
                 onFinish: () => (processingOut.value = false),
             });
         },
@@ -249,26 +284,6 @@ const onDetect = (detectedCodes: QrCodeResult[]) => {
             return;
         }
 
-       router.post('/absensi-pelajaran/checkin', { id_jadwal }, {
-    onSuccess: () => {
-        fetchStatus();
-        showNotification('✅ Absensi Pelajaran berhasil!', 'success');
-        refreshAttendance();
-    },
-   onError: (errors) => {
-    const msg = errors.message || '❌ Gagal absen, coba lagi!';
-    if (msg.includes('sudah absen')) {
-        errorMessage.value = '❌ Kamu sudah absen untuk jadwal ini.';
-    } else if (msg.includes('expired')) {
-        errorMessage.value = '⏰ QR Code sudah kedaluwarsa.';
-    } else {
-        errorMessage.value = msg;
-    }
-    showNotification(errorMessage.value, 'error');
-},
-
-});
-
         router.post('/absensi-pelajaran/checkin', { id_jadwal }, {
             onSuccess: () => {
                 fetchStatus();
@@ -279,6 +294,8 @@ const onDetect = (detectedCodes: QrCodeResult[]) => {
                 errorMessage.value = errors.message || '❌ Gagal absen, coba lagi!';
                 if (errors.message === 'Kamu sudah absen di jadwal ini!') {
                     errorMessage.value = '❌ Kamu sudah absen untuk jadwal ini.';
+                } else if (errors.message.includes('expired')) {
+                    errorMessage.value = '⏰ QR Code sudah kedaluwarsa.';
                 }
                 showNotification(errorMessage.value, 'error');
             },
@@ -408,6 +425,11 @@ onMounted(async () => {
                             <option value="izin">Izin</option>
                             <option value="sakit">Sakit</option>
                         </select>
+                        <div v-if="['izin', 'sakit'].includes(selectedStatus)" class="mb-3">
+                            <label for="checkin_description" class="block text-sm font-medium text-gray-700 mb-2">Keterangan</label>
+                            <textarea id="checkin_description" v-model="checkinDescription" class="w-full rounded-lg border border-gray-300 p-3 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none" :class="{ 'border-red-500': checkinDescriptionError }" placeholder="Masukkan keterangan" required></textarea>
+                            <p v-if="checkinDescriptionError" class="text-red-500 text-sm mt-1">{{ checkinDescriptionError }}</p>
+                        </div>
                         <p class="text-sm font-medium text-gray-900">
                             Status: <span :class="checkinStatus.includes('Sudah') ? 'text-green-600' : 'text-red-500'">{{ checkinStatus }}</span>
                         </p>
@@ -477,6 +499,33 @@ onMounted(async () => {
             </div>
         </div>
 
+        <!-- Early Checkout Modal -->
+        <div v-if="showEarlyCheckoutModal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" @click.self="closeEarlyCheckoutModal">
+            <div class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white shadow-2xl" @click.stop>
+                <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+                    <div class="flex items-center gap-2">
+                        <CheckCircle class="h-4 w-4 text-green-600" />
+                        <h2 class="text-lg font-semibold text-gray-900">Kenapa Pulang Cepat?</h2>
+                    </div>
+                    <button @click="closeEarlyCheckoutModal" type="button" class="text-gray-400 transition-colors hover:text-gray-600">✕</button>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div>
+                        <label for="checkout_description" class="block text-sm font-medium text-gray-700 mb-2">Keterangan Pulang Cepat</label>
+                        <textarea id="checkout_description" v-model="checkoutDescription" class="w-full rounded-lg border border-gray-300 p-3 text-gray-900 placeholder-gray-400 focus:border-green-500 focus:ring-2 focus:ring-green-500 focus:outline-none" :class="{ 'border-red-500': checkoutDescriptionError }" placeholder="Masukkan alasan pulang cepat" required></textarea>
+                        <p v-if="checkoutDescriptionError" class="text-red-500 text-sm mt-1">{{ checkoutDescriptionError }}</p>
+                    </div>
+                    <div class="flex gap-3 pt-4">
+                        <button type="button" @click="closeEarlyCheckoutModal" class="flex-1 rounded-xl bg-gray-500 py-3 text-white font-medium transition-colors hover:bg-gray-600">Batal</button>
+                        <button type="button" @click="performCheckout" :disabled="processingOut" class="flex-1 rounded-xl bg-green-600 py-3 text-white font-medium transition-colors hover:bg-green-700 disabled:bg-green-400">
+                            <span v-if="processingOut">Memproses...</span>
+                            <span v-else>Kirim</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Change Password Modal -->
         <div v-if="showChangePasswordModal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" @click.self="closePasswordModal">
             <div class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white shadow-2xl" @click.stop>
@@ -513,6 +562,8 @@ onMounted(async () => {
                 </form>
             </div>
         </div>
+
+        <!-- Toast Notification -->
         <transition name="fade-scale">
             <div v-if="showToast" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
                 <div class="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-2xl">
@@ -535,3 +586,32 @@ onMounted(async () => {
         </transition>
     </div>
 </template>
+
+<!-- Previous template and script setup sections remain unchanged -->
+
+<style scoped>
+/* Checkmark animation for toast notification */
+.checkmark-circle {
+    stroke: #4CAF50;
+    stroke-width: 2;
+    stroke-miterlimit: 10;
+    stroke-dasharray: 166;
+    stroke-dashoffset: 166;
+    animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+
+.checkmark-check {
+    stroke: #4CAF50;
+    stroke-width: 2;
+    stroke-miterlimit: 10;
+    stroke-dasharray: 48;
+    stroke-dashoffset: 48;
+    animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+}
+
+@keyframes stroke {
+    100% {
+        stroke-dashoffset: 0;
+    }
+}
+</style>

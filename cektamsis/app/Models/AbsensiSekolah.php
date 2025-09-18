@@ -24,6 +24,7 @@ class AbsensiSekolah extends Model
         'latitude_out',
         'longitude_out',
         'status',
+        'keterangan', // Added keterangan to fillable
     ];
 
     public function siswa()
