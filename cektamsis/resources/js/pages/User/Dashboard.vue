@@ -238,7 +238,8 @@ const performCheckout = () => {
 
     navigator.geolocation.getCurrentPosition(
         (pos) => {
-            const payload = {
+            // Prepare payload as a plain object
+            const payload: Record<string, any> = {
                 latitude: pos.coords.latitude,
                 longitude: pos.coords.longitude,
             };
