@@ -26,13 +26,14 @@ const currentDate = ref('');
 const checkinStatus = ref('Belum Absen');
 const checkoutStatus = ref('Belum Pulang');
 const canCheckout = ref(false);
+const canScanQR = ref(false); // New state to control QR scan button
 const processingIn = ref(false);
 const processingOut = ref(false);
-const checkinDescription = ref(''); // Renamed for clarity (used for check-in)
-const checkinDescriptionError = ref(''); // Error message for check-in description
-const checkoutDescription = ref(''); // New field for early checkout reason
-const showEarlyCheckoutModal = ref(false); // New state for early checkout modal
-const checkoutDescriptionError = ref(''); // Error message for early checkout reason
+const checkinDescription = ref('');
+const checkinDescriptionError = ref('');
+const checkoutDescription = ref('');
+const showEarlyCheckoutModal = ref(false);
+const checkoutDescriptionError = ref('');
 
 // QR Scanner
 const isScanning = ref(false);
@@ -63,6 +64,7 @@ const logout = () => {
             checkinStatus.value = 'Belum Absen';
             checkoutStatus.value = 'Belum Pulang';
             canCheckout.value = false;
+            canScanQR.value = false;
             closeDropdown();
         }
     });
@@ -130,20 +132,24 @@ const fetchStatus = async () => {
             checkinStatus.value = 'Belum Absen';
             checkoutStatus.value = 'Belum Pulang';
             canCheckout.value = false;
+            canScanQR.value = false; // Disable QR scanning
         } else if (data.status === 'sudah_masuk') {
             checkinStatus.value = 'Sudah Absen';
             checkoutStatus.value = 'Belum Pulang';
             const latestStatus = await fetch(route('absen.latest-status')).then(res => res.json());
             canCheckout.value = !['izin', 'sakit'].includes(latestStatus.status);
+            canScanQR.value = latestStatus.status === 'hadir'; // Enable QR scanning only for 'hadir'
         } else if (data.status === 'sudah_pulang') {
             checkinStatus.value = 'Sudah Absen';
             checkoutStatus.value = 'Sudah Pulang';
             canCheckout.value = false;
+            canScanQR.value = false; // Disable QR scanning
         }
     } catch (error) {
         checkinStatus.value = 'Belum Absen';
         checkoutStatus.value = 'Belum Pulang';
         canCheckout.value = false;
+        canScanQR.value = false;
         console.error('Error fetching status:', error);
     }
 };
@@ -183,10 +189,12 @@ const checkIn = () => {
                     stats.value.absenHariIni = selectedStatus.value;
                     if (['izin', 'sakit'].includes(selectedStatus.value)) {
                         canCheckout.value = false;
+                        canScanQR.value = false; // Disable QR scanning for izin/sakit
                         checkoutStatus.value = 'Tidak Perlu Pulang';
                         showNotification(`✅ Absen ${selectedStatus.value.charAt(0).toUpperCase() + selectedStatus.value.slice(1)} berhasil! Anda tidak perlu absen pulang.`, 'success');
                     } else {
                         canCheckout.value = true;
+                        canScanQR.value = true; // Enable QR scanning for hadir
                         showNotification('✅ Absen masuk berhasil!', 'success');
                     }
                     checkinDescription.value = '';
@@ -215,7 +223,7 @@ const checkOut = () => {
     const isEarlyCheckout = hours < 15 || (hours === 15 && minutes < 10);
 
     if (isEarlyCheckout) {
-        showEarlyCheckoutModal.value = true; // Show the early checkout modal
+        showEarlyCheckoutModal.value = true;
         return;
     }
 
@@ -238,13 +246,11 @@ const performCheckout = () => {
 
     navigator.geolocation.getCurrentPosition(
         (pos) => {
-            // Prepare payload as a plain object
             const payload: Record<string, any> = {
                 latitude: pos.coords.latitude,
                 longitude: pos.coords.longitude,
             };
 
-            // Include keterangan if provided
             if (showEarlyCheckoutModal.value) {
                 payload.keterangan = checkoutDescription.value;
             }
@@ -449,9 +455,13 @@ onMounted(async () => {
                             <span v-else>Absen Pulang</span>
                         </button>
                     </div>
-                    <button @click="isScanning = true; scanResult = ''" class="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-3 text-white hover:from-blue-700 hover:to-purple-700 active:scale-95">
-                        <QrCode class="h-5 w-5" /> Scan QR Absen
-                    </button>
+                    <div class="mt-4">
+                        <button @click="isScanning = true; scanResult = ''" :disabled="!canScanQR" class="flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-white transition-all duration-300" :class="canScanQR ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 active:scale-95' : 'bg-gray-300 cursor-not-allowed'">
+                            <QrCode class="h-5 w-5" /> Scan QR Absen
+                        </button>
+                        <p v-if="!canScanQR && checkinStatus === 'Sudah Absen'" class="mt-2 text-center text-sm text-red-500">Kamu absen izin/sakit tidak bisa absen pelajaran</p>
+                        <p v-if="!canScanQR && checkinStatus === 'Belum Absen'" class="mt-2 text-center text-sm text-red-500">Absen Hadir dahulu sebelum absen pelajaran.</p>
+                    </div>
                 </div>
             </div>
             <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-md hover:-translate-y-1 hover:shadow-lg">
@@ -462,7 +472,7 @@ onMounted(async () => {
                     <h3 class="text-lg font-semibold text-gray-900">Absensi Pelajaran Terbaru</h3>
                 </div>
                 <div class="space-y-4">
-                    <div v-for="(attendance, index) in props.recentAttendance" :key="index" class="rounded-2xl border border-gray-200 p-4 hover:bg-gray-50">
+                    <div v-for="(attendance, index) in props.recentAttendance.slice(0, 4)" :key="index" class="rounded-2xl border border-gray-200 p-4 hover:bg-gray-50">
                         <p class="text-sm font-medium text-gray-900">Mata Pelajaran: {{ attendance.name }}</p>
                         <p class="text-xs text-gray-500">Waktu: {{ attendance.time }}</p>
                         <p class="text-sm font-medium text-gray-900">Status: <span :class="`text-${attendance.color}-600`">{{ attendance.status }}</span></p>
@@ -587,8 +597,6 @@ onMounted(async () => {
         </transition>
     </div>
 </template>
-
-<!-- Previous template and script setup sections remain unchanged -->
 
 <style scoped>
 /* Checkmark animation for toast notification */

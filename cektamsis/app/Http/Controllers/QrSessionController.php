@@ -44,12 +44,12 @@ class QrSessionController extends Controller
         $qr = QrSession::where('kode_qr', $request->kode_qr)->first();
 
         if (!$qr) {
-            return response()->json(['message' => 'QR tidak ditemukan'], 404);
+            return back()->with(['message' => 'QR tidak ditemukan'], 404);
         }
 
         if (Carbon::now()->greaterThan($qr->waktu_selesai)) {
             $qr->update(['status' => 'expired']);
-            return response()->json(['message' => 'QR expired'], 400);
+            return back()->with(['message' => 'QR expired'], 400);
         }
 
         return response()->json([
