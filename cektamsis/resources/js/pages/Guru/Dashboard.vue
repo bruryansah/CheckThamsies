@@ -148,8 +148,8 @@
                             >
                                 <option disabled value="">-- Pilih Jadwal --</option>
                                 <option v-for="j in localJadwalData" :key="j.id_jadwal" :value="j.idenc">
-                                    {{ j.mata_pelajaran }} - {{ j.nama_kelas }} 
-                                    ({{ formatScheduleDate(j.tanggal) }} {{ j.jam_mulai }} - {{ j.jam_selesai }})
+                                    {{ j.mata_pelajaran }} - {{ j.nama_kelas }} ({{ formatScheduleDate(j.tanggal) }} {{ j.jam_mulai }} -
+                                    {{ j.jam_selesai }})
                                 </option>
                             </select>
                         </div>
@@ -415,12 +415,30 @@
                                 </div>
                             </div>
                             <div class="flex items-center justify-between">
-                                <span class="text-gray-600">Alpha/Izin/Sakit</span>
+                                <span class="text-gray-600">Alpha</span>
                                 <div class="flex items-center">
                                     <div class="mr-2 h-2 w-16 rounded-full bg-gray-200">
-                                        <div class="h-2 rounded-full bg-yellow-500" :style="{ width: attendanceStats.alphaIzinSakitPct + '%' }"></div>
+                                        <div class="h-2 rounded-full bg-red-500" :style="{ width: attendanceStats.alphaPct + '%' }"></div>
                                     </div>
-                                    <span class="text-sm font-semibold text-gray-900">{{ attendanceStats.alphaIzinSakitPct }}%</span>
+                                    <span class="text-sm font-semibold text-gray-900">{{ attendanceStats.alphaPct }}%</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-600">Izin</span>
+                                <div class="flex items-center">
+                                    <div class="mr-2 h-2 w-16 rounded-full bg-gray-200">
+                                        <div class="h-2 rounded-full bg-yellow-500" :style="{ width: attendanceStats.izinPct + '%' }"></div>
+                                    </div>
+                                    <span class="text-sm font-semibold text-gray-900">{{ attendanceStats.izinPct }}%</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-gray-600">Sakit</span>
+                                <div class="flex items-center">
+                                    <div class="mr-2 h-2 w-16 rounded-full bg-gray-200">
+                                        <div class="h-2 rounded-full bg-orange-500" :style="{ width: attendanceStats.sakitPct + '%' }"></div>
+                                    </div>
+                                    <span class="text-sm font-semibold text-gray-900">{{ attendanceStats.sakitPct }}%</span>
                                 </div>
                             </div>
 
@@ -927,8 +945,20 @@ const dynamicStats = computed(() => {
     // Use filtered attendance data instead of all attendance data
     const attendanceData = filteredAbsensiData.value;
 
-    // Calculate total unique students from filtered attendance data
-    const uniqueStudents = [...new Set(attendanceData.map((a) => a.name || a.nama_siswa))].length;
+    // Calculate total unique students from classes that the teacher teaches
+    const teacherClasses = [...new Set(props.jadwalData.map((j) => j.nama_kelas))];
+
+    // Calculate total students from teacher's classes using correct field name
+    const totalStudentsInTeacherClasses = props.kelasData
+        .filter((kelas) => teacherClasses.includes(kelas.nama_kelas))
+        .reduce((total, kelas) => {
+            const studentCount = parseInt(kelas.total_siswa) || 0;
+            return total + studentCount;
+        }, 0);
+
+    // If no data from kelasData, count unique students from attendance data
+    const fallbackStudentCount =
+        totalStudentsInTeacherClasses > 0 ? totalStudentsInTeacherClasses : [...new Set(attendanceData.map((a) => a.name || a.nama_siswa))].length;
 
     // Calculate total unique classes from schedule data
     const uniqueClasses = [...new Set(props.jadwalData.map((j) => j.nama_kelas))].length;
@@ -952,8 +982,8 @@ const dynamicStats = computed(() => {
     return [
         {
             label: 'Total Siswa',
-            value: uniqueStudents || '0',
-            change: uniqueStudents > 0 ? `${uniqueStudents} siswa` : 'Belum ada',
+            value: totalStudentsInTeacherClasses || '0',
+            change: totalStudentsInTeacherClasses > 0 ? `${uniqueClasses} kelas` : 'Belum ada',
             icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
             bgColor: 'bg-gradient-to-r from-blue-500 to-blue-600',
             textColor: 'text-blue-600',
@@ -1003,39 +1033,62 @@ const attendanceStats = computed(() => {
 
     let hadirCount = 0;
     let terlambatCount = 0;
+    let alphaCount = 0;
+    let izinCount = 0;
+    let sakitCount = 0;
+
+    // Count late students from ALL attendance data (not just today)
     const lateMap = {};
 
+    // Process today's data for percentages
     dataToProcess.forEach((a) => {
         const processedAttendance = processAttendanceStatus(a);
         const status = processedAttendance.displayStatus.toLowerCase();
-        const studentName = a.name || a.nama_siswa || 'Unknown';
 
         if (status === 'hadir') {
             hadirCount++;
         } else if (status === 'terlambat') {
             terlambatCount++;
+        }
+
+        const originalStatus = (a.status || '').toLowerCase();
+        if (originalStatus === 'alpha' || originalStatus === 'alpa') {
+            alphaCount++;
+        } else if (originalStatus === 'izin') {
+            izinCount++;
+        } else if (originalStatus === 'sakit') {
+            sakitCount++;
+        }
+    });
+
+    // Count late students from ALL attendance data
+    filteredAbsensiData.value.forEach((a) => {
+        const processedAttendance = processAttendanceStatus(a);
+        const studentName = a.name || a.nama_siswa || 'Unknown';
+
+        if (processedAttendance.displayStatus.toLowerCase() === 'terlambat') {
             lateMap[studentName] = (lateMap[studentName] || 0) + 1;
         }
     });
 
-    const alphaIzinSakitCount = dataToProcess.filter((a) => {
-        const status = (a.status || '').toLowerCase();
-        return ['alpha', 'izin', 'sakit', 'tidak hadir', 'alpa'].includes(status);
-    }).length;
-
     const topLateStudents = Object.entries(lateMap)
         .map(([name, count]) => ({ name, lateCount: count }))
+        .sort((a, b) => b.lateCount - a.lateCount)
         .slice(0, 5);
 
     return {
         hadirPct: Math.round((hadirCount / total) * 100),
         terlambatPct: Math.round((terlambatCount / total) * 100),
-        alphaIzinSakitPct: Math.round((alphaIzinSakitCount / total) * 100),
+        alphaPct: Math.round((alphaCount / total) * 100),
+        izinPct: Math.round((izinCount / total) * 100),
+        sakitPct: Math.round((sakitCount / total) * 100),
         topLateStudents,
         counts: {
             hadir: hadirCount,
             terlambat: terlambatCount,
-            alphaIzinSakit: alphaIzinSakitCount,
+            alpha: alphaCount,
+            izin: izinCount,
+            sakit: sakitCount,
             total,
         },
     };

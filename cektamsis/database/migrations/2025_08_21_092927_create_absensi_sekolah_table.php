@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-  Schema::create('absensi_sekolah', function (Blueprint $table) {
+        Schema::create('absensi_sekolah', function (Blueprint $table) {
             $table->id('id_absensi');
             $table->unsignedBigInteger('id_siswa');
             $table->date('tanggal');
@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('latitude_out', 50)->nullable();
             $table->string('longitude_out', 50)->nullable();
             $table->enum('status', ['hadir', 'izin', 'sakit', 'alfa']);
+            $table->string('keterangan');
             $table->timestamps();
 
             $table->foreign('id_siswa')->references('id_siswa')->on('siswa');
