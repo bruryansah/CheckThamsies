@@ -56,26 +56,56 @@ onMounted(() => {
                 }
             });
         },
-        { threshold: 0.1 },
+        {
+            threshold: 0.1,
+        },
     );
 
     document.querySelectorAll('.animate-on-scroll').forEach((el) => {
         observer.observe(el);
     });
 
-    // Navbar scroll effect
+    // Navbar scroll effect with show/hide functionality
     const navbar = document.querySelector('.navbar');
     if (navbar) {
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 50) {
-                navbar.classList.add('scrolled');
-            } else {
+        let lastScrollY = window.scrollY;
+        let ticking = false;
+
+        const updateNavbar = () => {
+            const scrollY = window.scrollY;
+
+            if (scrollY < 10) {
+                // Always show navbar at top
+                navbar.classList.remove('navbar-hidden');
                 navbar.classList.remove('scrolled');
+            } else if (scrollY < 80) {
+                // Show navbar but add scrolled effect
+                navbar.classList.remove('navbar-hidden');
+                navbar.classList.add('scrolled');
+            } else if (scrollY > lastScrollY && scrollY > 100) {
+                // Scrolling down - hide navbar
+                navbar.classList.add('navbar-hidden');
+                navbar.classList.add('scrolled');
+            } else if (scrollY < lastScrollY) {
+                // Scrolling up - show navbar
+                navbar.classList.remove('navbar-hidden');
+                navbar.classList.add('scrolled');
             }
-        });
+
+            lastScrollY = scrollY;
+            ticking = false;
+        };
+
+        const onScroll = () => {
+            if (!ticking) {
+                requestAnimationFrame(updateNavbar);
+                ticking = true;
+            }
+        };
+
+        window.addEventListener('scroll', onScroll, { passive: true });
     }
 });
-
 // Contact info data
 const contactInfo = ref([
     {
@@ -454,12 +484,17 @@ body {
     backdrop-filter: blur(20px);
     border-bottom: 1px solid rgba(229, 231, 235, 0.5);
     z-index: 1000;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateY(0);
 }
 
 .navbar.scrolled {
     background: rgba(255, 255, 255, 0.95);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.navbar.navbar-hidden {
+    transform: translateY(-100%);
 }
 
 .navbar-container {

@@ -12,13 +12,16 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\AbsenController;
 
-// Halaman umum
+// Halaman umum mm
 Route::get('/', fn() => Inertia::render('Welcome'))->name('home');
 
 Route::get('/tentang', [KontakController::class, 'total'])->name('tentang');
 
 Route::get('/fitur', function () {
     return Inertia::render('Fitur');
+});
+Route::get('/kontak', function () {
+    return Inertia::render('Kontak');
 });
 
 Route::get('/xrpl', function () {
@@ -199,6 +202,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
 use App\Http\Controllers\StudentPasswordController;
+use App\Http\Controllers\AboutController;
 
 Route::middleware(['auth'])->group(function () {
     Route::put('/student/password', [StudentPasswordController::class, 'update'])->name('student.password.update');
@@ -211,3 +215,5 @@ Route::middleware(['auth'])->group(function () {
 Route::post('/absensi-pelajaran/checkin', [\App\Http\Controllers\AbsenPelajaranController::class, 'checkIn'])->middleware(['auth', 'verified']);
 
 Route::get('/absen/latest-status', [AbsenController::class, 'latestStatus'])->name('absen.latest-status');
+
+Route::get('/tentang', [AboutController::class, 'index'])->name('about');
