@@ -29,28 +29,44 @@ class JadwalController extends Controller
         }
 
 
+
+
         $jadwal = Jadwal::with(['mapel', 'kelas'])
             ->where('id_guru', $guru->id_guru)
             ->get();
 
-       $jadwalFormatted = $jadwal->map(function ($item) {
+        // Ambil nama kelas yang guru ajar
+        $teacherClasses = $jadwal->pluck('kelas.nama_kelas')->unique();
+
+        $jadwalFormatted = $jadwal->map(function ($item) {
             return [
                 'id_jadwal'      => $item->id_jadwal,
                 'mata_pelajaran' => $item->mapel->nama_mapel ?? '-',
                 'nama_kelas'     => $item->kelas->nama_kelas ?? '-',
-                'kelas_id'       => $item->guru->kelas->id_kelas ?? null,
+                'kelas_id'       => $item->kelas->id_kelas ?? null,
                 'tanggal'        => $item->hari,
                 'jam_mulai'      => $item->jam_mulai,
                 'jam_selesai'    => $item->jam_selesai,
                 'guru_id'        => $item->id_guru,
                 'idenc' => Crypt::encryptString(
-                    $item->id_jadwal.'|'.$item->id_guru.'|'.$item->id_qr.'|'.now()->addMinutes(5)->format('Y-m-d H:i:s')
+                    $item->id_jadwal . '|' . $item->id_guru . '|' . $item->id_qr . '|' . now()->addMinutes(5)->format('Y-m-d H:i:s')
                 )
             ];
         });
 
-
-        $kelasList = \App\Models\Kelas::select('id_kelas as id', 'nama_kelas')->get();
+        // Ambil HANYA kelas yang guru ajar dengan siswa count
+        $kelasList = \App\Models\Kelas::with('siswa')
+            ->whereIn('nama_kelas', $teacherClasses)
+            ->select('id_kelas', 'nama_kelas', 'total_siswa')
+            ->get()
+            ->map(function ($kelas) {
+                return [
+                    'id' => $kelas->id_kelas,
+                    'nama_kelas' => $kelas->nama_kelas,
+                    'total_siswa' => $kelas->siswa->count(), // Real count
+                    'siswa_count' => $kelas->siswa->count(), // Fallback name
+                ];
+            });
 
         $absensi = DB::table('siswa')
             ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
