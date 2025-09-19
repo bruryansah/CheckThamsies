@@ -6,6 +6,7 @@ use App\Models\Guru;
 
 use Inertia\Inertia;
 use App\Models\Jadwal;
+use App\Models\AbsensiSekolah;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -96,6 +97,11 @@ class JadwalController extends Controller
             });
 
         return Inertia::render('Guru/Dashboard', [
+            'totalsakit' => AbsensiSekolah::where('status', 'sakit')->count(),
+            'totalizin' => AbsensiSekolah::where('status', 'izin')->count(),
+            'totalalfa' => AbsensiSekolah::where('status', 'alfa')->count(),
+            'lantai' => Jadwal::where('lantai')->count(),
+            'ruang' => Jadwal::where('ruang')->count(),
             'guru' => [
                 'id'   => $guru->id_guru,
                 'nama' => $guru->nama,
