@@ -268,14 +268,14 @@ class AdminCon extends Controller
     // Menampilkan Data Jadwal
     public function jadwal()
     {
-        $jadwal = DB::table('jadwal')->join('mapel', 'jadwal.id_mapel', '=', 'mapel.id_mapel')->join('guru', 'jadwal.id_guru', '=', 'guru.id_guru')->join('kelas', 'jadwal.id_kelas', '=', 'kelas.id_kelas')->select('jadwal.id_jadwal', 'jadwal.id_mapel', 'jadwal.id_guru', 'jadwal.id_kelas', 'jadwal.hari', 'jadwal.jam_mulai', 'jadwal.jam_selesai', 'mapel.nama_mapel as mapel', 'guru.nama as guru', 'kelas.nama_kelas as kelas')->paginate(5);
+        $jadwal = DB::table('jadwal')->join('mapel', 'jadwal.id_mapel', '=', 'mapel.id_mapel')->join('guru', 'jadwal.id_guru', '=', 'guru.id_guru')->join('kelas', 'jadwal.id_kelas', '=', 'kelas.id_kelas')->select('jadwal.id_jadwal', 'jadwal.id_mapel', 'jadwal.id_guru', 'jadwal.id_kelas', 'jadwal.hari','jadwal.lantai','ruang', 'jadwal.jam_mulai', 'jadwal.jam_selesai', 'mapel.nama_mapel as mapel', 'guru.nama as guru', 'kelas.nama_kelas as kelas')->paginate(5);
         return Inertia::render('Admin/jadwal', ['jadwal' => $jadwal]);
     }
 
     // Menampilkan Form Tambah Jadwal
     public function tambahd()
     {
-        $jadwal = \App\Models\Jadwal::all(['hari', 'jam_mulai', 'jam_selesai']); // ambil user yang ada
+        $jadwal = \App\Models\Jadwal::all(['hari','lantai','ruang', 'jam_mulai', 'jam_selesai']); // ambil user yang ada
         $mapel = \App\Models\Mapel::all(['id_mapel', 'nama_mapel']); // ambil user yang ada
         $guru = \App\Models\guru::all(['id_guru', 'nama']); // ambil user yang ada
         $kelas = \App\Models\kelas::all(['id_kelas', 'nama_kelas']); // ambil user yang ada
@@ -296,6 +296,8 @@ class AdminCon extends Controller
             'id_mapel' => 'required|exists:mapel,id_mapel',
             'id_kelas' => 'required|string|exists:kelas,id_kelas',
             'hari' => 'required|string',
+            'lantai' => 'required|string',
+            'ruang' => 'required|string',
             'jam_mulai' => 'required|string',
             'jam_selesai' => 'required|string',
         ]);
@@ -331,6 +333,8 @@ class AdminCon extends Controller
             'id_mapel' => 'required|exists:mapel,id_mapel',
             'id_kelas' => 'required|string|exists:kelas,id_kelas',
             'hari' => 'required|string',
+            'lantai' => 'required|string',
+            'ruang' => 'required|string',
             'jam_mulai' => 'required|string',
             'jam_selesai' => 'required|string',
         ]);

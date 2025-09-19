@@ -18,6 +18,8 @@ return new class extends Migration
             $table->unsignedBigInteger('id_mapel');
             $table->unsignedBigInteger('id_kelas');
             $table->string('hari');
+            $table->string('lantai');
+            $table->string('ruangan');
             $table->time('jam_mulai');
             $table->time('jam_selesai');
             $table->timestamps();

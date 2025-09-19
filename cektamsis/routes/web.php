@@ -15,6 +15,11 @@ use App\Http\Controllers\AbsenController;
 // Halaman umum mm
 Route::get('/', fn() => Inertia::render('Welcome'))->name('home');
 
+Route::get('/tentang', [KontakController::class, 'total'])->name('tentang');
+
+Route::get('/fitur', function () {
+    return Inertia::render('Fitur');
+});
 Route::get('/kontak', function () {
     return Inertia::render('Kontak');
 });
@@ -39,9 +44,6 @@ Route::post('/user/updatepass', [AdminCon::class, 'updatepass'])->name('user.upd
 Route::get('/user/delete/{id}', [AdminCon::class, 'destroys'])->name('user.hapus');
 // Users Route End
 
-Route::get('/tentang', fn() => Inertia::render('Tentang'));
-Route::get('/fitur', fn() => Inertia::render('Fitur'));
-Route::get('/kontak', fn() => Inertia::render('Kontak'));
 Route::post('/kontak', [KontakController::class, 'store'])->name('kontak.store');
 
 // Guru Route Start

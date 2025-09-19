@@ -285,6 +285,12 @@
                                     <div class="flex items-center justify-between">
                                         <h3 class="font-semibold text-gray-900">{{ schedule.mata_pelajaran }}</h3>
                                         <span class="rounded-full bg-purple-100 px-3 py-1 text-sm font-medium text-purple-700">
+                                            {{ schedule.lantai }}
+                                        </span>
+                                        <span class="rounded-full bg-purple-100 px-3 py-1 text-sm font-medium text-purple-700">
+                                            {{ schedule.ruang }}
+                                        </span>
+                                        <span class="rounded-full bg-purple-100 px-3 py-1 text-sm font-medium text-purple-700">
                                             {{ schedule.nama_kelas }}
                                         </span>
                                     </div>
@@ -752,6 +758,8 @@ const props = defineProps({
     jadwalData: { type: Array, default: () => [] },
     absensiData: { type: Array, default: () => [] },
     kelasData: { type: Array, default: () => [] },
+    lantai: { type: Array, default: () => [] },
+    ruang: { type: Array, default: () => [] },
 });
 
 // Filter attendance data based on teacher's schedule
@@ -763,6 +771,8 @@ const filteredAbsensiData = computed(() => {
         return props.jadwalData.some(
             (jadwal) =>
                 jadwal.mata_pelajaran === (absensi.subject || absensi.mata_pelajaran) &&
+                jadwal.lantai === (absensi.class || absensi.lantai) &&
+                jadwal.ruang === (absensi.class || absensi.ruang) &&
                 jadwal.nama_kelas === (absensi.class || absensi.nama_kelas) &&
                 jadwal.tanggal === (absensi.date || absensi.tanggal),
         );
@@ -891,10 +901,12 @@ function handleScroll() {
 const processAttendanceStatus = (attendance) => {
     const mapel = attendance.subject || attendance.mata_pelajaran;
     const kelas = attendance.class || attendance.nama_kelas;
+    const lantai = attendance.class || attendance.lantai;
+    const ruang = attendance.class || attendance.ruang;
     const tanggal = attendance.date || attendance.tanggal;
 
     // Find matching schedule
-    const jadwal = jadwalData.value.find((j) => j.mata_pelajaran === mapel && j.nama_kelas === kelas && j.tanggal === tanggal);
+    const jadwal = jadwalData.value.find((j) => j.mata_pelajaran === mapel && j.nama_kelas === kelas && j.lantai === lantai && j.ruang === ruang && j.tanggal === tanggal);
 
     let displayStatus = attendance.status;
 
@@ -1052,7 +1064,7 @@ const attendanceStats = computed(() => {
         }
 
         const originalStatus = (a.status || '').toLowerCase();
-        if (originalStatus === 'alpha' || originalStatus === 'alpa') {
+        if (originalStatus === 'alfa' || originalStatus === 'alfa') {
             alphaCount++;
         } else if (originalStatus === 'izin') {
             izinCount++;
@@ -1086,9 +1098,9 @@ const attendanceStats = computed(() => {
         counts: {
             hadir: hadirCount,
             terlambat: terlambatCount,
-            alpha: alphaCount,
-            izin: izinCount,
-            sakit: sakitCount,
+            totalalfa: alphaCount,
+            totalizin: izinCount,
+            totalsakit: sakitCount,
             total,
         },
     };

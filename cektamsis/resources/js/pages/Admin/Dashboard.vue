@@ -22,7 +22,7 @@ import {
   LinearScale,
   PointElement,
   CategoryScale
-} from 'chart.js'
+} from 'chart.js';
 
 // Register ChartJS components
 ChartJS.register(

@@ -29,7 +29,9 @@ import AppLayout from '@/layouts/AppLayout.vue';
         guru: string
         mapel: string
         kelas: string
-        hari: number
+        hari: string
+        lantai: string
+        ruang: string
         jam_mulai: string
         jam_selesai: string
     }
@@ -97,6 +99,10 @@ import AppLayout from '@/layouts/AppLayout.vue';
                                 </th>
                                 <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Hari
                                 </th>
+                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Lantai
+                                </th>
+                                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Ruangan
+                                </th>
                                 <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Jam Mulai
                                 </th>
                                 <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Jam Selesai
@@ -113,6 +119,8 @@ import AppLayout from '@/layouts/AppLayout.vue';
                                 <td class="px-6 py-4 text-center">{{ jadwal.guru }}</td>
                                 <td class="px-6 py-4 text-center">{{ jadwal.kelas }}</td>
                                 <td class="px-6 py-4 text-center">{{ jadwal.hari }}</td>
+                                <td class="px-6 py-4 text-center">{{ jadwal.lantai }}</td>
+                                <td class="px-6 py-4 text-center">{{ jadwal.ruang }}</td>
                                 <td class="px-6 py-4 text-center">{{ jadwal.jam_mulai }}</td>
                                 <td class="px-6 py-4 text-center">{{ jadwal.jam_selesai }}</td>
                                 <td class="px-6 py-4 text-center">

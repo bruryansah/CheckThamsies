@@ -1,6 +1,16 @@
 <script setup lang="ts">
-import { Head, Link } from '@inertiajs/vue3';
-import { computed, onMounted, ref } from 'vue';
+    import {
+        Head,
+        Link
+    } from '@inertiajs/vue3';
+    import {
+        onMounted,
+        ref,
+        computed
+    } from 'vue';
+    import {
+        usePage
+    } from '@inertiajs/vue3'
 
 const activeMenu = ref('tentang');
 const isMobileMenuOpen = ref(false);
@@ -14,13 +24,13 @@ interface Props {
 
 const props = defineProps<Props>();
 
-// Fixed: Direct access to props values
-const stats = computed(() => ({
-    totalSiswa: props.totalSiswa || 0,
-    totalGuru: props.totalGuru || 0,
-    totalKelas: props.totalKelas || 0,
-    totalJurusan: props.totalJurusan || 0,
-}));
+
+    const stats = computed(() => [{
+        totalsiswa: props.totalSiswa || 0,
+        totalguru: props.totalGuru || 0,
+        totalkelas: props.totalKelas || 0,
+        totaljurusan: props.totalJurusan || 0,
+    }]);
 
 function setActiveMenu(menu: string) {
     activeMenu.value = menu;
@@ -261,7 +271,7 @@ const systemFeatures = ref([
                         <div class="stat-card delay-0">
                             <div class="stat-icon bg-gradient-to-br from-blue-500 to-cyan-500">👥</div>
                             <div class="stat-info">
-                                <div class="stat-number">{{ stats.totalSiswa }}</div>
+                                <div class="stat-number">{{ stats[0] . totalsiswa }}</div>
                                 <div class="stat-label">Total Siswa</div>
                             </div>
                         </div>
@@ -270,7 +280,7 @@ const systemFeatures = ref([
                         <div class="stat-card delay-1">
                             <div class="stat-icon bg-gradient-to-br from-green-500 to-emerald-500">👨‍🏫</div>
                             <div class="stat-info">
-                                <div class="stat-number">{{ stats.totalGuru }}</div>
+                                <div class="stat-number">{{ stats[0] . totalguru }}</div>
                                 <div class="stat-label">Guru Profesional</div>
                             </div>
                         </div>
@@ -279,7 +289,7 @@ const systemFeatures = ref([
                         <div class="stat-card delay-2">
                             <div class="stat-icon bg-gradient-to-br from-purple-500 to-pink-500">🏫</div>
                             <div class="stat-info">
-                                <div class="stat-number">{{ stats.totalKelas }}</div>
+                                <div class="stat-number">{{ stats[0] . totalkelas }}</div>
                                 <div class="stat-label">Ruang Kelas</div>
                             </div>
                         </div>
@@ -288,7 +298,7 @@ const systemFeatures = ref([
                         <div class="stat-card delay-3">
                             <div class="stat-icon bg-gradient-to-br from-orange-500 to-red-500">📚</div>
                             <div class="stat-info">
-                                <div class="stat-number">{{ stats.totalJurusan }}</div>
+                                <div class="stat-number">{{ stats[0] . totaljurusan }}</div>
                                 <div class="stat-label">Program Keahlian</div>
                             </div>
                         </div>

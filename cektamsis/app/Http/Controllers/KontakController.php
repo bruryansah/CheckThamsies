@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Kontak;
 use Illuminate\Http\Request;
-use App\Models\user;
-use App\Models\kelas;
-use App\Models\jurusan;
+use App\Models\User;
+use App\Models\Kelas;
+use App\Models\Jurusan;
 use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 use function Termwind\render;
@@ -27,32 +27,39 @@ class KontakController extends Controller
     public function store(Request $request)
     {
         // Validate the request
-        $validator = Validator::make($request->all(), [
-            'nama' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
-            'subject' => 'required|string|max:255',
-            'pesan' => 'required|string|max:2000',
-        ], [
-            'nama.required' => 'Nama lengkap wajib diisi.',
-            'nama.string' => 'Nama harus berupa teks.',
-            'nama.max' => 'Nama maksimal 255 karakter.',
-            'email.required' => 'Email wajib diisi.',
-            'email.email' => 'Format email tidak valid.',
-            'email.max' => 'Email maksimal 255 karakter.',
-            'subject.required' => 'Subjek wajib diisi.',
-            'subject.string' => 'Subjek harus berupa teks.',
-            'subject.max' => 'Subjek maksimal 255 karakter.',
-            'pesan.required' => 'Pesan wajib diisi.',
-            'pesan.string' => 'Pesan harus berupa teks.',
-            'pesan.max' => 'Pesan maksimal 2000 karakter.',
-        ]);
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'nama' => 'required|string|max:255',
+                'email' => 'required|email|max:255',
+                'subject' => 'required|string|max:255',
+                'pesan' => 'required|string|max:2000',
+            ],
+            [
+                'nama.required' => 'Nama lengkap wajib diisi.',
+                'nama.string' => 'Nama harus berupa teks.',
+                'nama.max' => 'Nama maksimal 255 karakter.',
+                'email.required' => 'Email wajib diisi.',
+                'email.email' => 'Format email tidak valid.',
+                'email.max' => 'Email maksimal 255 karakter.',
+                'subject.required' => 'Subjek wajib diisi.',
+                'subject.string' => 'Subjek harus berupa teks.',
+                'subject.max' => 'Subjek maksimal 255 karakter.',
+                'pesan.required' => 'Pesan wajib diisi.',
+                'pesan.string' => 'Pesan harus berupa teks.',
+                'pesan.max' => 'Pesan maksimal 2000 karakter.',
+            ],
+        );
 
         if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terdapat kesalahan dalam pengisian form.',
-                'errors' => $validator->errors()
-            ], 422);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Terdapat kesalahan dalam pengisian form.',
+                    'errors' => $validator->errors(),
+                ],
+                422,
+            );
         }
 
         try {
@@ -65,12 +72,14 @@ class KontakController extends Controller
             ]);
 
             return back()->with('success', 'Pesan berhasil dikirim!');
-
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Terjadi kesalahan sistem. Silakan coba lagi.'
-            ], 500);
+            return response()->json(
+                [
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan sistem. Silakan coba lagi.',
+                ],
+                500,
+            );
         }
     }
 
@@ -82,7 +91,7 @@ class KontakController extends Controller
         $kontaks = Kontak::orderBy('created_at', 'desc')->paginate(10);
 
         return Inertia::render('Admin/Kontak', [
-            'kontaks' => $kontaks
+            'kontaks' => $kontaks,
         ]);
     }
 
@@ -95,7 +104,7 @@ class KontakController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Pesan telah ditandai sebagai dibaca.'
+            'message' => 'Pesan telah ditandai sebagai dibaca.',
         ]);
     }
 
@@ -108,17 +117,17 @@ class KontakController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Pesan berhasil dihapus.'
+            'message' => 'Pesan berhasil dihapus.',
         ]);
     }
 
     public function total()
     {
         return Inertia::render('Tentang', [
-            'totalSiswa' => user::where('role', 'siswa')->count(),
-            'totalGuru' => user::where('role', 'guru')->count(),
-            'totalKelas' => kelas::count(),
-            'totalJurusan' => jurusan::count(),
+            'totalSiswa' => User::where('role', 'user')->count(),
+            'totalGuru' => User::where('role', 'guru')->count(),
+            'totalKelas' => Kelas::count(),
+            'totalJurusan' => Jurusan::count(),
         ]);
     }
 }
