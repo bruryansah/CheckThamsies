@@ -17,9 +17,9 @@ return new class extends Migration
             $table->unsignedBigInteger('id_guru');
             $table->unsignedBigInteger('id_mapel');
             $table->unsignedBigInteger('id_kelas');
-            $table->string('hari');
+            $table->enum('hari', ['senin', 'selasa', 'rabu', 'kamis','jumat']);
             $table->string('lantai');
-            $table->string('ruangan');
+            $table->string('ruang');
             $table->time('jam_mulai');
             $table->time('jam_selesai');
             $table->timestamps();

@@ -36,6 +36,8 @@
             id_kelas: number
             id_mapel: number
             hari: string
+            lantai: string
+            ruang: string
             jam_mulai: string
             jam_selesai: string
         },
@@ -59,6 +61,8 @@
         id_kelas: '',
         id_mapel: '',
         hari: '',
+        lantai: '',
+        ruang: '',
         jam_mulai: '',
         jam_selesai: '',
     })
@@ -70,6 +74,8 @@
             form.id_kelas = props.jadwal.id_kelas ? String(props.jadwal.id_kelas) : ''
             form.id_mapel = props.jadwal.id_mapel ? String(props.jadwal.id_mapel) : ''
             form.hari = props.jadwal.hari || ''
+            form.lantai = props.jadwal.lantai || ''
+            form.ruang = props.jadwal.ruang || ''
             form.jam_mulai = props.jadwal.jam_mulai || ''
             form.jam_selesai = props.jadwal.jam_selesai || ''
         }
@@ -157,6 +163,23 @@
                     </div>
 
 
+                    <!-- Lantai -->
+                    <div>
+                        <label class="block text-sm font-medium text-zinc-300 mb-1">Lantai</label>
+                        <input v-model="form.lantai" type="text"
+                            class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 focus:ring focus:ring-green-500 focus:outline-none" />
+                        <span v-if="form.errors.jam_mulai"
+                            class="text-red-500 text-sm">{{ form . errors . lantai }}</span>
+                    </div>
+
+                    <!-- Ruangan -->
+                    <div>
+                        <label class="block text-sm font-medium text-zinc-300 mb-1">Ruangan</label>
+                        <input v-model="form.ruang" type="text"
+                            class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 focus:ring focus:ring-green-500 focus:outline-none" />
+                        <span v-if="form.errors.jam_mulai"
+                            class="text-red-500 text-sm">{{ form . errors . ruang }}</span>
+                    </div>
                     <!-- Jam Mulai -->
                     <div>
                         <label class="block text-sm font-medium text-zinc-300 mb-1">Jam Mulai</label>
