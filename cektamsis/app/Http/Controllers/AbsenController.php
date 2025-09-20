@@ -127,7 +127,7 @@ public function checkOut(Request $request)
 
     // Check if current time is before 15:10 (WIB)
     $now = Carbon::now('Asia/Jakarta');
-    $cutoffTime = Carbon::today('Asia/Jakarta')->setHour(15)->setMinute(10);
+    $cutoffTime = Carbon::today('Asia/Jakarta')->setHour(13)->setMinute(30);
     $isEarlyCheckout = $now->lessThan($cutoffTime);
 
     // Validasi input
