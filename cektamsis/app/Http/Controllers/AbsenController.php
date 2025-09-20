@@ -66,10 +66,10 @@ public function checkIn(Request $request)
     $siswa = Siswa::where('user_id', Auth::id())->first();
 
     if (!$siswa) {
-            return back()->with('error', 'Data siswa tidak ditemukan.');
-    }
+    return back()->withErrors(['message' => '❌ Data siswa tidak ditemukan, silakan hubungi admin!']);
+}
 
-    // Cek apakah sudah ada absensi hari ini
+
     $absensi = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)
         ->whereDate('tanggal', Carbon::today())
         ->first();
@@ -78,12 +78,11 @@ public function checkIn(Request $request)
             return back()->with('error', 'Anda sudah absen masuk hari ini');
     }
 
-    // Validasi input
     $validated = $request->validate([
         'latitude' => 'required|numeric',
         'longitude' => 'required|numeric',
         'status' => 'required|in:hadir,izin,sakit',
-        'description' => 'nullable|string|max:1000', // Make description optional but store it
+        'description' => 'nullable|string|max:1000',
     ]);
 
     AbsensiSekolah::create([
@@ -93,11 +92,14 @@ public function checkIn(Request $request)
         'latitude_in' => $validated['latitude'],
         'longitude_in' => $validated['longitude'],
         'status' => $validated['status'],
-        'keterangan' => $validated['description'] ?? '', // Use description if provided, empty string otherwise
+        'keterangan' => $validated['description'] ?? '',
     ]);
 
-        return back()->with('success', 'Absen masuk berhasil');
+    return back()->with('success', 'Absen masuk berhasil');
+
 }
+
+
 public function checkOut(Request $request)
 {
     $siswa = Siswa::where('user_id', Auth::id())->first();

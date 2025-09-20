@@ -6,54 +6,83 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use App\Models\QrSession;
 use App\Models\Jadwal;
-use App\Models\Guru;
-use App\Models\Mapel;
-use App\Models\Kelas;
 use Carbon\Carbon;
 
 class QrSessionController extends Controller
 {
+    /**
+     * Generate QR baru
+     */
     public function generate(Request $request)
     {
-        // Ambil jadwal berdasarkan id_jadwal
-        $jadwal = Jadwal::with(['guru', 'mapel'])->findOrFail($request->id_jadwal);
-
-        // buat kode unik QR
-        $kodeQr = Str::uuid()->toString();
+        $jadwal = Jadwal::with(['guru', 'mapel', 'kelas'])
+            ->findOrFail($request->id_jadwal);
 
         $now = Carbon::now();
+
+        // Cek apakah sudah ada QR aktif untuk jadwal ini
+        $existingQr = QrSession::where('id_jadwal', $jadwal->id_jadwal)
+            ->latest()
+            ->first();
+
+        $status = 'aktif';
         $expired = $now->copy()->addMinutes(10);
 
-        // simpan ke qr_session
+        // Jika ada QR sebelumnya dan sudah expired → QR baru dianggap "telat"
+        if ($existingQr && $now->greaterThan($existingQr->waktu_selesai)) {
+            $status = 'telat';
+            $expired = null; // QR telat tidak ada expired
+        }
+
+        // Buat kode unik QR
+        $kodeQr = Str::uuid()->toString();
+
+        // Simpan QR baru
         $qr = QrSession::create([
             'id_jadwal'     => $jadwal->id_jadwal,
             'id_guru'       => $jadwal->id_guru,
             'kode_qr'       => $kodeQr,
-            'nama_mapel'    => $jadwal->mapel->nama_mapel,
+            'nama_mapel'    => $jadwal->mapel->nama_mapel ?? '-',
             'nama_kelas'    => $jadwal->kelas->nama_kelas ?? '-',
             'waktu_mulai'   => $now,
             'waktu_selesai' => $expired,
-            'status'        => 'aktif',
+            'status'        => $status,
         ]);
 
-        return response()->json($qr);
+        return response()->json([
+            'success' => true,
+            'message' => "QR berhasil digenerate ({$status})",
+            'data' => $qr,
+        ]);
     }
 
+    /**
+     * Validasi QR ketika discan siswa
+     */
     public function validateQr(Request $request)
     {
         $qr = QrSession::where('kode_qr', $request->kode_qr)->first();
 
         if (!$qr) {
-            return back()->with(['message' => 'QR tidak ditemukan'], 404);
+            return response()->json([
+                'success' => false,
+                'message' => '❌ QR tidak ditemukan'
+            ], 404);
         }
 
-        if (Carbon::now()->greaterThan($qr->waktu_selesai)) {
+        // Jika status aktif tapi sudah lewat waktu → expired
+        if ($qr->status === 'aktif' && Carbon::now()->greaterThan($qr->waktu_selesai)) {
             $qr->update(['status' => 'expired']);
-            return back()->with(['message' => 'QR expired'], 400);
+
+            return response()->json([
+                'success' => false,
+                'message' => '❌ QR expired',
+            ], 400);
         }
 
         return response()->json([
-            'message' => 'QR valid',
+            'success' => true,
+            'message' => '✅ QR valid',
             'data' => $qr
         ]);
     }
