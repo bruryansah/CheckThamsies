@@ -5,6 +5,7 @@ import { onMounted, onUnmounted, ref, computed } from 'vue';
 import { QrcodeStream } from 'vue-qrcode-reader';
 import type { User as UserType } from '@/types';
 
+
 // Props dari Inertia
 interface Props {
     kehadiransekolah: number;
@@ -201,7 +202,10 @@ const checkIn = () => {
                     checkinDescriptionError.value = '';
                     refreshAttendance();
                 },
-                onError: () => showNotification('❌ Gagal absen masuk!', 'error'),
+                onError: () => {
+                    // Ini fallback kalau ada error non-flash
+                    showNotification('❌ Absensi gagal mungkin data siswa tidak ditemukan, silakan hubungi admin atau guru!', 'error');
+                },
                 onFinish: () => (processingIn.value = false),
             });
         },
@@ -211,6 +215,7 @@ const checkIn = () => {
         },
     );
 };
+
 
 // Absen Pulang
 const checkOut = () => {
