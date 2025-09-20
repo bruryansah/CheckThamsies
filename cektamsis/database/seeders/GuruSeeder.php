@@ -61,6 +61,7 @@ class GuruSeeder extends Seeder
                 'id_mapel'  => 14, // RPL
             ],
         ];
+        
 
         foreach ($data as $guru) {
             Guru::updateOrCreate(
