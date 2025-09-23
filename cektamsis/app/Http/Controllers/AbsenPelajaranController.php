@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use Carbon\Carbon;
@@ -18,71 +17,73 @@ class AbsenPelajaranController extends Controller
     {
         Log::info('🔹 Absensi attempt', ['request' => $request->all(), 'user_id' => Auth::id()]);
 
-        // 1. Cek siswa
+        // 1. Validate request
+        $request->validate([
+            'id_jadwal' => 'required',
+            'status' => 'required|in:hadir,izin,sakit',
+            'description' => 'required_if:status,izin,sakit|nullable|string|max:255',
+        ]);
+
+        // 2. Check student
         $siswa = Siswa::where('user_id', Auth::id())->first();
         if (!$siswa) {
-            return redirect()->back()->with('flash', [
-                'success' => false,
-                'message' => 'Siswa tidak ditemukan'
-            ]);
+            return back()->withErrors(['message' => 'Siswa tidak ditemukan']);
         }
 
-        // 2. Ambil ID jadwal dari request (decrypt)
-        $decode = explode('|', Crypt::decryptString($request->id_jadwal));
+        // 3. Decrypt and extract QR code data
+        try {
+            $decode = explode('|', Crypt::decryptString($request->id_jadwal));
+            $id_jadwal = (int) $decode[0];
+            $id_guru = (int) $decode[1];
+            $id_qr = (int) $decode[2];
+            $expiredAt = $decode[3] !== 'null' ? Carbon::parse($decode[3]) : null;
+        } catch (\Exception $e) {
+            return back()->withErrors(['message' => 'Format QR Code tidak valid']);
+        }
 
-        $id_jadwal = (int) $decode[0];
-        $id_guru   = (int) $decode[1];
-        $id_qr     = (int) $decode[2];
-        $expiredAt = $decode[3] !== 'null' ? Carbon::parse($decode[3]) : null;
-
-        // 3. Validasi jadwal
+        // 4. Validate schedule
         $jadwal = Jadwal::find($id_jadwal);
         if (!$jadwal) {
-            return redirect()->back()->with('flash', [
-                'success' => false,
-                'message' => 'Jadwal tidak ditemukan'
-            ]);
+            return back()->withErrors(['message' => 'Jadwal tidak ditemukan']);
         }
 
-        // 4. Cek apakah sudah absen
+        // 5. Check if already attended
         $sudahAbsen = AbsensiPelajaran::where('id_siswa', $siswa->id_siswa)
             ->where('id_jadwal', $id_jadwal)
             ->exists();
 
         if ($sudahAbsen) {
-            return back()->withErrors([
-                'message' => 'Kamu sudah absen di jadwal ini!',
-            ]);
+            return back()->withErrors(['message' => 'Kamu sudah absen di jadwal ini!']);
         }
 
-        // 5. Tentukan status absensi berdasarkan expired
-        $status = 'hadir';
-        $keterangan = null;
+        // 6. Determine status and description
+        $status = $request->status;
+        $keterangan = $request->description ?? 'Aman';
 
-        if ($expiredAt && now()->gt($expiredAt)) {
-            // QR pertama expired → absensi masuk sebagai TELAT
+        if ($status === 'hadir' && $expiredAt && now()->gt($expiredAt)) {
             $status = 'telat';
-            $keterangan = 'Terlambat';
+            $keterangan = $request->description ?? 'Terlambat';
         }
 
-        // 6. Simpan absensi
-        $isLate = now()->gt(Carbon::parse($expiredAt));
-
+        // 7. Save attendance
         AbsensiPelajaran::create([
-            'id_qr'      => $id_qr,
-            'id_siswa'   => $siswa->id_siswa,
-            'id_jadwal'  => $id_jadwal,
-            'id_guru'    => $id_guru,
-            'status'     => $isLate ? 'telat' : 'hadir',
+            'id_qr' => $id_qr,
+            'id_siswa' => $siswa->id_siswa,
+            'id_jadwal' => $id_jadwal,
+            'id_guru' => $id_guru,
+            'status' => $status,
             'waktu_scan' => now('Asia/Jakarta'),
-            'keterangan' => $isLate ? 'Terlambat' : 'Aman',
+            'keterangan' => $keterangan,
         ]);
+
+        // 8. Return response
+        $message = $status === 'hadir' ? 'Absensi berhasil (Hadir)!' :
+                   ($status === 'telat' ? 'Absensi berhasil, tetapi status kamu TERLAMBAT.' :
+                   "Absensi berhasil ($status)!");
 
         return redirect()->back()->with('flash', [
             'success' => true,
-            'message' => $status === 'hadir'
-                ? 'Absensi berhasil (Hadir)!'
-                : 'Absensi berhasil, tetapi status kamu TERLAMBAT.'
+            'message' => $message,
         ]);
     }
 }
