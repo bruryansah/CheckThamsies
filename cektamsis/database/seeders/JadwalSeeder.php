@@ -54,7 +54,7 @@ class JadwalSeeder extends Seeder
 
                     // Ambil mapel acak
                     $id_mapel = array_rand($mapel);
-
+                    
                     $insertData[] = [
                         'id_guru'     => \App\Models\Guru::inRandomOrder()->first()->id_guru,
                         'id_mapel'    => $id_mapel,
