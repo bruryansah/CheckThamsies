@@ -113,6 +113,7 @@ const stats = computed(() => ({
 
 // Status Select
 const selectedStatus = ref('hadir');
+const selectedStatus1 = ref('hadir');
 
 // Helper: Tailwind colors for stats
 const statColor = (color: string) => {
@@ -301,11 +302,24 @@ const onDetect = (detectedCodes: QrCodeResult[]) => {
             return;
         }
 
-        router.post('/absensi-pelajaran/checkin', { id_jadwal }, {
+        // Validate description for izin or sakit
+        if (['izin', 'sakit'].includes(selectedStatus1.value) && !checkinDescription.value.trim()) {
+            checkinDescriptionError.value = 'Keterangan diperlukan untuk status Izin atau Sakit';
+            showNotification(checkinDescriptionError.value, 'error');
+            return;
+        }
+
+        router.post('/absensi-pelajaran/checkin', {
+            id_jadwal,
+            status: selectedStatus1.value,
+            description: checkinDescription.value,
+        }, {
             onSuccess: () => {
                 fetchStatus();
-                showNotification('✅ Absensi Pelajaran berhasil!', 'success');
+                showNotification(`✅ Absensi Pelajaran berhasil (${selectedStatus1.value.charAt(0).toUpperCase() + selectedStatus1.value.slice(1)})!`, 'success');
                 refreshAttendance();
+                checkinDescription.value = ''; // Clear description
+                checkinDescriptionError.value = ''; // Clear error
             },
             onError: (errors) => {
                 errorMessage.value = errors.message || '❌ Gagal absen, coba lagi!';
@@ -466,6 +480,16 @@ onMounted(async () => {
                         </button>
                     </div>
                     <div class="mt-4">
+                        <select v-model="selectedStatus1" class="mb-3 w-full rounded-lg border border-gray-300 p-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 text-gray-900">
+                            <option value="hadir">Hadir</option>
+                            <option value="izin">Izin</option>
+                            <option value="sakit">Sakit</option>
+                        </select>
+                         <div v-if="['izin', 'sakit'].includes(selectedStatus1)" class="mb-3">
+                            <label for="checkin_description" class="block text-sm font-medium text-gray-700 mb-2">Keterangan</label>
+                            <textarea id="checkin_description" v-model="checkinDescription" class="w-full rounded-lg border border-gray-300 p-3 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none" :class="{ 'border-red-500': checkinDescriptionError }" placeholder="Masukkan keterangan" required></textarea>
+                            <p v-if="checkinDescriptionError" class="text-red-500 text-sm mt-1">{{ checkinDescriptionError }}</p>
+                        </div>
                         <button @click="isScanning = true; scanResult = ''" :disabled="!canScanQR" class="flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-white transition-all duration-300" :class="canScanQR ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 active:scale-95' : 'bg-gray-300 cursor-not-allowed'">
                             <QrCode class="h-5 w-5" /> Scan QR Absen
                         </button>
