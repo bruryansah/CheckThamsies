@@ -243,8 +243,7 @@
                                         </svg>
                                     </div>
                                     <div class="text-left">
-                                        <p class="font-semibold text-yellow-900 group-hover:text-white">Tutup Absen (Finalize)</p>
-                                        <p class="text-sm text-yellow-600 group-hover:text-yellow-100">Tandai belum absen menjadi Alpa</p>
+                                        <p class="font-semibold text-yellow-900 group-hover:text-white">Tutup Absen</p>
                                     </div>
                                 </div>
                             </button>
@@ -561,6 +560,7 @@
                                 <th class="px-4 py-3 text-left font-semibold text-gray-900">Tanggal</th>
                                 <th class="px-4 py-3 text-left font-semibold text-gray-900">Waktu</th>
                                 <th class="px-4 py-3 text-left font-semibold text-gray-900">Status</th>
+                                <th class="px-4 py-3 text-left font-semibold text-gray-900">Keterangan</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -584,6 +584,9 @@
                                     >
                                         {{ processAttendanceStatus(student).displayStatus }}
                                     </span>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <span class="text-sm text-gray-700">{{ student.keterangan || '-' }}</span>
                                 </td>
                             </tr>
                         </tbody>
@@ -851,6 +854,7 @@ export default {
                         date: match ? aDate(match) || todayDate : todayDate,
                         time: match ? match.time || match.waktu || '' : '',
                         status: match ? match.status || 'Belum Absen' : 'Belum Absen',
+                        keterangan: match ? match.keterangan || null : null,
                     };
                     merged.push(record);
                 }
@@ -1108,7 +1112,15 @@ export default {
             return [...filteredAbsensiData.value]
                 .sort((a, b) => new Date(b.tanggal + ' ' + b.waktu) - new Date(a.tanggal + ' ' + a.waktu))
                 .slice(0, 5)
-                .map((attendance) => processAttendanceStatus(attendance));
+                .map((attendance) => processAttendanceStatus(attendance))
+                .map((a) => {
+                    // tampilkan keterangan pada label untuk izin/sakit bila tersedia
+                    const statusLower = (a.originalStatus || a.status || '').toLowerCase();
+                    if (['izin', 'sakit'].includes(statusLower) && a.keterangan) {
+                        return { ...a, displayStatus: `${a.displayStatus} - ${a.keterangan}` };
+                    }
+                    return a;
+                });
         });
 
         const attendanceStats = computed(() => {
@@ -1332,6 +1344,11 @@ export default {
 
             const tableData = (filteredAttendanceData.value || []).map((a, index) => {
                 const processed = processAttendanceStatus(a);
+                const statusText = (() => {
+                    const s = (a.status || '').toLowerCase();
+                    if (['izin', 'sakit'].includes(s) && a.keterangan) return `${processed.displayStatus} - ${a.keterangan}`;
+                    return processed.displayStatus || '-';
+                })();
                 return [
                     index + 1,
                     a.name || a.nama_siswa || '-',
@@ -1342,7 +1359,8 @@ export default {
                     a.ruang || '-',
                     a.date || a.tanggal || '-',
                     a.time || a.waktu || '-',
-                    processed.displayStatus || '-',
+                    statusText,
+                    a.keterangan || '-',
                 ];
             });
 
@@ -1351,7 +1369,7 @@ export default {
             } else {
                 autoTable(doc, {
                     startY: 40,
-                    head: [['No', 'Nama', 'Kelas', 'Mapel', 'Hari', 'Lantai', 'Ruang', 'Tanggal', 'Waktu', 'Status']],
+                    head: [['No', 'Nama', 'Kelas', 'Mapel', 'Hari', 'Lantai', 'Ruang', 'Tanggal', 'Waktu', 'Status', 'Keterangan']],
                     body: tableData,
                     theme: 'grid',
                     styles: { fontSize: 8, cellPadding: 2 },

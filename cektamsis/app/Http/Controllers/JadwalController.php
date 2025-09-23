@@ -84,7 +84,8 @@ class JadwalController extends Controller
                 'jadwal.lantai',
                 'jadwal.ruang',
                 'absensi_pelajaran.waktu_scan',
-                'absensi_pelajaran.status'
+                'absensi_pelajaran.status',
+                'absensi_pelajaran.keterangan'
             )
             ->get()
             ->map(function ($row) {
@@ -98,6 +99,7 @@ class JadwalController extends Controller
                     'date'   => $row->waktu_scan ? date('Y-m-d', strtotime($row->waktu_scan)) : date('Y-m-d'),
                     'time'   => $row->waktu_scan ? date('H:i', strtotime($row->waktu_scan)) : 'Belum Absen',
                     'status' => $row->status ?? 'Belum Absen',
+                    'keterangan' => $row->keterangan ?? null,
                 ];
             });
 
