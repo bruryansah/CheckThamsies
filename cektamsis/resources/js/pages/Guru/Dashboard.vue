@@ -154,7 +154,7 @@
                             </select>
                         </div>
 
-                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                             <button
                                 @click="generateQRCode"
                                 :disabled="!selectedJadwal || isGeneratingQR"
@@ -214,6 +214,37 @@
                                     <div class="text-left">
                                         <p class="font-semibold text-green-900 group-hover:text-white">Lihat Absensi</p>
                                         <p class="text-sm text-green-600 group-hover:text-green-100">Cek kehadiran siswa</p>
+                                    </div>
+                                </div>
+                            </button>
+
+                            <button
+                                @click="finalizeAbsensi"
+                                :disabled="!selectedJadwal"
+                                :class="selectedJadwal ? 'hover:from-yellow-500 hover:to-yellow-600' : 'cursor-not-allowed opacity-50'"
+                                class="group transform rounded-xl border border-yellow-200 bg-gradient-to-r from-yellow-50 to-yellow-100 p-4 transition-all duration-300 hover:scale-105 hover:border-yellow-500"
+                            >
+                                <div class="flex items-center space-x-3">
+                                    <div
+                                        class="flex h-10 w-10 items-center justify-center rounded-lg bg-yellow-500 transition-colors duration-300 group-hover:bg-white"
+                                    >
+                                        <svg
+                                            class="h-5 w-5 text-white group-hover:text-yellow-500"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M9 12h6m-6 4h6M7 8h10M5 6a2 2 0 012-2h10a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2V6z"
+                                            />
+                                        </svg>
+                                    </div>
+                                    <div class="text-left">
+                                        <p class="font-semibold text-yellow-900 group-hover:text-white">Tutup Absen (Finalize)</p>
+                                        <p class="text-sm text-yellow-600 group-hover:text-yellow-100">Tandai belum absen menjadi Alpa</p>
                                     </div>
                                 </div>
                             </button>
@@ -825,31 +856,7 @@ export default {
                 }
             }
 
-            // Include any existing records that weren't merged above (safety)
-            const existsKey = new Set(merged.map((m) => `${m.name}|${m.class}|${m.subject}|${m.hari}`));
-            for (const a of absensiArr) {
-                const name = a.name || a.nama_siswa;
-                const className = a.class || a.nama_kelas;
-                const subject = a.subject || a.mata_pelajaran;
-                const hari = a.hari;
-                if (!name || !className || !subject || !hari) continue;
-                const k = `${name}|${className}|${subject}|${hari}`;
-                if (!existsKey.has(k)) {
-                    merged.push({
-                        name,
-                        class: className,
-                        subject,
-                        hari,
-                        lantai: a.lantai,
-                        ruang: a.ruang,
-                        date: aDate(a) || todayDate,
-                        time: a.time || a.waktu || '',
-                        status: a.status || 'Belum Absen',
-                    });
-                    existsKey.add(k);
-                }
-            }
-
+            // Kembalikan hasil merge saja untuk menghindari baris duplikat dari record tanpa jadwal (mapel null)
             return merged;
         });
 
@@ -1021,7 +1028,7 @@ export default {
                 return 'bg-green-100 text-green-800 border border-green-300';
             } else if (status === 'terlambat') {
                 return 'bg-red-100 text-red-800 border border-red-300';
-            } else if (['alpha', 'izin', 'sakit', 'tidak hadir', 'alpa', 'alfa'].includes(status)) {
+            } else if (['alpha', 'izin', 'sakit', 'tidak hadir', 'alfa', 'alfa'].includes(status)) {
                 return 'bg-yellow-100 text-yellow-800 border border-yellow-300';
             } else if (status === 'belum absen' || status === '') {
                 return 'bg-gray-100 text-gray-800 border border-gray-300';
@@ -1292,6 +1299,28 @@ export default {
         };
 
         // Utility Functions
+        const finalizeAbsensi = () => {
+            if (!selectedJadwal.value) {
+                showNotification('Silakan pilih jadwal terlebih dahulu!', 'error');
+                return;
+            }
+            router.post(
+                '/absensi-pelajaran/finalize',
+                { id_jadwal: selectedJadwal.value },
+                {
+                    onSuccess: () => {
+                        showNotification('Finalize berhasil diproses', 'success');
+                        // Reload data agar sinkron dengan DB
+                        router.visit(window.location.href, { preserveScroll: true });
+                    },
+                    onError: (errors) => {
+                        const msg = (errors && (errors.message || errors[Object.keys(errors)[0]])) || 'Gagal finalize';
+                        showNotification(String(msg), 'error');
+                    },
+                },
+            );
+        };
+
         const exportToPDF = () => {
             const doc = new jsPDF();
             doc.setFontSize(14);
@@ -1506,6 +1535,7 @@ export default {
             formatDate,
             filterSchedule,
             filterAttendanceData,
+            finalizeAbsensi,
             logout,
         };
     },
