@@ -55,34 +55,40 @@ class AbsenPelajaranController extends Controller
             ]);
         }
 
-        // 5. Tentukan status absensi berdasarkan expired
-        $status = 'hadir';
-        $keterangan = null;
+        // 5. Tentukan status berdasarkan input (hadir/izin/sakit) dan expired
+        $inputStatus = strtolower($request->input('status', 'hadir'));
+        $description = $request->input('description');
 
-        if ($expiredAt && now()->gt($expiredAt)) {
-            // QR pertama expired → absensi masuk sebagai TELAT
-            $status = 'telat';
-            $keterangan = 'Terlambat';
+        // Jika siswa memilih Izin/Sakit untuk absensi pelajaran, simpan langsung dengan keterangan
+        if (in_array($inputStatus, ['izin', 'sakit'], true)) {
+            AbsensiPelajaran::create([
+                'id_jadwal'  => $id_jadwal,
+                'id_siswa'   => $siswa->id_siswa,
+                'waktu_scan' => now('Asia/Jakarta'),
+                'status'     => $inputStatus,
+                'keterangan' => $description ?: ucfirst($inputStatus),
+            ]);
+
+            return back()->with('flash', [
+                'success' => true,
+                'message' => 'Absensi berhasil (' . ucfirst($inputStatus) . ')!',
+            ]);
         }
 
-        // 6. Simpan absensi
-        $isLate = now()->gt(Carbon::parse($expiredAt));
+        // 6. Simpan absensi Hadir, dengan keterangan 'Terlambat' jika QR expired
+        $isLate = $expiredAt && now()->gt($expiredAt);
 
         AbsensiPelajaran::create([
-            'id_qr'      => $id_qr,
-            'id_siswa'   => $siswa->id_siswa,
             'id_jadwal'  => $id_jadwal,
-            'id_guru'    => $id_guru,
-            'status'     => $isLate ? 'telat' : 'hadir',
+            'id_siswa'   => $siswa->id_siswa,
             'waktu_scan' => now('Asia/Jakarta'),
+            'status'     => 'hadir',
             'keterangan' => $isLate ? 'Terlambat' : 'Aman',
         ]);
 
-        return redirect()->back()->with('flash', [
+        return back()->with('flash', [
             'success' => true,
-            'message' => $status === 'hadir'
-                ? 'Absensi berhasil (Hadir)!'
-                : 'Absensi berhasil, tetapi status kamu TERLAMBAT.'
+            'message' => $isLate ? 'Absensi berhasil, tetapi status kamu TERLAMBAT.' : 'Absensi berhasil (Hadir)!',
         ]);
     }
 
