@@ -125,6 +125,15 @@ const mainNavItems = [
       { title: "Kelas XII", href: "/siswaxii" },
     ],
   },
+  {
+    title: "Data Absensi",
+    icon: GraduationCap,
+    children: [
+      { title: "Kelas X", href: "/absenx" },
+      { title: "Kelas XI", href: "/absenxi" },
+      { title: "Kelas XII", href: "/absenxii" },
+    ],
+  },
 ];
 </script>
 
