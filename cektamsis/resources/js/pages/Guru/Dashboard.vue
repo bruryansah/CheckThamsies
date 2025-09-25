@@ -157,8 +157,8 @@
                         <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                             <button
                                 @click="generateQRCode"
-                                :disabled="!selectedJadwal || isGeneratingQR"
-                                :class="selectedJadwal && !isGeneratingQR ? 'hover:from-blue-500 hover:to-blue-600' : 'cursor-not-allowed opacity-50'"
+                                :disabled="!selectedJadwal || isGeneratingQR || isSelectedFinalizedToday"
+                                :class="selectedJadwal && !isGeneratingQR && !isSelectedFinalizedToday ? 'hover:from-blue-500 hover:to-blue-600' : 'cursor-not-allowed opacity-50'"
                                 class="group transform rounded-xl border border-blue-200 bg-gradient-to-r from-blue-50 to-blue-100 p-4 transition-all duration-300 hover:scale-105 hover:border-blue-500"
                             >
                                 <div class="flex items-center space-x-3">
@@ -413,7 +413,7 @@
                                         <p class="text-xs text-gray-500">{{ attendance.time || attendance.waktu }}</p>
                                     </div>
                                 </div>
-                                <span class="rounded-full px-2 py-1 text-xs font-medium" :class="getAttendanceStatusClass(attendance)">
+                                <span class="inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold" :class="getAttendanceStatusClass(attendance)">
                                     {{ attendance.displayStatus }}
                                 </span>
                             </div>
@@ -550,7 +550,7 @@
                 <div class="overflow-x-auto">
                     <table class="w-full">
                         <thead>
-                            <tr class="border-b">
+                            <tr class="sticky top-0 z-10 border-b bg-gray-50">
                                 <th class="px-4 py-3 text-left font-semibold text-gray-900">Nama Siswa</th>
                                 <th class="px-4 py-3 text-left font-semibold text-gray-900">Kelas</th>
                                 <th class="px-4 py-3 text-left font-semibold text-gray-900">Mata Pelajaran</th>
@@ -567,7 +567,7 @@
                             <tr
                                 v-for="(student, index) in filteredAttendanceData"
                                 :key="index"
-                                class="border-b transition-colors duration-200 hover:bg-gray-50"
+                                class="odd:bg-white even:bg-gray-50 border-b transition-colors duration-200 hover:bg-gray-100"
                             >
                                 <td class="px-4 py-3">{{ student.name || student.nama_siswa }}</td>
                                 <td class="px-4 py-3">{{ student.class || student.nama_kelas }}</td>
@@ -579,7 +579,7 @@
                                 <td class="px-4 py-3">{{ student.time || student.waktu }}</td>
                                 <td class="px-4 py-3">
                                     <span
-                                        class="rounded px-2 py-1 text-xs font-semibold"
+                                        class="inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-semibold"
                                         :class="getAttendanceStatusClass(processAttendanceStatus(student))"
                                     >
                                         {{ processAttendanceStatus(student).displayStatus }}
@@ -1026,13 +1026,15 @@ export default {
         };
 
         const getAttendanceStatusClass = (student) => {
-            const status = (student.displayStatus || student.status || '').toLowerCase();
+            let status = (student.displayStatus || student.status || '').toLowerCase().trim();
+            // Normalize when there is extra text like "Izin - Flu" or "Sakit - Demam"
+            status = status.replace(/\s*-.*$/, '');
 
             if (status === 'hadir') {
                 return 'bg-green-100 text-green-800 border border-green-300';
-            } else if (status === 'terlambat') {
+            } else if (status === 'terlambat' || status === 'alfa' || status === 'alpha' || status === 'tidak hadir') {
                 return 'bg-red-100 text-red-800 border border-red-300';
-            } else if (['alpha', 'izin', 'sakit', 'tidak hadir', 'alfa', 'alfa'].includes(status)) {
+            } else if (status === 'izin' || status === 'sakit') {
                 return 'bg-yellow-100 text-yellow-800 border border-yellow-300';
             } else if (status === 'belum absen' || status === '') {
                 return 'bg-gray-100 text-gray-800 border border-gray-300';
@@ -1246,20 +1248,49 @@ export default {
 
         const selectedScheduleTime = computed(() => {
             if (!selectedJadwal.value) return '';
-            const jadwal = jadwalData.value.find((j) => j.id_jadwal == selectedJadwal.value);
+            const jadwal = jadwalData.value.find((j) => j.idenc == selectedJadwal.value);
             return jadwal ? `${jadwal.jam_mulai} - ${jadwal.jam_selesai}` : '';
         });
 
+        const selectedJadwalObj = computed(() => {
+            if (!selectedJadwal.value) return null;
+            return jadwalData.value.find((j) => j.idenc == selectedJadwal.value) || null;
+        });
+
         const selectedJadwalLabel = computed(() => {
-            if (!selectedJadwal.value) return '';
-            const jadwal = jadwalData.value.find((j) => j.id_jadwal == selectedJadwal.value);
+            const jadwal = selectedJadwalObj.value;
             return jadwal ? `${jadwal.mata_pelajaran} - ${jadwal.nama_kelas}` : '';
+        });
+
+        const isSelectedFinalizedToday = computed(() => {
+            const jadwal = selectedJadwalObj.value;
+            if (!jadwal) return false;
+            const todayStr = new Date().toISOString().split('T')[0];
+            const arr = Array.isArray(props.absensiData) ? props.absensiData : [];
+            return arr.some((a) => {
+                const subject = a.subject || a.mata_pelajaran;
+                const kelas = a.class || a.nama_kelas;
+                const hari = (a.hari || '').toLowerCase();
+                const tanggal = a.date || a.tanggal || '';
+                const ket = (a.keterangan || '').toLowerCase();
+                return (
+                    subject === jadwal.mata_pelajaran &&
+                    kelas === jadwal.nama_kelas &&
+                    hari === (jadwal.hari || '').toLowerCase() &&
+                    tanggal === todayStr &&
+                    ket.startsWith('otomatis alfa')
+                );
+            });
         });
 
         // QR Code Functions
         const generateQRCode = async () => {
             if (!selectedJadwal.value) {
                 showNotification('Silakan pilih jadwal terlebih dahulu!', 'error');
+                return;
+            }
+            if (isSelectedFinalizedToday.value) {
+                showNotification('Absen untuk jadwal ini sudah ditutup hari ini. Tidak bisa generate QR lagi.', 'error');
                 return;
             }
             try {

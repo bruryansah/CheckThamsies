@@ -18,7 +18,20 @@ class QrSessionController extends Controller
         $jadwal = Jadwal::with(['guru', 'mapel', 'kelas'])
             ->findOrFail($request->id_jadwal);
 
-        $now = Carbon::now();
+        $now = Carbon::now('Asia/Jakarta');
+
+        // Tolak generate jika absensi jadwal ini sudah difinalize hari ini
+        $today = $now->toDateString();
+        $sudahFinal = \App\Models\AbsensiPelajaran::where('id_jadwal', $jadwal->id_jadwal)
+            ->whereDate('waktu_scan', $today)
+            ->where('keterangan', 'like', 'Otomatis alfa%')
+            ->exists();
+        if ($sudahFinal) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Absen untuk jadwal ini sudah ditutup hari ini. Tidak bisa generate QR lagi.',
+            ], 422);
+        }
 
         // Cek apakah sudah ada QR aktif untuk jadwal ini
         $existingQr = QrSession::where('id_jadwal', $jadwal->id_jadwal)
