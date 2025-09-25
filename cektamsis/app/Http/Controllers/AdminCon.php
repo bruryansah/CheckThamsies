@@ -929,4 +929,40 @@ public function siswaxi(Request $request)
         return redirect('/jurusan');
     }
     // Jurusan Section End
+
+    // Absensi Siswa X Start Section
+
+        public function absenx(Request $request)
+    {
+        // Ambil daftar kelas unik di tingkat X
+        $kelasList = DB::table('absensi_sekolah')
+            ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
+            ->where('kelas.tingkat_kelas', 'like', '1%')
+            ->pluck('kelas.nama_kelas')
+            ->unique()
+            ->values();
+
+        // Ambil filter kelas dari query string
+        $selectedKelas = $request->input('kelas');
+
+        // Query siswa
+        $siswax = DB::table('siswa')
+            ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
+            ->join('jurusan', 'siswa.id_jurusan', '=', 'jurusan.id_jurusan')
+            ->select('siswa.id_siswa', 'siswa.nama', 'siswa.email', 'kelas.nama_kelas as kelas', 'jurusan.nama_jurusan as jurusan')
+            ->where('kelas.tingkat_kelas', 'like', '1%')
+            ->when($selectedKelas, function ($query, $kelas) {
+                return $query->where('kelas.nama_kelas', $kelas);
+            })
+            ->paginate(5)
+            ->appends($request->query());
+
+        return Inertia::render('Admin/xrpl', [
+            'siswa' => $siswax,
+            'kelasList' => $kelasList,
+            'selectedKelas' => $selectedKelas,
+        ]);
+    }
+
+    // Absensi Siswa X End Section
 }
