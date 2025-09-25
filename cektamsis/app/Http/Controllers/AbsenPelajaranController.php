@@ -44,7 +44,19 @@ class AbsenPelajaranController extends Controller
             ]);
         }
 
-        // 4. Cek apakah sudah absen
+        // 4. Cek apakah sudah ditutup (finalize) untuk hari ini
+        $today = Carbon::today('Asia/Jakarta');
+        $sudahFinal = AbsensiPelajaran::where('id_jadwal', $id_jadwal)
+            ->whereDate('waktu_scan', $today)
+            ->where('keterangan', 'like', 'Otomatis alfa%')
+            ->exists();
+        if ($sudahFinal) {
+            return back()->withErrors([
+                'message' => 'Absen untuk jadwal ini sudah ditutup hari ini.',
+            ]);
+        }
+
+        // 5. Cek apakah sudah absen
         $sudahAbsen = AbsensiPelajaran::where('id_siswa', $siswa->id_siswa)
             ->where('id_jadwal', $id_jadwal)
             ->exists();
@@ -153,7 +165,7 @@ class AbsenPelajaranController extends Controller
                     'id_siswa'   => $s->id_siswa,
                     'waktu_scan' => $now,
                     'status'     => 'alfa',
-                    'keterangan' => 'Otomatis alfa (finalize)',
+                    'keterangan' => 'Otomatis alfa',
                 ]);
                 $created++;
             }
