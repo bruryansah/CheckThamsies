@@ -5,7 +5,6 @@ import { onMounted, onUnmounted, ref, computed } from 'vue';
 import { QrcodeStream } from 'vue-qrcode-reader';
 import type { User as UserType } from '@/types';
 
-
 // Props dari Inertia
 interface Props {
     kehadiransekolah: number;
@@ -27,7 +26,7 @@ const currentDate = ref('');
 const checkinStatus = ref('Belum Absen');
 const checkoutStatus = ref('Belum Pulang');
 const canCheckout = ref(false);
-const canScanQR = ref(false); // New state to control QR scan button
+const canScanQR = ref(false);
 const processingIn = ref(false);
 const processingOut = ref(false);
 const checkinDescription = ref('');
@@ -35,6 +34,7 @@ const checkinDescriptionError = ref('');
 const checkoutDescription = ref('');
 const showEarlyCheckoutModal = ref(false);
 const checkoutDescriptionError = ref('');
+const latestCheckinStatus = ref<string | null>(null);
 
 // QR Scanner
 const isScanning = ref(false);
@@ -66,6 +66,7 @@ const logout = () => {
             checkoutStatus.value = 'Belum Pulang';
             canCheckout.value = false;
             canScanQR.value = false;
+            latestCheckinStatus.value = null;
             closeDropdown();
         }
     });
@@ -112,6 +113,7 @@ const stats = computed(() => ({
 
 // Status Select
 const selectedStatus = ref('hadir');
+const selectedStatus1 = ref('hadir');
 
 // Helper: Tailwind colors for stats
 const statColor = (color: string) => {
@@ -133,24 +135,29 @@ const fetchStatus = async () => {
             checkinStatus.value = 'Belum Absen';
             checkoutStatus.value = 'Belum Pulang';
             canCheckout.value = false;
-            canScanQR.value = false; // Disable QR scanning
+            canScanQR.value = false;
+            latestCheckinStatus.value = null;
         } else if (data.status === 'sudah_masuk') {
             checkinStatus.value = 'Sudah Absen';
             checkoutStatus.value = 'Belum Pulang';
             const latestStatus = await fetch(route('absen.latest-status')).then(res => res.json());
+            console.log('Latest Status:', latestStatus.status);
+            latestCheckinStatus.value = latestStatus.status;
             canCheckout.value = !['izin', 'sakit'].includes(latestStatus.status);
-            canScanQR.value = latestStatus.status === 'hadir'; // Enable QR scanning only for 'hadir'
+            canScanQR.value = latestStatus.status === 'hadir';
         } else if (data.status === 'sudah_pulang') {
             checkinStatus.value = 'Sudah Absen';
             checkoutStatus.value = 'Sudah Pulang';
             canCheckout.value = false;
-            canScanQR.value = false; // Disable QR scanning
+            canScanQR.value = false;
+            latestCheckinStatus.value = null;
         }
     } catch (error) {
         checkinStatus.value = 'Belum Absen';
         checkoutStatus.value = 'Belum Pulang';
         canCheckout.value = false;
         canScanQR.value = false;
+        latestCheckinStatus.value = null;
         console.error('Error fetching status:', error);
     }
 };
@@ -188,14 +195,15 @@ const checkIn = () => {
                 onSuccess: () => {
                     fetchStatus();
                     stats.value.absenHariIni = selectedStatus.value;
+                    latestCheckinStatus.value = selectedStatus.value;
                     if (['izin', 'sakit'].includes(selectedStatus.value)) {
                         canCheckout.value = false;
-                        canScanQR.value = false; // Disable QR scanning for izin/sakit
+                        canScanQR.value = false;
                         checkoutStatus.value = 'Tidak Perlu Pulang';
                         showNotification(`✅ Absen ${selectedStatus.value.charAt(0).toUpperCase() + selectedStatus.value.slice(1)} berhasil! Anda tidak perlu absen pulang.`, 'success');
                     } else {
                         canCheckout.value = true;
-                        canScanQR.value = true; // Enable QR scanning for hadir
+                        canScanQR.value = true;
                         showNotification('✅ Absen masuk berhasil!', 'success');
                     }
                     checkinDescription.value = '';
@@ -203,7 +211,6 @@ const checkIn = () => {
                     refreshAttendance();
                 },
                 onError: () => {
-                    // Ini fallback kalau ada error non-flash
                     showNotification('❌ Absensi gagal mungkin data siswa tidak ditemukan, silakan hubungi admin atau guru!', 'error');
                 },
                 onFinish: () => (processingIn.value = false),
@@ -216,16 +223,15 @@ const checkIn = () => {
     );
 };
 
-
 // Absen Pulang
 const checkOut = () => {
     if (processingOut.value) return;
 
-    // Check if current time is before 15:10 (WIB)
+    // Check if current time is before 13:30 (WIB)
     const now = new Date();
     const hours = now.getHours();
     const minutes = now.getMinutes();
-    const isEarlyCheckout = hours < 15 || (hours === 15 && minutes < 10);
+    const isEarlyCheckout = hours < 13 || (hours === 13 && minutes < 30);
 
     if (isEarlyCheckout) {
         showEarlyCheckoutModal.value = true;
@@ -296,11 +302,24 @@ const onDetect = (detectedCodes: QrCodeResult[]) => {
             return;
         }
 
-        router.post('/absensi-pelajaran/checkin', { id_jadwal }, {
+        // Validate description for izin or sakit
+        if (['izin', 'sakit'].includes(selectedStatus1.value) && !checkinDescription.value.trim()) {
+            checkinDescriptionError.value = 'Keterangan diperlukan untuk status Izin atau Sakit';
+            showNotification(checkinDescriptionError.value, 'error');
+            return;
+        }
+
+        router.post('/absensi-pelajaran/checkin', {
+            id_jadwal,
+            status: selectedStatus1.value,
+            description: checkinDescription.value,
+        }, {
             onSuccess: () => {
                 fetchStatus();
-                showNotification('✅ Absensi Pelajaran berhasil!', 'success');
+                showNotification(`✅ Absensi Pelajaran berhasil (${selectedStatus1.value.charAt(0).toUpperCase() + selectedStatus1.value.slice(1)})!`, 'success');
                 refreshAttendance();
+                checkinDescription.value = ''; // Clear description
+                checkinDescriptionError.value = ''; // Clear error
             },
             onError: (errors) => {
                 errorMessage.value = errors.message || '❌ Gagal absen, coba lagi!';
@@ -461,10 +480,20 @@ onMounted(async () => {
                         </button>
                     </div>
                     <div class="mt-4">
+                        <select v-model="selectedStatus1" class="mb-3 w-full rounded-lg border border-gray-300 p-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 text-gray-900">
+                            <option value="hadir">Hadir</option>
+                            <option value="izin">Izin</option>
+                            <option value="sakit">Sakit</option>
+                        </select>
+                         <div v-if="['izin', 'sakit'].includes(selectedStatus1)" class="mb-3">
+                            <label for="checkin_description" class="block text-sm font-medium text-gray-700 mb-2">Keterangan</label>
+                            <textarea id="checkin_description" v-model="checkinDescription" class="w-full rounded-lg border border-gray-300 p-3 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none" :class="{ 'border-red-500': checkinDescriptionError }" placeholder="Masukkan keterangan" required></textarea>
+                            <p v-if="checkinDescriptionError" class="text-red-500 text-sm mt-1">{{ checkinDescriptionError }}</p>
+                        </div>
                         <button @click="isScanning = true; scanResult = ''" :disabled="!canScanQR" class="flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-white transition-all duration-300" :class="canScanQR ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 active:scale-95' : 'bg-gray-300 cursor-not-allowed'">
                             <QrCode class="h-5 w-5" /> Scan QR Absen
                         </button>
-                        <p v-if="!canScanQR && checkinStatus === 'Sudah Absen'" class="mt-2 text-center text-sm text-red-500">Kamu absen izin/sakit tidak bisa absen pelajaran</p>
+                        <p v-if="!canScanQR && checkinStatus === 'Sudah Absen' && ['izin', 'sakit'].includes(latestCheckinStatus ?? '')" class="mt-2 text-center text-sm text-red-500">Kamu izin/sakit tidak bisa absen pelajaran</p>
                         <p v-if="!canScanQR && checkinStatus === 'Belum Absen'" class="mt-2 text-center text-sm text-red-500">Absen Hadir dahulu sebelum absen pelajaran.</p>
                     </div>
                 </div>

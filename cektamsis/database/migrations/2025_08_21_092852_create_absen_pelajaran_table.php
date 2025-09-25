@@ -15,7 +15,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('id_jadwal');   // relasi ke jadwal
             $table->unsignedBigInteger('id_siswa');    // relasi ke siswa
             $table->dateTime('waktu_scan');            // waktu absen
-            $table->enum('status', ['hadir', 'izin', 'sakit', 'alpa'])->default('hadir');
+            $table->enum('status', ['hadir', 'izin', 'sakit', 'alfa'])->default('hadir');
             $table->string('keterangan', 255)->nullable();
             $table->timestamps();
 

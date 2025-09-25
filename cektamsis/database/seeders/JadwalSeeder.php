@@ -124,12 +124,8 @@ class JadwalSeeder extends Seeder
                         break;
                     }
 
-                    // Pilih guru random
-                    $guru = $guruList->random();
-
-                    // Pilih mapel dari 2 mapel milik guru ini
-                    $mapelPilihan = $guruMapel[$guru->id_guru];
-                    $id_mapel = $mapelPilihan[array_rand($mapelPilihan)];
+                    // Ambil mapel acak
+                    $id_mapel = array_rand($mapel);
 
                     $insertData[] = [
                         'id_guru'     => $guru->id_guru,

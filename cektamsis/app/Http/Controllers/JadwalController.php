@@ -29,9 +29,6 @@ class JadwalController extends Controller
             ]);
         }
 
-
-
-
         $jadwal = Jadwal::with(['mapel', 'kelas'])
             ->where('id_guru', $guru->id_guru)
             ->get();
@@ -45,7 +42,9 @@ class JadwalController extends Controller
                 'mata_pelajaran' => $item->mapel->nama_mapel ?? '-',
                 'nama_kelas'     => $item->kelas->nama_kelas ?? '-',
                 'kelas_id'       => $item->kelas->id_kelas ?? null,
-                'tanggal'        => $item->hari,
+                'hari'           => $item->hari, // Use hari instead of tanggal
+                'lantai'         => $item->lantai,
+                'ruang'          => $item->ruang,
                 'jam_mulai'      => $item->jam_mulai,
                 'jam_selesai'    => $item->jam_selesai,
                 'guru_id'        => $item->id_guru,
@@ -81,8 +80,12 @@ class JadwalController extends Controller
                 'siswa.nama as nama_siswa',
                 'kelas.nama_kelas',
                 'mapel.nama_mapel',
+                'jadwal.hari',
+                'jadwal.lantai',
+                'jadwal.ruang',
                 'absensi_pelajaran.waktu_scan',
-                'absensi_pelajaran.status'
+                'absensi_pelajaran.status',
+                'absensi_pelajaran.keterangan'
             )
             ->get()
             ->map(function ($row) {
@@ -90,18 +93,26 @@ class JadwalController extends Controller
                     'name'   => $row->nama_siswa,
                     'class'  => $row->nama_kelas,
                     'subject' => $row->nama_mapel ?? '-',
+                    'hari'   => $row->hari ?? 'senin', // Default to senin if null
+                    'lantai' => $row->lantai ?? '-',
+                    'ruang'  => $row->ruang ?? '-',
                     'date'   => $row->waktu_scan ? date('Y-m-d', strtotime($row->waktu_scan)) : date('Y-m-d'),
                     'time'   => $row->waktu_scan ? date('H:i', strtotime($row->waktu_scan)) : 'Belum Absen',
                     'status' => $row->status ?? 'Belum Absen',
+                    'keterangan' => $row->keterangan ?? null,
                 ];
             });
+
+        // Get count of unique lantai and ruang from jadwal
+        $lantaiCount = $jadwal->pluck('lantai')->unique()->count();
+        $ruangCount = $jadwal->pluck('ruang')->unique()->count();
 
         return Inertia::render('Guru/Dashboard', [
             'totalsakit' => AbsensiSekolah::where('status', 'sakit')->count(),
             'totalizin' => AbsensiSekolah::where('status', 'izin')->count(),
             'totalalfa' => AbsensiSekolah::where('status', 'alfa')->count(),
-            'lantai' => Jadwal::where('lantai')->count(),
-            'ruang' => Jadwal::where('ruang')->count(),
+            'lantai' => $lantaiCount,
+            'ruang' => $ruangCount,
             'guru' => [
                 'id'   => $guru->id_guru,
                 'nama' => $guru->nama,

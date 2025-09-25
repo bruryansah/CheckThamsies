@@ -148,13 +148,13 @@
                             >
                                 <option disabled value="">-- Pilih Jadwal --</option>
                                 <option v-for="j in localJadwalData" :key="j.id_jadwal" :value="j.idenc">
-                                    {{ j.mata_pelajaran }} - {{ j.nama_kelas }} ({{ formatScheduleDate(j.tanggal) }} {{ j.jam_mulai }} -
-                                    {{ j.jam_selesai }})
+                                    {{ j.mata_pelajaran }} - {{ j.nama_kelas }} ({{ formatHari(j.hari) }} {{ j.jam_mulai }} - {{ j.jam_selesai }}) -
+                                    Lt.{{ j.lantai }} R.{{ j.ruang }}
                                 </option>
                             </select>
                         </div>
 
-                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                             <button
                                 @click="generateQRCode"
                                 :disabled="!selectedJadwal || isGeneratingQR"
@@ -217,6 +217,36 @@
                                     </div>
                                 </div>
                             </button>
+
+                            <button
+                                @click="finalizeAbsensi"
+                                :disabled="!selectedJadwal"
+                                :class="selectedJadwal ? 'hover:from-yellow-500 hover:to-yellow-600' : 'cursor-not-allowed opacity-50'"
+                                class="group transform rounded-xl border border-yellow-200 bg-gradient-to-r from-yellow-50 to-yellow-100 p-4 transition-all duration-300 hover:scale-105 hover:border-yellow-500"
+                            >
+                                <div class="flex items-center space-x-3">
+                                    <div
+                                        class="flex h-10 w-10 items-center justify-center rounded-lg bg-yellow-500 transition-colors duration-300 group-hover:bg-white"
+                                    >
+                                        <svg
+                                            class="h-5 w-5 text-white group-hover:text-yellow-500"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M9 12h6m-6 4h6M7 8h10M5 6a2 2 0 012-2h10a2 2 0 012 2v12a2 2 0 01-2 2H7a2 2 0 01-2-2V6z"
+                                            />
+                                        </svg>
+                                    </div>
+                                    <div class="text-left">
+                                        <p class="font-semibold text-yellow-900 group-hover:text-white">Tutup Absen</p>
+                                    </div>
+                                </div>
+                            </button>
                         </div>
                     </div>
 
@@ -237,36 +267,34 @@
 
                             <div class="flex flex-wrap gap-2">
                                 <select
-                                    v-model="selectedDate"
+                                    v-model="selectedHari"
                                     @change="filterSchedule"
                                     class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-transparent focus:ring-2 focus:ring-purple-500"
                                 >
-                                    <option value="">Tanggal</option>
-                                    <option v-for="date in availableDates" :key="date" :value="date">
-                                        {{ formatDate(date) }}
-                                    </option>
+                                    <option value="">Semua Hari</option>
+                                    <option value="senin">Senin</option>
+                                    <option value="selasa">Selasa</option>
+                                    <option value="rabu">Rabu</option>
+                                    <option value="kamis">Kamis</option>
+                                    <option value="jumat">Jumat</option>
                                 </select>
 
                                 <select
-                                    v-model="selectedMonth"
+                                    v-model="selectedLantai"
                                     @change="filterSchedule"
                                     class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-transparent focus:ring-2 focus:ring-purple-500"
                                 >
-                                    <option value="">Bulan</option>
-                                    <option v-for="(month, index) in months" :key="index" :value="index + 1">
-                                        {{ month }}
-                                    </option>
+                                    <option value="">Semua Lantai</option>
+                                    <option v-for="lantai in availableLantai" :key="lantai" :value="lantai">Lantai {{ lantai }}</option>
                                 </select>
 
                                 <select
-                                    v-model="selectedYear"
+                                    v-model="selectedRuang"
                                     @change="filterSchedule"
                                     class="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:border-transparent focus:ring-2 focus:ring-purple-500"
                                 >
-                                    <option value="">Tahun</option>
-                                    <option v-for="year in availableYears" :key="year" :value="year">
-                                        {{ year }}
-                                    </option>
+                                    <option value="">Semua Ruang</option>
+                                    <option v-for="ruang in availableRuang" :key="ruang" :value="ruang">Ruang {{ ruang }}</option>
                                 </select>
                             </div>
                         </div>
@@ -284,18 +312,22 @@
                                 <div class="flex-1">
                                     <div class="flex items-center justify-between">
                                         <h3 class="font-semibold text-gray-900">{{ schedule.mata_pelajaran }}</h3>
-                                        <span class="rounded-full bg-purple-100 px-3 py-1 text-sm font-medium text-purple-700">
-                                            {{ schedule.lantai }}
-                                        </span>
-                                        <span class="rounded-full bg-purple-100 px-3 py-1 text-sm font-medium text-purple-700">
-                                            {{ schedule.ruang }}
-                                        </span>
-                                        <span class="rounded-full bg-purple-100 px-3 py-1 text-sm font-medium text-purple-700">
-                                            {{ schedule.nama_kelas }}
-                                        </span>
+                                        <div class="flex flex-wrap gap-2">
+                                            <span class="rounded-full bg-purple-100 px-3 py-1 text-sm font-medium text-purple-700">
+                                                {{ schedule.nama_kelas }}
+                                            </span>
+                                            <span class="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-700">
+                                                Lt.{{ schedule.lantai }}
+                                            </span>
+                                            <span class="rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-700">
+                                                R.{{ schedule.ruang }}
+                                            </span>
+                                        </div>
                                     </div>
                                     <p class="mt-1 text-sm text-gray-600">{{ schedule.jam_mulai }} - {{ schedule.jam_selesai }}</p>
-                                    <p class="mt-1 text-xs text-gray-500">{{ schedule.ruangan }} • {{ formatScheduleDate(schedule.tanggal) }}</p>
+                                    <p class="mt-1 text-xs text-gray-500">
+                                        {{ formatHari(schedule.hari) }} • Lantai {{ schedule.lantai }} • Ruang {{ schedule.ruang }}
+                                    </p>
                                 </div>
                             </div>
 
@@ -522,9 +554,13 @@
                                 <th class="px-4 py-3 text-left font-semibold text-gray-900">Nama Siswa</th>
                                 <th class="px-4 py-3 text-left font-semibold text-gray-900">Kelas</th>
                                 <th class="px-4 py-3 text-left font-semibold text-gray-900">Mata Pelajaran</th>
+                                <th class="px-4 py-3 text-left font-semibold text-gray-900">Hari</th>
+                                <th class="px-4 py-3 text-left font-semibold text-gray-900">Lantai</th>
+                                <th class="px-4 py-3 text-left font-semibold text-gray-900">Ruang</th>
                                 <th class="px-4 py-3 text-left font-semibold text-gray-900">Tanggal</th>
                                 <th class="px-4 py-3 text-left font-semibold text-gray-900">Waktu</th>
                                 <th class="px-4 py-3 text-left font-semibold text-gray-900">Status</th>
+                                <th class="px-4 py-3 text-left font-semibold text-gray-900">Keterangan</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -536,6 +572,9 @@
                                 <td class="px-4 py-3">{{ student.name || student.nama_siswa }}</td>
                                 <td class="px-4 py-3">{{ student.class || student.nama_kelas }}</td>
                                 <td class="px-4 py-3">{{ student.subject || student.mata_pelajaran }}</td>
+                                <td class="px-4 py-3">{{ formatHari(student.hari) }}</td>
+                                <td class="px-4 py-3">{{ student.lantai }}</td>
+                                <td class="px-4 py-3">{{ student.ruang }}</td>
                                 <td class="px-4 py-3">{{ student.date || student.tanggal }}</td>
                                 <td class="px-4 py-3">{{ student.time || student.waktu }}</td>
                                 <td class="px-4 py-3">
@@ -545,6 +584,9 @@
                                     >
                                         {{ processAttendanceStatus(student).displayStatus }}
                                     </span>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <span class="text-sm text-gray-700">{{ student.keterangan || '-' }}</span>
                                 </td>
                             </tr>
                         </tbody>
@@ -743,630 +785,782 @@
     </div>
 </template>
 
-<script setup>
+<script>
 import { router } from '@inertiajs/vue3';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import QRCode from 'qrcode';
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue';
 
-// Props
-const props = defineProps({
-    auth: Object,
-    flash: Object,
-    guru: Object,
-    jadwalData: { type: Array, default: () => [] },
-    absensiData: { type: Array, default: () => [] },
-    kelasData: { type: Array, default: () => [] },
-    lantai: { type: Array, default: () => [] },
-    ruang: { type: Array, default: () => [] },
-});
-
-// Filter attendance data based on teacher's schedule
-const filteredAbsensiData = computed(() => {
-    if (!props.absensiData || !props.jadwalData) return [];
-
-    return props.absensiData.filter((absensi) => {
-        // Check if this attendance record matches any of the teacher's scheduled classes
-        return props.jadwalData.some(
-            (jadwal) =>
-                jadwal.mata_pelajaran === (absensi.subject || absensi.mata_pelajaran) &&
-                jadwal.lantai === (absensi.class || absensi.lantai) &&
-                jadwal.ruang === (absensi.class || absensi.ruang) &&
-                jadwal.nama_kelas === (absensi.class || absensi.nama_kelas) &&
-                jadwal.tanggal === (absensi.date || absensi.tanggal),
-        );
-    });
-});
-
-// Reactive data
-const localAbsensiData = ref(props.absensiData ?? []);
-const allAttendanceData = ref(filteredAbsensiData.value ?? []);
-const filteredAttendanceData = ref([...filteredAbsensiData.value]);
-const teacherName = ref(props.guru?.nama ?? 'Guru');
-const showAttendanceModal = ref(false);
-const jadwalData = ref(props.jadwalData ?? []);
-const selectedClass = ref('');
-const selectedSubject = ref('');
-const selectedDate = ref('');
-const selectedMonth = ref('');
-const selectedYear = ref('');
-const attendanceFilter = ref({
-    class: '',
-    subject: '',
-});
-const localKelasData = ref(props.kelasData ?? []);
-const localJadwalData = ref(props.jadwalData ?? []);
-const isNavbarVisible = ref(true);
-const qrImage = ref('');
-const selectedJadwal = ref('');
-const isGeneratingQR = ref(false);
-
-// Password Modal Settings
-const showChangePasswordModal = ref(false);
-const dropdownOpen = ref(false);
-const passwordForm = ref({
-    current_password: '',
-    new_password: '',
-    new_password_confirmation: '',
-});
-const passwordErrors = ref({});
-const processingPassword = ref(false);
-
-// Toast Notification
-const toastMessage = ref('');
-const toastType = ref('success');
-const showToast = ref(false);
-
-// Confirmation Modal
-const showConfirmationModal = ref(false);
-const confirmationMessage = ref('');
-const confirmationCallback = ref(null);
-
-// Functions
-const showNotification = (msg, type = 'success') => {
-    toastMessage.value = msg;
-    toastType.value = type;
-    showToast.value = true;
-    setTimeout(() => (showToast.value = false), 3000);
-};
-
-const showConfirmModal = (message, callback) => {
-    confirmationMessage.value = message;
-    confirmationCallback.value = callback;
-    showConfirmationModal.value = true;
-};
-
-const confirmAction = () => {
-    if (confirmationCallback.value) {
-        confirmationCallback.value();
-    }
-    closeConfirmModal();
-};
-
-const closeConfirmModal = () => {
-    showConfirmationModal.value = false;
-    confirmationMessage.value = '';
-    confirmationCallback.value = null;
-};
-
-const toggleDropdown = () => (dropdownOpen.value = !dropdownOpen.value);
-const closeDropdown = () => (dropdownOpen.value = false);
-
-const closePasswordModal = () => {
-    showChangePasswordModal.value = false;
-    passwordForm.value = {
-        current_password: '',
-        new_password: '',
-        new_password_confirmation: '',
-    };
-    passwordErrors.value = {};
-};
-
-const submitPasswordChange = () => {
-    if (processingPassword.value) return;
-    processingPassword.value = true;
-    passwordErrors.value = {};
-
-    router.put(route('guru.password.update'), passwordForm.value, {
-        onSuccess: () => {
-            showNotification('Password berhasil diubah!', 'success');
-            closePasswordModal();
-        },
-        onError: (errors) => {
-            // Set form errors for field highlighting
-            passwordErrors.value = Object.fromEntries(Object.entries(errors).map(([key, val]) => [key, Array.isArray(val) ? val : [val]]));
-        },
-        onFinish: () => (processingPassword.value = false),
-    });
-};
-
-let lastScrollY = window.scrollY;
-let scrollTimeout = null;
-
-function handleScroll() {
-    clearTimeout(scrollTimeout);
-
-    if (window.scrollY > lastScrollY) {
-        isNavbarVisible.value = false;
-    } else {
-        scrollTimeout = setTimeout(() => {
-            isNavbarVisible.value = true;
-        }, 100);
-    }
-
-    lastScrollY = window.scrollY;
-}
-
-const processAttendanceStatus = (attendance) => {
-    const mapel = attendance.subject || attendance.mata_pelajaran;
-    const kelas = attendance.class || attendance.nama_kelas;
-    const lantai = attendance.class || attendance.lantai;
-    const ruang = attendance.class || attendance.ruang;
-    const tanggal = attendance.date || attendance.tanggal;
-
-    // Find matching schedule
-    const jadwal = jadwalData.value.find((j) => j.mata_pelajaran === mapel && j.nama_kelas === kelas && j.lantai === lantai && j.ruang === ruang && j.tanggal === tanggal);
-
-    let displayStatus = attendance.status;
-
-    if (jadwal && displayStatus.toLowerCase() === 'hadir') {
-        const attendanceTime = attendance.time || attendance.waktu;
-        const scheduleStartTime = jadwal.jam_mulai;
-
-        // Parse time strings
-        const [attendanceHours, attendanceMinutes] = attendanceTime.split(':').map(Number);
-        const [scheduleHours, scheduleMinutes] = scheduleStartTime.split(':').map(Number);
-
-        // Convert to minutes for comparison
-        const attendanceInMinutes = attendanceHours * 60 + attendanceMinutes;
-        const scheduleInMinutes = scheduleHours * 60 + scheduleMinutes;
-
-        // Grace period: 10 minutes after start time
-        const lateThreshold = scheduleInMinutes + 10;
-
-        if (attendanceInMinutes > lateThreshold) {
-            displayStatus = 'Terlambat';
-        }
-    }
-
-    return {
-        ...attendance,
-        displayStatus,
-        originalStatus: attendance.status,
-        scheduleInfo: jadwal || null,
-    };
-};
-
-const getAttendanceStatusClass = (student) => {
-    const status = (student.displayStatus || student.status || '').toLowerCase();
-
-    if (status === 'hadir') {
-        return 'bg-green-100 text-green-800 border border-green-300';
-    } else if (status === 'terlambat') {
-        return 'bg-red-100 text-red-800 border border-red-300';
-    } else if (['alpha', 'izin', 'sakit', 'tidak hadir', 'alpa'].includes(status)) {
-        return 'bg-yellow-100 text-yellow-800 border border-yellow-300';
-    } else {
-        return 'bg-gray-100 text-gray-800 border border-gray-300';
-    }
-};
-
-// Computed Properties with Dynamic Data
-const dynamicStats = computed(() => {
-    // Use filtered attendance data instead of all attendance data
-    const attendanceData = filteredAbsensiData.value;
-
-    // Calculate total unique students from classes that the teacher teaches
-    const teacherClasses = [...new Set(props.jadwalData.map((j) => j.nama_kelas))];
-
-    // Calculate total students from teacher's classes using correct field name
-    const totalStudentsInTeacherClasses = props.kelasData
-        .filter((kelas) => teacherClasses.includes(kelas.nama_kelas))
-        .reduce((total, kelas) => {
-            const studentCount = parseInt(kelas.total_siswa) || 0;
-            return total + studentCount;
-        }, 0);
-
-    // If no data from kelasData, count unique students from attendance data
-    const fallbackStudentCount =
-        totalStudentsInTeacherClasses > 0 ? totalStudentsInTeacherClasses : [...new Set(attendanceData.map((a) => a.name || a.nama_siswa))].length;
-
-    // Calculate total unique classes from schedule data
-    const uniqueClasses = [...new Set(props.jadwalData.map((j) => j.nama_kelas))].length;
-
-    // Calculate total unique subjects from schedule data
-    const uniqueSubjects = [...new Set(props.jadwalData.map((j) => j.mata_pelajaran))].length;
-
-    // Calculate today's attendance from filtered data
-    const today = new Date().toISOString().split('T')[0];
-    const todayAttendance = attendanceData.filter((a) => {
-        const recordDate = a.tanggal || a.date;
-        return recordDate === today || recordDate === new Date().toLocaleDateString('en-CA');
-    });
-
-    // Count students present today
-    const presentToday = todayAttendance.filter((a) => {
-        const status = (a.status || '').toLowerCase();
-        return status === 'hadir';
-    }).length;
-
-    return [
-        {
-            label: 'Total Siswa',
-            value: totalStudentsInTeacherClasses || '0',
-            change: totalStudentsInTeacherClasses > 0 ? `${uniqueClasses} kelas` : 'Belum ada',
-            icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
-            bgColor: 'bg-gradient-to-r from-blue-500 to-blue-600',
-            textColor: 'text-blue-600',
-        },
-        {
-            label: 'Hadir Hari Ini',
-            value: presentToday || '0',
-            change: todayAttendance.length > 0 ? `${presentToday}/${todayAttendance.length}` : 'Belum ada',
-            icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
-            bgColor: 'bg-gradient-to-r from-green-500 to-green-600',
-            textColor: 'text-green-600',
-        },
-        {
-            label: 'Kelas yang Diajar',
-            value: uniqueClasses || '0',
-            change: uniqueClasses > 0 ? `${uniqueClasses} kelas` : 'Belum ada',
-            icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
-            bgColor: 'bg-gradient-to-r from-purple-500 to-purple-600',
-            textColor: 'text-purple-600',
-        },
-        {
-            label: 'Mata Pelajaran',
-            value: uniqueSubjects || '0',
-            change: uniqueSubjects > 0 ? `${uniqueSubjects} mapel` : 'Belum ada',
-            icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253',
-            bgColor: 'bg-gradient-to-r from-orange-500 to-orange-600',
-            textColor: 'text-orange-600',
-        },
-    ];
-});
-
-const recentAttendance = computed(() => {
-    return [...filteredAbsensiData.value]
-        .sort((a, b) => new Date(b.tanggal + ' ' + b.waktu) - new Date(a.tanggal + ' ' + a.waktu))
-        .slice(0, 5)
-        .map((attendance) => processAttendanceStatus(attendance));
-});
-
-const attendanceStats = computed(() => {
-    const todayData = filteredAbsensiData.value.filter((a) => {
-        const recordDate = a.tanggal || a.date;
-        return recordDate === today || recordDate === new Date().toLocaleDateString('en-CA');
-    });
-
-    const dataToProcess = todayData.length > 0 ? todayData : filteredAbsensiData.value;
-    const total = dataToProcess.length || 1;
-
-    let hadirCount = 0;
-    let terlambatCount = 0;
-    let alphaCount = 0;
-    let izinCount = 0;
-    let sakitCount = 0;
-
-    // Count late students from ALL attendance data (not just today)
-    const lateMap = {};
-
-    // Process today's data for percentages
-    dataToProcess.forEach((a) => {
-        const processedAttendance = processAttendanceStatus(a);
-        const status = processedAttendance.displayStatus.toLowerCase();
-
-        if (status === 'hadir') {
-            hadirCount++;
-        } else if (status === 'terlambat') {
-            terlambatCount++;
-        }
-
-        const originalStatus = (a.status || '').toLowerCase();
-        if (originalStatus === 'alfa' || originalStatus === 'alfa') {
-            alphaCount++;
-        } else if (originalStatus === 'izin') {
-            izinCount++;
-        } else if (originalStatus === 'sakit') {
-            sakitCount++;
-        }
-    });
-
-    // Count late students from ALL attendance data
-    filteredAbsensiData.value.forEach((a) => {
-        const processedAttendance = processAttendanceStatus(a);
-        const studentName = a.name || a.nama_siswa || 'Unknown';
-
-        if (processedAttendance.displayStatus.toLowerCase() === 'terlambat') {
-            lateMap[studentName] = (lateMap[studentName] || 0) + 1;
-        }
-    });
-
-    const topLateStudents = Object.entries(lateMap)
-        .map(([name, count]) => ({ name, lateCount: count }))
-        .sort((a, b) => b.lateCount - a.lateCount)
-        .slice(0, 5);
-
-    return {
-        hadirPct: Math.round((hadirCount / total) * 100),
-        terlambatPct: Math.round((terlambatCount / total) * 100),
-        alphaPct: Math.round((alphaCount / total) * 100),
-        izinPct: Math.round((izinCount / total) * 100),
-        sakitPct: Math.round((sakitCount / total) * 100),
-        topLateStudents,
-        counts: {
-            hadir: hadirCount,
-            terlambat: terlambatCount,
-            totalalfa: alphaCount,
-            totalizin: izinCount,
-            totalsakit: sakitCount,
-            total,
-        },
-    };
-});
-
-const availableSubjects = computed(() => {
-    return [...new Set(props.jadwalData.map((item) => item.mata_pelajaran))];
-});
-
-// Filter kelas data to only show classes that the teacher teaches
-const filteredKelasData = computed(() => {
-    const teacherClasses = [...new Set(props.jadwalData.map((jadwal) => jadwal.nama_kelas))];
-    return props.kelasData.filter((kelas) => teacherClasses.includes(kelas.nama_kelas));
-});
-
-const availableDates = computed(() => {
-    if (!jadwalData.value) return [];
-    return [...new Set(jadwalData.value.map((item) => item.tanggal))].sort();
-});
-
-const availableYears = computed(() => {
-    if (!jadwalData.value) return [];
-    return [...new Set(jadwalData.value.map((item) => new Date(item.tanggal).getFullYear()))].sort();
-});
-
-const filteredSchedule = computed(() => {
-    let filtered = jadwalData.value ?? [];
-
-    if (selectedDate.value) {
-        filtered = filtered.filter((item) => item.tanggal === selectedDate.value);
-    }
-    if (selectedMonth.value) {
-        filtered = filtered.filter((item) => {
-            const itemMonth = new Date(item.tanggal).getMonth() + 1;
-            return itemMonth == selectedMonth.value;
-        });
-    }
-    if (selectedYear.value) {
-        filtered = filtered.filter((item) => {
-            const itemYear = new Date(item.tanggal).getFullYear();
-            return itemYear == selectedYear.value;
-        });
-    }
-
-    return filtered.sort((a, b) => {
-        const dateA = new Date(a.tanggal + ' ' + a.jam_mulai);
-        const dateB = new Date(b.tanggal + ' ' + b.jam_mulai);
-        return dateA - dateB;
-    });
-});
-
-const selectedScheduleTime = computed(() => {
-    if (!selectedJadwal.value) return '';
-    const jadwal = jadwalData.value.find((j) => j.id_jadwal == selectedJadwal.value);
-    return jadwal ? `${jadwal.jam_mulai} - ${jadwal.jam_selesai}` : '';
-});
-
-const selectedJadwalLabel = computed(() => {
-    if (!selectedJadwal.value) return '';
-    const jadwal = jadwalData.value.find((j) => j.id_jadwal == selectedJadwal.value);
-    return jadwal ? `${jadwal.mata_pelajaran} - ${jadwal.nama_kelas}` : '';
-});
-
-/**
- * 🔹 QR Code Absensi
- */
-const generateQRCode = async () => {
-    if (!selectedJadwal.value) {
-        showNotification('Silakan pilih jadwal terlebih dahulu!', 'error');
-        return;
-    }
-    try {
-        isGeneratingQR.value = true;
-        const payload = `jadwal:${selectedJadwal.value}`;
-        const qrDataUrl = await QRCode.toDataURL(payload, {
-            width: 250,
-            margin: 2,
-            color: { dark: '#000000', light: '#ffffff' },
-        });
-        qrImage.value = qrDataUrl;
-        await nextTick();
-        const qrDiv = document.getElementById('qrcode');
-        if (qrDiv) {
-            qrDiv.innerHTML = '';
-            const img = document.createElement('img');
-            img.src = qrImage.value;
-            img.className = 'h-32 w-32 sm:h-48 sm:w-48 object-contain';
-            img.alt = 'QR Code Absensi';
-            qrDiv.appendChild(img);
-        }
-        showNotification('QR Code berhasil di-generate!', 'success');
-    } catch (error) {
-        console.error('Error generating QR code:', error);
-        showNotification('Gagal membuat QR Code. Silakan coba lagi.', 'error');
-    } finally {
-        isGeneratingQR.value = false;
-    }
-};
-
-const refreshQRCode = async () => {
-    if (!qrImage.value) {
-        showNotification('Belum ada QR Code untuk direfresh. Silakan generate dulu.', 'error');
-        return;
-    }
-
-    // Show confirmation modal instead of browser confirm
-    showConfirmModal('Apakah anda yakin untuk merefresh QR Code?', async () => {
-        await generateQRCode();
-        showNotification('QR Code berhasil direfresh!', 'success');
-    });
-};
-
-const onJadwalChange = () => {
-    qrImage.value = '';
-    const qrDiv = document.getElementById('qrcode');
-    if (qrDiv) {
-        qrDiv.innerHTML = '<p class="text-sm text-gray-500">QR Code akan muncul di sini</p>';
-    }
-};
-
-/**
- * 🔹 Utility Functions
- */
-const exportToPDF = () => {
-    const doc = new jsPDF();
-    doc.setFontSize(14);
-    doc.text('Laporan Absensi Siswa', 14, 15);
-    doc.setFontSize(10);
-    doc.text(`Guru: ${teacherName.value}`, 14, 22);
-    doc.text(`Kelas: ${attendanceFilter.value.class || 'Semua'}`, 14, 28);
-    doc.text(`Mata Pelajaran: ${attendanceFilter.value.subject || 'Semua'}`, 14, 34);
-
-    const tableData = (filteredAttendanceData.value || []).map((a, index) => {
-        const processed = processAttendanceStatus(a);
-        return [
-            index + 1,
-            a.name || a.nama_siswa || '-',
-            a.class || a.nama_kelas || '-',
-            a.subject || a.mata_pelajaran || '-',
-            a.date || a.tanggal || '-',
-            a.time || a.waktu || '-',
-            processed.displayStatus || '-',
-        ];
-    });
-
-    if (tableData.length === 0) {
-        doc.text('Tidak ada data absensi untuk kelas dan mata pelajaran yang Anda ajar.', 14, 45);
-    } else {
-        autoTable(doc, {
-            startY: 40,
-            head: [['No', 'Nama Siswa', 'Kelas', 'Mata Pelajaran', 'Tanggal', 'Waktu', 'Status']],
-            body: tableData,
-            theme: 'grid',
-            styles: { fontSize: 9, cellPadding: 3 },
-            headStyles: { fillColor: [41, 128, 185] },
-            didParseCell: function (data) {
-                if (data.column.index === 6 && data.cell.text[0] === 'Terlambat') {
-                    data.cell.styles.textColor = [220, 38, 38];
-                    data.cell.styles.fontStyle = 'bold';
-                }
-            },
-        });
-    }
-    doc.save(`Absensi_${teacherName.value}_${attendanceFilter.value.class || 'Semua'}_${Date.now()}.pdf`);
-};
-
-const months = ref(['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']);
-
-const today = new Date().toISOString().split('T')[0];
-
-const logout = () => {
-    router.post(route('logout'));
-};
-
-const filterSchedule = () => {
-    console.log('Filtering schedule...');
-};
-
-const filterAttendanceData = () => {
-    let filtered = filteredAbsensiData.value; // Use filtered data instead of all data
-
-    if (attendanceFilter.value.class) {
-        filtered = filtered.filter((item) => item.class === attendanceFilter.value.class || item.nama_kelas === attendanceFilter.value.class);
-    }
-
-    if (attendanceFilter.value.subject) {
-        filtered = filtered.filter(
-            (item) => item.subject === attendanceFilter.value.subject || item.mata_pelajaran === attendanceFilter.value.subject,
-        );
-    }
-
-    filteredAttendanceData.value = filtered;
-};
-
-const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('id-ID', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-    });
-};
-
-const formatScheduleDate = (dateString) => {
-    const date = new Date(dateString);
-    const today = new Date();
-    const isToday = date.toDateString() === today.toDateString();
-
-    if (isToday) {
-        return 'Hari ini';
-    } else {
-        return date.toLocaleDateString('id-ID', {
-            weekday: 'long',
-            day: 'numeric',
-            month: 'long',
-        });
-    }
-};
-
-let qrInterval = null;
-
-onMounted(() => {
-    window.addEventListener('scroll', handleScroll);
-
-    // Initialize filtered attendance data
-    allAttendanceData.value = filteredAbsensiData.value;
-    filteredAttendanceData.value = [...filteredAbsensiData.value];
-
-    // Close dropdown on click outside
-    const handleClick = (e) => {
-        const dropdown = document.querySelector('.dropdown-container');
-        if (dropdown && !dropdown.contains(e.target)) closeDropdown();
-    };
-    document.addEventListener('click', handleClick);
-
-    const cards = document.querySelectorAll('.group');
-    cards.forEach((card, index) => {
-        card.style.opacity = '0';
-        card.style.transform = 'translateY(20px)';
-
-        setTimeout(() => {
-            card.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
-        }, index * 100);
-    });
-
-    qrInterval = setInterval(
-        () => {
-            if (qrImage.value) {
-                refreshQRCode();
+export default {
+    props: {
+        auth: Object,
+        flash: Object,
+        guru: Object,
+        jadwalData: { type: Array, default: () => [] },
+        absensiData: { type: Array, default: () => [] },
+        kelasData: { type: Array, default: () => [] },
+        lantai: { type: Number, default: 0 },
+        ruang: { type: Number, default: 0 },
+    },
+    setup(props) {
+        // Filter/Merge attendance data: include all students per schedule, default to "Belum Absen",
+        // and auto-mark "Alfa" if > 30 minutes after start and not scanned today.
+        const filteredAbsensiData = computed(() => {
+            const jadwalArr = Array.isArray(props.jadwalData) ? props.jadwalData : [];
+            const absensiArr = Array.isArray(props.absensiData) ? props.absensiData : [];
+            if (jadwalArr.length === 0 || absensiArr.length === 0) return [];
+
+            // Build map: className -> Map(uniqueKey -> {name, class})
+            const studentsByClass = new Map();
+            for (const a of absensiArr) {
+                const className = a.class || a.nama_kelas;
+                const name = a.name || a.nama_siswa;
+                if (!className || !name) continue;
+                if (!studentsByClass.has(className)) studentsByClass.set(className, new Map());
+                const key = `${name}|${className}`;
+                const map = studentsByClass.get(className);
+                if (!map.has(key)) map.set(key, { name, class: className });
             }
-        },
-        5 * 60 * 1000,
-    );
-});
 
-onUnmounted(() => {
-    if (qrInterval) {
-        clearInterval(qrInterval);
-    }
-});
+            const todayDate = new Date().toISOString().split('T')[0];
+            const merged = [];
+
+            // Helper to get date field
+            const aDate = (obj) => obj?.date || obj?.tanggal || null;
+
+            // For each schedule, ensure all students in that class are represented
+            for (const j of jadwalArr) {
+                const className = j.nama_kelas;
+                const classStudents = studentsByClass.get(className) || new Map();
+
+                for (const { name } of classStudents.values()) {
+                    // Find matching attendance for this schedule (subject+class+hari)
+                    const match = absensiArr.find(
+                        (a) =>
+                            (a.name || a.nama_siswa) === name &&
+                            (a.class || a.nama_kelas) === className &&
+                            (a.subject || a.mata_pelajaran) === j.mata_pelajaran &&
+                            a.hari === j.hari,
+                    );
+
+                    const record = {
+                        name,
+                        class: className,
+                        subject: j.mata_pelajaran,
+                        hari: j.hari,
+                        lantai: j.lantai,
+                        ruang: j.ruang,
+                        date: match ? aDate(match) || todayDate : todayDate,
+                        time: match ? match.time || match.waktu || '' : '',
+                        status: match ? match.status || 'Belum Absen' : 'Belum Absen',
+                        keterangan: match ? match.keterangan || null : null,
+                    };
+                    merged.push(record);
+                }
+            }
+
+            // Kembalikan hasil merge saja untuk menghindari baris duplikat dari record tanpa jadwal (mapel null)
+            return merged;
+        });
+
+        // Reactive data - ensure all props are arrays
+        const localAbsensiData = ref(Array.isArray(props.absensiData) ? props.absensiData : []);
+        const allAttendanceData = ref([]);
+        const filteredAttendanceData = ref([]);
+        const teacherName = ref(props.guru?.nama ?? 'Guru');
+        const showAttendanceModal = ref(false);
+        const jadwalData = ref(Array.isArray(props.jadwalData) ? props.jadwalData : []);
+        const selectedClass = ref('');
+        const selectedSubject = ref('');
+        const selectedHari = ref('');
+        const selectedLantai = ref('');
+        const selectedRuang = ref('');
+        const attendanceFilter = ref({
+            class: '',
+            subject: '',
+        });
+        const localKelasData = ref(Array.isArray(props.kelasData) ? props.kelasData : []);
+        const localJadwalData = ref(Array.isArray(props.jadwalData) ? props.jadwalData : []);
+        const isNavbarVisible = ref(true);
+        const qrImage = ref('');
+        const selectedJadwal = ref('');
+        const isGeneratingQR = ref(false);
+
+        // Password Modal Settings
+        const showChangePasswordModal = ref(false);
+        const dropdownOpen = ref(false);
+        const passwordForm = ref({
+            current_password: '',
+            new_password: '',
+            new_password_confirmation: '',
+        });
+        const passwordErrors = ref({});
+        const processingPassword = ref(false);
+
+        // Toast Notification
+        const toastMessage = ref('');
+        const toastType = ref('success');
+        const showToast = ref(false);
+
+        // Confirmation Modal
+        const showConfirmationModal = ref(false);
+        const confirmationMessage = ref('');
+        const confirmationCallback = ref(null);
+
+        // Variables for scroll management and intervals
+        let lastScrollY = typeof window !== 'undefined' ? window.scrollY : 0;
+        let scrollTimeout = null;
+        let qrInterval = null;
+        const today = new Date().toISOString().split('T')[0];
+
+        // Functions
+        const showNotification = (msg, type = 'success') => {
+            toastMessage.value = msg;
+            toastType.value = type;
+            showToast.value = true;
+            setTimeout(() => (showToast.value = false), 3000);
+        };
+
+        const showConfirmModal = (message, callback) => {
+            confirmationMessage.value = message;
+            confirmationCallback.value = callback;
+            showConfirmationModal.value = true;
+        };
+
+        const confirmAction = () => {
+            if (confirmationCallback.value) {
+                confirmationCallback.value();
+            }
+            closeConfirmModal();
+        };
+
+        const closeConfirmModal = () => {
+            showConfirmationModal.value = false;
+            confirmationMessage.value = '';
+            confirmationCallback.value = null;
+        };
+
+        const toggleDropdown = () => (dropdownOpen.value = !dropdownOpen.value);
+        const closeDropdown = () => (dropdownOpen.value = false);
+
+        const closePasswordModal = () => {
+            showChangePasswordModal.value = false;
+            passwordForm.value = {
+                current_password: '',
+                new_password: '',
+                new_password_confirmation: '',
+            };
+            passwordErrors.value = {};
+        };
+
+        const submitPasswordChange = () => {
+            if (processingPassword.value) return;
+            processingPassword.value = true;
+            passwordErrors.value = {};
+
+            router.put('/guru/password/update', passwordForm.value, {
+                onSuccess: () => {
+                    showNotification('Password berhasil diubah!', 'success');
+                    closePasswordModal();
+                },
+                onError: (errors) => {
+                    passwordErrors.value = Object.fromEntries(Object.entries(errors).map(([key, val]) => [key, Array.isArray(val) ? val : [val]]));
+                },
+                onFinish: () => (processingPassword.value = false),
+            });
+        };
+
+        // Helpers for attendance calculations
+        const normalizeHari = (h) => (typeof h === 'string' ? h.trim().toLowerCase() : '');
+        const getTodayHariLower = () => ['minggu', 'senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu'][new Date().getDay()];
+        const parseTimeToMinutes = (t) => {
+            if (!t || typeof t !== 'string') return null;
+            const m = t.match(/^(\d{1,2}):(\d{2})/);
+            if (!m) return null;
+            return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+        };
+
+        const processAttendanceStatus = (attendance) => {
+            const mapel = attendance.subject || attendance.mata_pelajaran;
+            const kelas = attendance.class || attendance.nama_kelas;
+            const hari = attendance.hari;
+
+            const jadwal = jadwalData.value.find((j) => j.mata_pelajaran === mapel && j.nama_kelas === kelas && j.hari === hari);
+
+            let displayStatus = attendance.status || 'Belum Absen';
+
+            if (jadwal) {
+                // Late if present > 10 minutes after start
+                if (displayStatus.toLowerCase() === 'hadir') {
+                    const attendanceMinutes = parseTimeToMinutes(attendance.time || attendance.waktu);
+                    const scheduleMinutes = parseTimeToMinutes(jadwal.jam_mulai);
+                    if (attendanceMinutes != null && scheduleMinutes != null) {
+                        const lateThreshold = scheduleMinutes + 10;
+                        if (attendanceMinutes > lateThreshold) {
+                            displayStatus = 'Terlambat';
+                        }
+                    }
+                }
+
+                // Auto ALFA if not checked in 30 minutes after start, same day
+                const todayHari = getTodayHariLower();
+                const isSameDay = normalizeHari(jadwal.hari) === normalizeHari(todayHari);
+                const hasNoScan = parseTimeToMinutes(attendance.time || attendance.waktu) == null;
+                if (isSameDay && hasNoScan && (displayStatus.toLowerCase() === 'belum absen' || displayStatus.toLowerCase() === '')) {
+                    const now = new Date();
+                    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+                    const scheduleMinutes = parseTimeToMinutes(jadwal.jam_mulai);
+                    if (scheduleMinutes != null && nowMinutes > scheduleMinutes + 30) {
+                        displayStatus = 'Alfa';
+                    }
+                }
+            }
+
+            return {
+                ...attendance,
+                displayStatus,
+                originalStatus: attendance.status,
+                scheduleInfo: jadwal || null,
+            };
+        };
+
+        const getAttendanceStatusClass = (student) => {
+            const status = (student.displayStatus || student.status || '').toLowerCase();
+
+            if (status === 'hadir') {
+                return 'bg-green-100 text-green-800 border border-green-300';
+            } else if (status === 'terlambat') {
+                return 'bg-red-100 text-red-800 border border-red-300';
+            } else if (['alpha', 'izin', 'sakit', 'tidak hadir', 'alfa', 'alfa'].includes(status)) {
+                return 'bg-yellow-100 text-yellow-800 border border-yellow-300';
+            } else if (status === 'belum absen' || status === '') {
+                return 'bg-gray-100 text-gray-800 border border-gray-300';
+            } else {
+                return 'bg-gray-100 text-gray-800 border border-gray-300';
+            }
+        };
+
+        // Computed Properties
+        const dynamicStats = computed(() => {
+            const attendanceData = filteredAbsensiData.value;
+            const jadwalArray = Array.isArray(props.jadwalData) ? props.jadwalData : [];
+            const kelasArray = Array.isArray(props.kelasData) ? props.kelasData : [];
+
+            const teacherClasses = [...new Set(jadwalArray.map((j) => j.nama_kelas))];
+            const totalStudentsInTeacherClasses = kelasArray
+                .filter((kelas) => teacherClasses.includes(kelas.nama_kelas))
+                .reduce((total, kelas) => {
+                    const studentCount = parseInt(kelas.total_siswa) || 0;
+                    return total + studentCount;
+                }, 0);
+
+            const fallbackStudentCount =
+                totalStudentsInTeacherClasses > 0
+                    ? totalStudentsInTeacherClasses
+                    : [...new Set(attendanceData.map((a) => a.name || a.nama_siswa))].length;
+            const uniqueClasses = [...new Set(jadwalArray.map((j) => j.nama_kelas))].length;
+            const uniqueSubjects = [...new Set(jadwalArray.map((j) => j.mata_pelajaran))].length;
+
+            const todayAttendance = attendanceData.filter((a) => {
+                const recordDate = a.tanggal || a.date;
+                return recordDate === today || recordDate === new Date().toLocaleDateString('en-CA');
+            });
+
+            const presentToday = todayAttendance.filter((a) => {
+                const status = (a.status || '').toLowerCase();
+                return status === 'hadir';
+            }).length;
+
+            return [
+                {
+                    label: 'Total Siswa',
+                    value: totalStudentsInTeacherClasses || '0',
+                    change: totalStudentsInTeacherClasses > 0 ? `${uniqueClasses} kelas` : 'Belum ada',
+                    icon: 'M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z',
+                    bgColor: 'bg-gradient-to-r from-blue-500 to-blue-600',
+                    textColor: 'text-blue-600',
+                },
+                {
+                    label: 'Hadir Hari Ini',
+                    value: presentToday || '0',
+                    change: todayAttendance.length > 0 ? `${presentToday}/${todayAttendance.length}` : 'Belum ada',
+                    icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
+                    bgColor: 'bg-gradient-to-r from-green-500 to-green-600',
+                    textColor: 'text-green-600',
+                },
+                {
+                    label: 'Kelas yang Diajar',
+                    value: uniqueClasses || '0',
+                    change: uniqueClasses > 0 ? `${uniqueClasses} kelas` : 'Belum ada',
+                    icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4',
+                    bgColor: 'bg-gradient-to-r from-purple-500 to-purple-600',
+                    textColor: 'text-purple-600',
+                },
+                {
+                    label: 'Mata Pelajaran',
+                    value: uniqueSubjects || '0',
+                    change: uniqueSubjects > 0 ? `${uniqueSubjects} mapel` : 'Belum ada',
+                    icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253',
+                    bgColor: 'bg-gradient-to-r from-orange-500 to-orange-600',
+                    textColor: 'text-orange-600',
+                },
+            ];
+        });
+
+        const recentAttendance = computed(() => {
+            return [...filteredAbsensiData.value]
+                .sort((a, b) => new Date(b.tanggal + ' ' + b.waktu) - new Date(a.tanggal + ' ' + a.waktu))
+                .slice(0, 5)
+                .map((attendance) => processAttendanceStatus(attendance))
+                .map((a) => {
+                    // tampilkan keterangan pada label untuk izin/sakit bila tersedia
+                    const statusLower = (a.originalStatus || a.status || '').toLowerCase();
+                    if (['izin', 'sakit'].includes(statusLower) && a.keterangan) {
+                        return { ...a, displayStatus: `${a.displayStatus} - ${a.keterangan}` };
+                    }
+                    return a;
+                });
+        });
+
+        const attendanceStats = computed(() => {
+            const todayData = filteredAbsensiData.value.filter((a) => {
+                const recordDate = a.tanggal || a.date;
+                return recordDate === today || recordDate === new Date().toLocaleDateString('en-CA');
+            });
+
+            const dataToProcess = todayData.length > 0 ? todayData : filteredAbsensiData.value;
+            const total = dataToProcess.length || 1;
+
+            let hadirCount = 0;
+            let terlambatCount = 0;
+            let alphaCount = 0;
+            let izinCount = 0;
+            let sakitCount = 0;
+
+            const lateMap = {};
+
+            dataToProcess.forEach((a) => {
+                const processedAttendance = processAttendanceStatus(a);
+                const status = processedAttendance.displayStatus.toLowerCase();
+
+                if (status === 'hadir') {
+                    hadirCount++;
+                } else if (status === 'terlambat') {
+                    terlambatCount++;
+                } else if (status === 'alfa') {
+                    alphaCount++;
+                }
+
+                const originalStatus = (a.status || '').toLowerCase();
+                if (originalStatus === 'izin') {
+                    izinCount++;
+                } else if (originalStatus === 'sakit') {
+                    sakitCount++;
+                }
+            });
+
+            filteredAbsensiData.value.forEach((a) => {
+                const processedAttendance = processAttendanceStatus(a);
+                const studentName = a.name || a.nama_siswa || 'Unknown';
+
+                if (processedAttendance.displayStatus.toLowerCase() === 'terlambat') {
+                    lateMap[studentName] = (lateMap[studentName] || 0) + 1;
+                }
+            });
+
+            const topLateStudents = Object.entries(lateMap)
+                .map(([name, count]) => ({ name, lateCount: count }))
+                .sort((a, b) => b.lateCount - a.lateCount)
+                .slice(0, 5);
+
+            return {
+                hadirPct: Math.round((hadirCount / total) * 100),
+                terlambatPct: Math.round((terlambatCount / total) * 100),
+                alphaPct: Math.round((alphaCount / total) * 100),
+                izinPct: Math.round((izinCount / total) * 100),
+                sakitPct: Math.round((sakitCount / total) * 100),
+                topLateStudents,
+                counts: {
+                    hadir: hadirCount,
+                    terlambat: terlambatCount,
+                    totalAlfa: alphaCount,
+                    totalIzin: izinCount,
+                    totalSakit: sakitCount,
+                    total,
+                },
+            };
+        });
+
+        const availableSubjects = computed(() => {
+            const jadwalArray = Array.isArray(props.jadwalData) ? props.jadwalData : [];
+            return [...new Set(jadwalArray.map((item) => item.mata_pelajaran))];
+        });
+
+        const availableLantai = computed(() => {
+            const jadwalArray = Array.isArray(props.jadwalData) ? props.jadwalData : [];
+            return [...new Set(jadwalArray.map((item) => item.lantai))].sort();
+        });
+
+        const availableRuang = computed(() => {
+            const jadwalArray = Array.isArray(props.jadwalData) ? props.jadwalData : [];
+            return [...new Set(jadwalArray.map((item) => item.ruang))].sort();
+        });
+
+        const filteredKelasData = computed(() => {
+            const jadwalArray = Array.isArray(props.jadwalData) ? props.jadwalData : [];
+            const kelasArray = Array.isArray(props.kelasData) ? props.kelasData : [];
+            const teacherClasses = [...new Set(jadwalArray.map((jadwal) => jadwal.nama_kelas))];
+            return kelasArray.filter((kelas) => teacherClasses.includes(kelas.nama_kelas));
+        });
+
+        const filteredSchedule = computed(() => {
+            let filtered = jadwalData.value ?? [];
+
+            if (selectedHari.value) {
+                filtered = filtered.filter((item) => item.hari === selectedHari.value);
+            }
+            if (selectedLantai.value) {
+                filtered = filtered.filter((item) => item.lantai === selectedLantai.value);
+            }
+            if (selectedRuang.value) {
+                filtered = filtered.filter((item) => item.ruang === selectedRuang.value);
+            }
+
+            return filtered.sort((a, b) => {
+                const dayOrder = { senin: 1, selasa: 2, rabu: 3, kamis: 4, jumat: 5 };
+                const dayComparison = dayOrder[a.hari] - dayOrder[b.hari];
+
+                if (dayComparison !== 0) {
+                    return dayComparison;
+                }
+
+                const timeA = a.jam_mulai.split(':').map(Number);
+                const timeB = b.jam_mulai.split(':').map(Number);
+                const timeAMinutes = timeA[0] * 60 + timeA[1];
+                const timeBMinutes = timeB[0] * 60 + timeB[1];
+
+                return timeAMinutes - timeBMinutes;
+            });
+        });
+
+        const selectedScheduleTime = computed(() => {
+            if (!selectedJadwal.value) return '';
+            const jadwal = jadwalData.value.find((j) => j.id_jadwal == selectedJadwal.value);
+            return jadwal ? `${jadwal.jam_mulai} - ${jadwal.jam_selesai}` : '';
+        });
+
+        const selectedJadwalLabel = computed(() => {
+            if (!selectedJadwal.value) return '';
+            const jadwal = jadwalData.value.find((j) => j.id_jadwal == selectedJadwal.value);
+            return jadwal ? `${jadwal.mata_pelajaran} - ${jadwal.nama_kelas}` : '';
+        });
+
+        // QR Code Functions
+        const generateQRCode = async () => {
+            if (!selectedJadwal.value) {
+                showNotification('Silakan pilih jadwal terlebih dahulu!', 'error');
+                return;
+            }
+            try {
+                isGeneratingQR.value = true;
+                const payload = `jadwal:${selectedJadwal.value}`;
+                const qrDataUrl = await QRCode.toDataURL(payload, {
+                    width: 250,
+                    margin: 2,
+                    color: { dark: '#000000', light: '#ffffff' },
+                });
+                qrImage.value = qrDataUrl;
+                await nextTick();
+                const qrDiv = document.getElementById('qrcode');
+                if (qrDiv) {
+                    qrDiv.innerHTML = '';
+                    const img = document.createElement('img');
+                    img.src = qrImage.value;
+                    img.className = 'h-32 w-32 sm:h-48 sm:w-48 object-contain';
+                    img.alt = 'QR Code Absensi';
+                    qrDiv.appendChild(img);
+                }
+                showNotification('QR Code berhasil di-generate!', 'success');
+            } catch (error) {
+                console.error('Error generating QR code:', error);
+                showNotification('Gagal membuat QR Code. Silakan coba lagi.', 'error');
+            } finally {
+                isGeneratingQR.value = false;
+            }
+        };
+
+        const refreshQRCode = async () => {
+            if (!qrImage.value) {
+                showNotification('Belum ada QR Code untuk direfresh. Silakan generate dulu.', 'error');
+                return;
+            }
+
+            showConfirmModal('Apakah anda yakin untuk merefresh QR Code?', async () => {
+                await generateQRCode();
+                showNotification('QR Code berhasil direfresh!', 'success');
+            });
+        };
+
+        const onJadwalChange = () => {
+            qrImage.value = '';
+            const qrDiv = document.getElementById('qrcode');
+            if (qrDiv) {
+                qrDiv.innerHTML = '<p class="text-sm text-gray-500">QR Code akan muncul di sini</p>';
+            }
+        };
+
+        // Utility Functions
+        const finalizeAbsensi = () => {
+            if (!selectedJadwal.value) {
+                showNotification('Silakan pilih jadwal terlebih dahulu!', 'error');
+                return;
+            }
+            router.post(
+                '/absensi-pelajaran/finalize',
+                { id_jadwal: selectedJadwal.value },
+                {
+                    onSuccess: () => {
+                        showNotification('Finalize berhasil diproses', 'success');
+                        // Reload data agar sinkron dengan DB
+                        router.visit(window.location.href, { preserveScroll: true });
+                    },
+                    onError: (errors) => {
+                        const msg = (errors && (errors.message || errors[Object.keys(errors)[0]])) || 'Gagal finalize';
+                        showNotification(String(msg), 'error');
+                    },
+                },
+            );
+        };
+
+        const exportToPDF = () => {
+            const doc = new jsPDF();
+            doc.setFontSize(14);
+            doc.text('Laporan Absensi Siswa', 14, 15);
+            doc.setFontSize(10);
+            doc.text(`Guru: ${teacherName.value}`, 14, 22);
+            doc.text(`Kelas: ${attendanceFilter.value.class || 'Semua'}`, 14, 28);
+            doc.text(`Mata Pelajaran: ${attendanceFilter.value.subject || 'Semua'}`, 14, 34);
+
+            const tableData = (filteredAttendanceData.value || []).map((a, index) => {
+                const processed = processAttendanceStatus(a);
+                const statusText = (() => {
+                    const s = (a.status || '').toLowerCase();
+                    if (['izin', 'sakit'].includes(s) && a.keterangan) return `${processed.displayStatus} - ${a.keterangan}`;
+                    return processed.displayStatus || '-';
+                })();
+                return [
+                    index + 1,
+                    a.name || a.nama_siswa || '-',
+                    a.class || a.nama_kelas || '-',
+                    a.subject || a.mata_pelajaran || '-',
+                    formatHari(a.hari) || '-',
+                    a.lantai || '-',
+                    a.ruang || '-',
+                    a.date || a.tanggal || '-',
+                    a.time || a.waktu || '-',
+                    statusText,
+                    a.keterangan || '-',
+                ];
+            });
+
+            if (tableData.length === 0) {
+                doc.text('Tidak ada data absensi untuk kelas dan mata pelajaran yang Anda ajar.', 14, 45);
+            } else {
+                autoTable(doc, {
+                    startY: 40,
+                    head: [['No', 'Nama', 'Kelas', 'Mapel', 'Hari', 'Lantai', 'Ruang', 'Tanggal', 'Waktu', 'Status', 'Keterangan']],
+                    body: tableData,
+                    theme: 'grid',
+                    styles: { fontSize: 8, cellPadding: 2 },
+                    headStyles: { fillColor: [41, 128, 185] },
+                    didParseCell: function (data) {
+                        if (data.column.index === 9 && data.cell.text[0] === 'Terlambat') {
+                            data.cell.styles.textColor = [220, 38, 38];
+                            data.cell.styles.fontStyle = 'bold';
+                        }
+                    },
+                });
+            }
+            doc.save(`Absensi_${teacherName.value}_${attendanceFilter.value.class || 'Semua'}_${Date.now()}.pdf`);
+        };
+
+        const formatHari = (hari) => {
+            const hariMap = {
+                senin: 'Senin',
+                selasa: 'Selasa',
+                rabu: 'Rabu',
+                kamis: 'Kamis',
+                jumat: 'Jumat',
+            };
+            return hariMap[hari?.toLowerCase()] || hari || 'Senin';
+        };
+
+        const formatDate = (dateString) => {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('id-ID', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+            });
+        };
+
+        const filterSchedule = () => {
+            console.log('Filtering schedule...');
+        };
+
+        const filterAttendanceData = () => {
+            let filtered = filteredAbsensiData.value;
+
+            if (attendanceFilter.value.class) {
+                filtered = filtered.filter((item) => item.class === attendanceFilter.value.class || item.nama_kelas === attendanceFilter.value.class);
+            }
+
+            if (attendanceFilter.value.subject) {
+                filtered = filtered.filter(
+                    (item) => item.subject === attendanceFilter.value.subject || item.mata_pelajaran === attendanceFilter.value.subject,
+                );
+            }
+
+            filteredAttendanceData.value = filtered;
+        };
+
+        const logout = () => {
+            router.post('/logout');
+        };
+
+        // Event handlers and scroll management
+        function handleScroll() {
+            clearTimeout(scrollTimeout);
+
+            if (window.scrollY > lastScrollY) {
+                isNavbarVisible.value = false;
+            } else {
+                scrollTimeout = setTimeout(() => {
+                    isNavbarVisible.value = true;
+                }, 100);
+            }
+
+            lastScrollY = window.scrollY;
+        }
+
+        // Initialize computed-dependent reactive values
+        allAttendanceData.value = filteredAbsensiData.value;
+        filteredAttendanceData.value = [...filteredAbsensiData.value];
+
+        // Lifecycle hooks
+        onMounted(() => {
+            window.addEventListener('scroll', handleScroll);
+
+            allAttendanceData.value = filteredAbsensiData.value;
+            filteredAttendanceData.value = [...filteredAbsensiData.value];
+
+            const handleClick = (e) => {
+                const dropdown = document.querySelector('.dropdown-container');
+                if (dropdown && !dropdown.contains(e.target)) closeDropdown();
+            };
+            document.addEventListener('click', handleClick);
+
+            const cards = document.querySelectorAll('.group');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+
+                setTimeout(() => {
+                    card.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+
+            qrInterval = setInterval(
+                () => {
+                    if (qrImage.value) {
+                        refreshQRCode();
+                    }
+                },
+                5 * 60 * 1000,
+            );
+        });
+
+        onUnmounted(() => {
+            if (qrInterval) {
+                clearInterval(qrInterval);
+            }
+            window.removeEventListener('scroll', handleScroll);
+        });
+
+        return {
+            // Reactive variables
+            localAbsensiData,
+            allAttendanceData,
+            filteredAttendanceData,
+            teacherName,
+            showAttendanceModal,
+            jadwalData,
+            selectedClass,
+            selectedSubject,
+            selectedHari,
+            selectedLantai,
+            selectedRuang,
+            attendanceFilter,
+            localKelasData,
+            localJadwalData,
+            isNavbarVisible,
+            qrImage,
+            selectedJadwal,
+            isGeneratingQR,
+            showChangePasswordModal,
+            dropdownOpen,
+            passwordForm,
+            passwordErrors,
+            processingPassword,
+            toastMessage,
+            toastType,
+            showToast,
+            showConfirmationModal,
+            confirmationMessage,
+            confirmationCallback,
+
+            // Computed properties
+            dynamicStats,
+            recentAttendance,
+            attendanceStats,
+            availableSubjects,
+            availableLantai,
+            availableRuang,
+            filteredKelasData,
+            filteredSchedule,
+            selectedScheduleTime,
+            selectedJadwalLabel,
+
+            // Methods
+            showNotification,
+            showConfirmModal,
+            confirmAction,
+            closeConfirmModal,
+            toggleDropdown,
+            closeDropdown,
+            closePasswordModal,
+            submitPasswordChange,
+            processAttendanceStatus,
+            getAttendanceStatusClass,
+            generateQRCode,
+            refreshQRCode,
+            onJadwalChange,
+            exportToPDF,
+            formatHari,
+            formatDate,
+            filterSchedule,
+            filterAttendanceData,
+            finalizeAbsensi,
+            logout,
+        };
+    },
+};
 </script>
 
 <style scoped>
-/* Dropdown Animation */
 .dropdown-enter-active,
 .dropdown-leave-active {
     transition: all 0.3s ease;
@@ -1382,7 +1576,6 @@ onUnmounted(() => {
     transform: translateY(0) scale(1);
 }
 
-/* Toast Animation */
 .fade-scale-enter-active,
 .fade-scale-leave-active {
     transition: all 0.3s ease;
@@ -1398,7 +1591,6 @@ onUnmounted(() => {
     transform: scale(1);
 }
 
-/* Checkmark Animation */
 .checkmark-circle {
     stroke: #4ade80;
     stroke-width: 3;
@@ -1437,37 +1629,8 @@ onUnmounted(() => {
     }
 }
 
-@keyframes pulse {
-    0%,
-    100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.8;
-    }
-}
-
-@keyframes slideInRight {
-    from {
-        opacity: 0;
-        transform: translateX(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
 .group {
     animation: fadeInUp 0.6s ease-out forwards;
-}
-
-.group:nth-child(odd) {
-    animation-delay: 0.1s;
-}
-
-.group:nth-child(even) {
-    animation-delay: 0.2s;
 }
 
 .group:hover {
@@ -1479,122 +1642,12 @@ onUnmounted(() => {
     -webkit-backdrop-filter: blur(12px);
 }
 
-.bg-green-500,
-.bg-blue-500,
-.bg-purple-500,
-.bg-yellow-500,
-.bg-red-500 {
-    animation: pulse 2s infinite;
-    transition: width 1s ease-in-out;
-}
-
-#qrcode {
-    transition: all 0.3s ease-in-out;
-}
-
-#qrcode:hover {
-    transform: scale(1.05);
-}
-
-@keyframes modalSlideIn {
-    from {
-        opacity: 0;
-        transform: scale(0.9) translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
-}
-
-.fixed.inset-0 > div {
-    animation: modalSlideIn 0.3s ease-out;
-}
-
 select {
-    transition: all 0.3s ease;
     color: #000;
-}
-
-select:focus {
-    transform: scale(1.02);
-}
-
-@media (max-width: 640px) {
-    .grid-cols-1.sm\\:grid-cols-2 {
-        gap: 3rem;
-    }
-
-    .text-2xl {
-        font-size: 1.5rem;
-    }
-
-    .p-6 {
-        padding: 1rem;
-    }
-
-    .flex-wrap {
-        gap: 0.5rem;
-    }
-}
-
-@media (max-width: 768px) {
-    .flex-col.sm\\:flex-row {
-        align-items: flex-start;
-    }
-
-    .gap-4 {
-        gap: 0.75rem;
-    }
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-.animate-spin {
-    animation: spin 1s linear infinite;
-}
-
-@keyframes gradientShift {
-    0%,
-    100% {
-        background-position: 0% 50%;
-    }
-    50% {
-        background-position: 100% 50%;
-    }
-}
-
-.bg-gradient-to-r {
-    background-size: 200% 200%;
-    animation: gradientShift 4s ease infinite;
 }
 
 td {
     color: #000;
-}
-
-tbody tr:hover {
-    transform: translateX(4px);
-}
-
-.space-y-4 > div {
-    transition: all 0.3s ease;
-}
-
-.space-y-4 > div:hover {
-    transform: translateX(4px);
-    background-color: rgba(59, 130, 246, 0.05);
-    border-radius: 0.5rem;
-    padding: 0.5rem;
-}
-
-select:hover {
-    border-color: #6366f1;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 .overflow-y-auto::-webkit-scrollbar {
