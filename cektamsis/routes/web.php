@@ -111,8 +111,6 @@ Route::get('/siswaxii/delete/{id}', [AdminCon::class, 'destroyxii'])->name('sisw
 
 // Absen Siswa X Route Start
 Route::get('/absenx', [AdminCon::class, 'absenx'])->name('absenx');
-Route::get('/absenx/tambah', [AdminCon::class, 'tambahabsenx'])->name('absenx.tambah');
-Route::post('/absenx/tambahstore', [AdminCon::class, 'storeabsenx']);
 Route::get('/absenx/edit/{id}', [AdminCon::class, 'editabsenx'])->name('absenx.edit');
 Route::put('/absenx/update/{id}', [AdminCon::class, 'updateabsenx']);
 Route::get('/absenx/delete/{id}', [AdminCon::class, 'destroyabsenx'])->name('absenx.hapus');
@@ -120,8 +118,6 @@ Route::get('/absenx/delete/{id}', [AdminCon::class, 'destroyabsenx'])->name('abs
 
 // Absen Siswa XI Route Start
 Route::get('/absenxi', [AdminCon::class, 'absenxi'])->name('absenxi');
-Route::get('/absenxi/tambah', [AdminCon::class, 'tambahabsenxi'])->name('absenxi.tambah');
-Route::post('/absenxi/tambahstore', [AdminCon::class, 'storeabsenxi']);
 Route::get('/absenxi/edit/{id}', [AdminCon::class, 'editabsenxi'])->name('absenxi.edit');
 Route::put('/absenxi/update/{id}', [AdminCon::class, 'updateabsenxi']);
 Route::get('/absenxi/delete/{id}', [AdminCon::class, 'destroyabsenxi'])->name('absenxi.hapus');
@@ -129,8 +125,6 @@ Route::get('/absenxi/delete/{id}', [AdminCon::class, 'destroyabsenxi'])->name('a
 
 // Absen Siswa XII Route Start
 Route::get('/absenxii', [AdminCon::class, 'absenxii'])->name('absenxii');
-Route::get('/absenxii/tambah', [AdminCon::class, 'tambahabsenxii'])->name('absenxii.tambah');
-Route::post('/absenxii/tambahstore', [AdminCon::class, 'storeabsenxii']);
 Route::get('/absenxii/edit/{id}', [AdminCon::class, 'editabsenxii'])->name('absenxii.edit');
 Route::put('/absenxii/update/{id}', [AdminCon::class, 'updateabsenxii']);
 Route::get('/absenxii/delete/{id}', [AdminCon::class, 'destroyabsenxii'])->name('absenxii.hapus');
@@ -141,8 +135,6 @@ Route::get('/siswa/tambah', [AdminCon::class, 'create'])->name(name: 'siswa.tamb
 
 // Jadwal Route Start
 Route::get('/jadwal', [AdminCon::class, 'jadwal'])->name('jadwal');
-Route::get('/jadwal/tambah', [AdminCon::class, 'tambahd'])->name('jadwal.tambah');
-Route::post('/jadwal/tambahstore', [AdminCon::class, 'stored']);
 Route::get('/jadwal/edit/{id}', [AdminCon::class, 'editd'])->name('jadwal.edit');
 Route::put('/jadwal/update/{id}', [AdminCon::class, 'updated']);
 Route::get('/jadwal/delete/{id}', [AdminCon::class, 'destroyd'])->name('jadwal.hapus');

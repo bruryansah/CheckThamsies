@@ -8,7 +8,7 @@ import { defineProps, ref } from 'vue'
 
 const breadcrumbs: BreadcrumbItem[] = [
   { title: 'Dashboard', href: '/dashboard' },
-  { title: 'Data Absensi Kelas XI', href: '/absensixi' },
+  { title: 'Data Absensi Kelas XII', href: '/absensixii' },
 ];
 
 interface Absen {
@@ -57,7 +57,7 @@ const proceedDelete = () => {
       <div class="rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-lg">
         <!-- Header -->
         <div class="flex items-center justify-between mb-6">
-          <h1 class="text-xl font-semibold text-white">Data Absensi Kelas XI</h1>
+          <h1 class="text-xl font-semibold text-white">Data Absensi Kelas XII</h1>
         </div>
 
         <!-- Table (Desktop) -->

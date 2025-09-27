@@ -8,7 +8,7 @@ import AppLayout from '@/layouts/AppLayout.vue';
         Head
     } from '@inertiajs/vue3';
     import {
-        Plus
+        Plus, Pencil, Trash2
     } from 'lucide-vue-next';
     import {
         defineProps,
@@ -108,18 +108,22 @@ import AppLayout from '@/layouts/AppLayout.vue';
                                 <td class="px-6 py-4 text-center">{{ guru.nip }}</td>
                                 <td class="px-6 py-4 text-center">{{ guru.email }}</td>
                                 <td class="px-6 py-4 text-center">{{ guru.mapel }}</td>
-                                <td class="px-6 py-4 text-center">
-                                    <div class="flex justify-center gap-2">
-                                        <TextLink :href="route('guru.edit', guru.id_guru)"
-                                            class="rounded-lg bg-yellow-500 px-3 py-1 text-xs font-semibold text-white hover:bg-yellow-600">
-                                            Edit
-                                        </TextLink>
-                                        <button @click="confirmDelete(guru)"
-                                            class="rounded-lg bg-red-600 px-3 py-1 text-xs font-semibold text-white hover:bg-red-700 transition">
-                                            Hapus
-                                        </button>
-                                    </div>
-                                </td>
+<td class="px-6 py-4 text-center">
+  <div class="flex justify-center gap-2">
+    <TextLink
+      :href="route('user.edit', guru.id_guru)"
+      class="rounded-lg bg-yellow-500 p-2 text-white hover:bg-yellow-600"
+    >
+      <Pencil class="w-4 h-4" />
+    </TextLink>
+    <button
+      @click="confirmDelete(guru)"
+_guru      class="rounded-lg bg-red-600 p-2 text-white hover:bg-red-700 transition"
+    >
+      <Trash2 class="w-4 h-4" />
+    </button>
+  </div>
+</td>
                             </tr>
                         </tbody>
 
