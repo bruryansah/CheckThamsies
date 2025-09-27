@@ -8,7 +8,7 @@ import { defineProps, ref } from 'vue'
 
 const breadcrumbs: BreadcrumbItem[] = [
   { title: 'Dashboard', href: '/dashboard' },
-  { title: 'Data Siswa Kelas XII', href: '/siswaxiI' },
+  { title: 'Data Siswa XII RPL', href: '/siswaxii' },
 ];
 
 interface Siswa {
@@ -19,14 +19,16 @@ interface Siswa {
   jurusan: string
 }
 
-// Props dari controller
 const props = defineProps<{
   siswa: {
     data: Siswa[],
     links: { url: string | null; label: string; active: boolean }[]
   },
-  kelasList?: string[],         // daftar kelas dari controller
-  selectedKelas?: string | null // kelas yang sedang difilter
+  kelasList?: string[],
+  selectedKelas?: string | null,
+  filters?: {
+    search?: string
+  }
 }>()
 
 // State modal hapus
@@ -48,22 +50,29 @@ const proceedDelete = () => {
   }
 }
 
+// Search query
+const searchQuery = ref(props.filters?.search || '')
+
 // Function filter kelas
 const filterKelas = (kelas: string) => {
-  router.get(route('siswaxii'), { kelas }, { preserveState: true })
+  router.get(route('siswaxii'), { kelas, search: searchQuery.value }, { preserveState: true })
+}
+
+// Function search
+const searchData = () => {
+  router.get(route('siswaxii'), { search: searchQuery.value, kelas: props.selectedKelas }, { preserveState: true })
 }
 </script>
 
 <template>
-  <Head title="Data Siswa Kelas XI" />
+  <Head title="Data Siswa XII RPL" />
 
   <AppLayout :breadcrumbs="breadcrumbs">
     <div class="flex h-full flex-1 flex-col gap-6 p-6 overflow-x-auto">
       <div class="rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-lg">
         <!-- Header -->
         <div class="flex items-center justify-between mb-6">
-          <h1 class="text-xl font-semibold text-white">Data Siswa Kelas XII
-          </h1>
+          <h1 class="text-xl font-semibold text-white">Data Siswa Kelas X</h1>
           <TextLink :href="route('siswaxii.tambah')"
             class="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 transition">
             <Plus class="h-4 w-4" />
@@ -71,9 +80,25 @@ const filterKelas = (kelas: string) => {
           </TextLink>
         </div>
 
-        <!-- Filter Kelas -->
+        <!-- Search & Filter -->
         <div class="mb-6 flex items-center gap-3">
-          <label class="text-sm text-zinc-300">Filter Kelas:</label>
+          <!-- Searchbar -->
+          <input
+            v-model="searchQuery"
+            @keyup.enter="searchData"
+            type="text"
+            placeholder="Cari siswa..."
+            class="rounded-lg bg-zinc-800 border border-zinc-700 text-sm text-white px-3 py-2 focus:ring-2 focus:ring-green-600 focus:outline-none w-64"
+          />
+          <button
+            @click="searchData"
+            class="px-4 py-2 rounded-lg bg-green-600 text-white text-sm font-medium hover:bg-green-700 transition"
+          >
+            Cari
+          </button>
+
+          <!-- Filter Kelas -->
+          <label class="text-sm text-zinc-300 ml-4">Filter Kelas:</label>
           <select
             class="rounded-lg bg-zinc-800 border border-zinc-700 text-sm text-white px-3 py-2 focus:ring-2 focus:ring-green-600 focus:outline-none"
             @change="filterKelas(($event.target as HTMLSelectElement).value)"

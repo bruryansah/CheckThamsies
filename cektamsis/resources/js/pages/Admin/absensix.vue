@@ -2,8 +2,8 @@
 import TextLink from '@/components/TextLink.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/vue3';
-import { Plus, Pencil, Trash2 } from 'lucide-vue-next';
+import { Head, router } from '@inertiajs/vue3';
+import { Plus, Pencil, Trash2, Search } from 'lucide-vue-next';
 import { defineProps, ref } from 'vue'
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -22,17 +22,22 @@ interface Absen {
   kelas: string
 }
 
-
 const props = defineProps<{
   absen: {
     data: Absen[]
     links: { url: string | null; label: string; active: boolean }[]
+  },
+  filters?: {
+    search?: string
   }
 }>()
 
 // State untuk modal konfirmasi
 const showConfirmModal = ref(false)
 const selectedabsensi = ref<Absen | null>(null)
+
+// State search
+const search = ref(props.filters?.search || '')
 
 const confirmDelete = (absen: Absen) => {
   selectedabsensi.value = absen
@@ -47,10 +52,15 @@ const proceedDelete = () => {
     window.location.href = route('absenx.hapus', selectedabsensi.value.id_absensi)
   }
 }
+
+// Function search
+const performSearch = () => {
+  router.get(route('absenx'), { search: search.value }, { preserveState: true, replace: true })
+}
 </script>
 
 <template>
-  <Head title="Data Jadwal" />
+  <Head title="Data Absensi Kelas X" />
 
   <AppLayout :breadcrumbs="breadcrumbs">
     <div class="flex h-full flex-1 flex-col gap-6 p-6 overflow-x-auto">
@@ -58,6 +68,21 @@ const proceedDelete = () => {
         <!-- Header -->
         <div class="flex items-center justify-between mb-6">
           <h1 class="text-xl font-semibold text-white">Data Absensi Kelas X</h1>
+        </div>
+
+        <!-- Searchbar -->
+        <div class="relative mb-6 w-full md:w-1/3">
+          <input
+            v-model="search"
+            @keyup.enter="performSearch"
+            type="text"
+            placeholder="Cari nama siswa..."
+            class="w-full rounded-full bg-zinc-800 border border-zinc-700 pl-10 pr-4 py-2 text-sm text-white focus:ring-2 focus:ring-green-600 focus:outline-none"
+          />
+          <Search
+            class="absolute left-3 top-2.5 h-4 w-4 text-zinc-400 cursor-pointer"
+            @click="performSearch"
+          />
         </div>
 
         <!-- Table (Desktop) -->
@@ -86,25 +111,26 @@ const proceedDelete = () => {
                 <td class="px-6 py-4 text-center">{{ ab.status }}</td>
                 <td class="px-6 py-4 text-center">{{ ab.keterangan || 'Tidak ada'}}</td>
                 <td class="px-6 py-4 text-center">
-  <div class="flex justify-center gap-2">
-    <TextLink
-      :href="route('absenx.edit', ab.id_absensi)"
-      class="rounded-lg bg-yellow-500 p-2 text-white hover:bg-yellow-600"
-    >
-      <Pencil class="w-4 h-4" />
-    </TextLink>
-    <button
-      @click="confirmDelete(ab)"
-      class="rounded-lg bg-red-600 p-2 text-white hover:bg-red-700 transition"
-    >
-      <Trash2 class="w-4 h-4" />
-    </button>
-  </div>
-</td>
+                  <div class="flex justify-center gap-2">
+                    <TextLink
+                      :href="route('absenx.edit', ab.id_absensi)"
+                      class="rounded-lg bg-yellow-500 p-2 text-white hover:bg-yellow-600"
+                    >
+                      <Pencil class="w-4 h-4" />
+                    </TextLink>
+                    <button
+                      @click="confirmDelete(ab)"
+                      class="rounded-lg bg-red-600 p-2 text-white hover:bg-red-700 transition"
+                    >
+                      <Trash2 class="w-4 h-4" />
+                    </button>
+                  </div>
+                </td>
               </tr>
             </tbody>
           </table>
         </div>
+
         <!-- Pagination -->
         <div class="flex justify-center mt-4 gap-2">
           <button v-for="link in props.absen.links" :key="link.label" v-html="link.label" :disabled="!link.url"

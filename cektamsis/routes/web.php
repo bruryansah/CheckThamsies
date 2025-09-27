@@ -135,6 +135,8 @@ Route::get('/siswa/tambah', [AdminCon::class, 'create'])->name(name: 'siswa.tamb
 
 // Jadwal Route Start
 Route::get('/jadwal', [AdminCon::class, 'jadwal'])->name('jadwal');
+Route::get('/jadwal/tambah', [AdminCon::class, 'tambahd'])->name('jadwal.tambah');
+Route::post('/jadwal/tambahstore', [AdminCon::class, 'stored']);
 Route::get('/jadwal/edit/{id}', [AdminCon::class, 'editd'])->name('jadwal.edit');
 Route::put('/jadwal/update/{id}', [AdminCon::class, 'updated']);
 Route::get('/jadwal/delete/{id}', [AdminCon::class, 'destroyd'])->name('jadwal.hapus');

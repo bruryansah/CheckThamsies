@@ -2,9 +2,9 @@
 import TextLink from '@/components/TextLink.vue'
 import AppLayout from '@/layouts/AppLayout.vue'
 import { type BreadcrumbItem } from '@/types'
-import { Head } from '@inertiajs/vue3'
+import { Head, router } from '@inertiajs/vue3'
 import { Plus, Pencil, Trash2 } from 'lucide-vue-next'
-import { defineProps, ref, computed } from 'vue'
+import { defineProps, ref, watch } from 'vue'
 
 const breadcrumbs: BreadcrumbItem[] = [
   { title: 'Dashboard', href: '/dashboard' },
@@ -18,15 +18,29 @@ interface User {
   role: string
 }
 
-// ubah type props -> sekarang bukan array biasa, tapi ada data & links
+// Props dari controller
 const props = defineProps<{
   users: {
     data: User[]
     links: { url: string | null; label: string; active: boolean }[]
   }
+  filters: {
+    search: string
+  }
 }>()
 
-// State untuk modal konfirmasi
+// State untuk search
+const searchQuery = ref(props.filters.search || '')
+
+// Kirim query ke backend kalau user mengetik
+watch(searchQuery, (value) => {
+  router.get('/user', { search: value }, {
+    preserveState: true,
+    replace: true
+  })
+})
+
+// State modal konfirmasi
 const showConfirmModal = ref(false)
 const selecteduser = ref<User | null>(null)
 
@@ -37,24 +51,21 @@ const getRoleColor = (role: string) => {
     guru: 'bg-blue-600 text-white',
     user: 'bg-green-600 text-white'
   }
-
   const normalizedRole = role.toLowerCase()
   return roleColors[normalizedRole as keyof typeof roleColors] || 'bg-zinc-600 text-white'
 }
 
-// Function untuk menampilkan konfirmasi hapus
+// Konfirmasi hapus
 const confirmDelete = (user: User) => {
   selecteduser.value = user
   showConfirmModal.value = true
 }
 
-// Function untuk membatalkan hapus
 const cancelDelete = () => {
   showConfirmModal.value = false
   selecteduser.value = null
 }
 
-// Function untuk melanjutkan hapus
 const proceedDelete = () => {
   if (selecteduser.value) {
     window.location.href = route('user.hapus', selecteduser.value.id)
@@ -68,60 +79,71 @@ const proceedDelete = () => {
   <AppLayout :breadcrumbs="breadcrumbs">
     <div class="flex h-full flex-1 flex-col gap-6 p-6 overflow-x-auto">
       <div class="rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-lg">
-<!-- Header -->
-<div class="flex items-center justify-between mb-6">
-  <h1 class="text-xl font-semibold text-white">Data User</h1>
 
-  <!-- ✅ Tombol disusun sejajar -->
-  <div class="flex gap-2">
-    <TextLink
-      :href="route('user.password')"
-      class="flex items-center gap-1 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 transition"
-    >
-      <Plus class="h-4 w-4" />
-      Ganti Password
-    </TextLink>
-    <TextLink
-      :href="route('user.tambah')"
-      class="flex items-center gap-1 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 transition"
-    >
-      <Plus class="h-4 w-4" />
-      Tambah User
-    </TextLink>
-  </div>
-</div>
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6">
+          <h1 class="text-xl font-semibold text-white">Data User</h1>
 
+          <!-- ✅ Search + Tombol -->
+          <div class="flex items-center gap-2">
+            <!-- Search Bar -->
+            <div class="relative">
+              <input
+                type="text"
+                v-model="searchQuery"
+                placeholder="Cari user..."
+                class="pl-9 pr-3 py-2 w-52 rounded-lg border border-zinc-700 bg-zinc-800 text-sm text-white placeholder-zinc-400 focus:ring focus:ring-green-500 focus:outline-none"
+              />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M21 21l-4.35-4.35M16.65 11A5.65 5.65 0 116.35 11a5.65 5.65 0 0110.3 0z"
+                />
+              </svg>
+            </div>
+
+            <!-- Tombol Ganti Password -->
+            <TextLink
+              :href="route('user.password')"
+              class="flex items-center gap-1 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 transition"
+            >
+              <Plus class="h-4 w-4" />
+              Ganti Password
+            </TextLink>
+
+            <!-- Tombol Tambah User -->
+            <TextLink
+              :href="route('user.tambah')"
+              class="flex items-center gap-1 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 transition"
+            >
+              <Plus class="h-4 w-4" />
+              Tambah User
+            </TextLink>
+          </div>
+        </div>
 
         <!-- Table -->
         <div class="overflow-hidden rounded-lg border border-zinc-800">
           <table class="min-w-full divide-y divide-zinc-800">
             <thead class="bg-zinc-800">
               <tr>
-                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">
-                  Id User
-                </th>
-                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">
-                  Nama
-                </th>
-                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">
-                  Email
-                </th>
-                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">
-                  Roles
-                </th>
-                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">
-                  Aksi
-                </th>
+                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Id User</th>
+                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Nama</th>
+                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Email</th>
+                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Roles</th>
+                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Aksi</th>
               </tr>
             </thead>
-            <tbody
-              class="divide-y divide-zinc-800 bg-zinc-900 text-sm text-zinc-200"
-            >
-              <tr
-                v-for="user in props.users.data"
-                :key="user.id"
-                class="hover:bg-zinc-800/60 transition"
-              >
+            <tbody class="divide-y divide-zinc-800 bg-zinc-900 text-sm text-zinc-200">
+              <tr v-for="user in props.users.data" :key="user.id" class="hover:bg-zinc-800/60 transition">
                 <td class="px-6 py-4 text-center">{{ user.id }}</td>
                 <td class="px-6 py-4 text-center">{{ user.name }}</td>
                 <td class="px-6 py-4 text-center">{{ user.email }}</td>
@@ -133,22 +155,22 @@ const proceedDelete = () => {
                     {{ user.role }}
                   </span>
                 </td>
-               <td class="px-6 py-4 text-center">
-  <div class="flex justify-center gap-2">
-    <TextLink
-      :href="route('user.edit', user.id)"
-      class="rounded-lg bg-yellow-500 p-2 text-white hover:bg-yellow-600"
-    >
-      <Pencil class="w-4 h-4" />
-    </TextLink>
-    <button
-      @click="confirmDelete(user)"
-      class="rounded-lg bg-red-600 p-2 text-white hover:bg-red-700 transition"
-    >
-      <Trash2 class="w-4 h-4" />
-    </button>
-  </div>
-</td>
+                <td class="px-6 py-4 text-center">
+                  <div class="flex justify-center gap-2">
+                    <TextLink
+                      :href="route('user.edit', user.id)"
+                      class="rounded-lg bg-yellow-500 p-2 text-white hover:bg-yellow-600"
+                    >
+                      <Pencil class="w-4 h-4" />
+                    </TextLink>
+                    <button
+                      @click="confirmDelete(user)"
+                      class="rounded-lg bg-red-600 p-2 text-white hover:bg-red-700 transition"
+                    >
+                      <Trash2 class="w-4 h-4" />
+                    </button>
+                  </div>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -175,21 +197,15 @@ const proceedDelete = () => {
           <p class="text-sm text-zinc-400 mb-2">Keterangan Role:</p>
           <div class="flex flex-wrap gap-3">
             <div class="flex items-center gap-2">
-              <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-600 text-white">
-                Admin
-              </span>
+              <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-red-600 text-white">Admin</span>
               <span class="text-xs text-zinc-400">Administrator sistem</span>
             </div>
             <div class="flex items-center gap-2">
-              <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-600 text-white">
-                Guru
-              </span>
+              <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-600 text-white">Guru</span>
               <span class="text-xs text-zinc-400">Tenaga pengajar</span>
             </div>
             <div class="flex items-center gap-2">
-              <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-600 text-white">
-                User
-              </span>
+              <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-600 text-white">User</span>
               <span class="text-xs text-zinc-400">Pengguna biasa</span>
             </div>
           </div>
@@ -198,29 +214,16 @@ const proceedDelete = () => {
     </div>
 
     <!-- Modal Konfirmasi Hapus -->
-    <div
-      v-if="showConfirmModal"
-      class="fixed inset-0 z-50 flex items-center justify-center"
-    >
+    <div v-if="showConfirmModal" class="fixed inset-0 z-50 flex items-center justify-center">
       <!-- Backdrop -->
-      <div
-        class="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
-        @click="cancelDelete"
-      ></div>
+      <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" @click="cancelDelete"></div>
 
       <!-- Modal -->
-      <div
-        class="relative bg-zinc-900 rounded-lg border border-zinc-800 shadow-xl max-w-md w-full mx-4"
-      >
+      <div class="relative bg-zinc-900 rounded-lg border border-zinc-800 shadow-xl max-w-md w-full mx-4">
         <div class="p-6">
-          <!-- Header -->
           <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold text-white">
-              Konfirmasi Hapus
-            </h3>
+            <h3 class="text-lg font-semibold text-white">Konfirmasi Hapus</h3>
           </div>
-
-          <!-- Content -->
           <div class="mb-6">
             <p class="text-zinc-300">
               Apakah Anda yakin ingin menghapus data user
@@ -234,12 +237,8 @@ const proceedDelete = () => {
               </span>
               ?
             </p>
-            <p class="text-sm text-zinc-400 mt-2">
-              Tindakan ini tidak dapat dibatalkan.
-            </p>
+            <p class="text-sm text-zinc-400 mt-2">Tindakan ini tidak dapat dibatalkan.</p>
           </div>
-
-          <!-- Actions -->
           <div class="flex justify-end gap-3">
             <button
               @click="cancelDelete"
