@@ -9,6 +9,7 @@ use App\Models\Jadwal;
 use App\Models\Jurusan;
 use App\Models\User;
 use App\Models\AbsensiSekolah;
+use Illuminate\Http\Client\Events\RequestSending;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
@@ -63,15 +64,31 @@ class AdminCon extends Controller
     // Users section Start
     // Menampilkan Data User
 
-    public function indexs()
+    public function indexs(Request $request)
     {
-        // Ambil data user dengan pagination (5 per halaman)
-        $users = DB::table('users')->select('id', 'name', 'email', 'role')->paginate(5);
+        // Ambil query pencarian dari request
+        $search = $request->input('search');
+
+        // Query ke database users
+        $users = DB::table('users')
+            ->select('id', 'name', 'email', 'role')
+            ->when($search, function ($query, $search) {
+                $query
+                    ->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('role', 'like', "%{$search}%");
+            })
+            ->paginate(5)
+            ->withQueryString(); // supaya ?search=... tetap ada di pagination
 
         return Inertia::render('Admin/manageuser', [
             'users' => $users,
+            'filters' => [
+                'search' => $search,
+            ],
         ]);
     }
+
     // Menampilkan Form Tambah Guru
     public function tambahs()
     {
@@ -175,10 +192,27 @@ class AdminCon extends Controller
 
     // Guru Section Start
     // Menampilkan Data Guru
-    public function index()
+    public function index(Request $request)
     {
-        $guru = DB::table('guru')->join('mapel', 'guru.id_mapel', '=', 'mapel.id_mapel')->select('guru.id_guru', 'guru.nama', 'guru.nip', 'guru.email', 'mapel.nama_mapel as mapel')->paginate(5);
-        return Inertia::render('Admin/guru', ['guru' => $guru]);
+        $search = $request->input('search');
+
+        $guru = DB::table('guru')
+        ->join('mapel', 'guru.id_mapel', '=', 'mapel.id_mapel')
+        ->select('guru.id_guru', 'guru.nama', 'guru.nip', 'guru.email', 'mapel.nama_mapel as mapel')
+        ->when($search, function ($query, $search) {
+                $query
+                    ->where('name', 'like', "%{$search}%")
+                    ->where('nip', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('role', 'like', "%{$search}%")
+                    ->orWhere('nama_mapel', 'like', "%{$search}%");
+            })
+            ->paginate(5)
+            ->withQueryString(); // supaya ?search=... tetap ada di pagination
+        return Inertia::render('Admin/guru', [
+            'guru' => $guru,
+            'filters' => ['search' => $search],
+        ]);
     }
 
     // Menampilkan Form Tambah Guru
@@ -359,8 +393,9 @@ class AdminCon extends Controller
         // Ambil daftar kelas unik di tingkat X RPL
         $kelasList = DB::table('siswa')->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')->where('kelas.tingkat_kelas', 'like', '1%')->pluck('kelas.nama_kelas')->unique()->values();
 
-        // Ambil filter kelas dari query string
+        // Ambil filter kelas & search dari query string
         $selectedKelas = $request->input('kelas');
+        $search = $request->input('search');
 
         // Query siswa
         $siswax = DB::table('siswa')
@@ -371,6 +406,14 @@ class AdminCon extends Controller
             ->when($selectedKelas, function ($query, $kelas) {
                 return $query->where('kelas.nama_kelas', $kelas);
             })
+            ->when($search, function ($query, $search) {
+                return $query->where(function ($q) use ($search) {
+                    $q->where('siswa.nama', 'like', "%{$search}%")
+                        ->orWhere('siswa.email', 'like', "%{$search}%")
+                        ->orWhere('kelas.nama_kelas', 'like', "%{$search}%")
+                        ->orWhere('jurusan.nama_jurusan', 'like', "%{$search}%");
+                });
+            })
             ->paginate(5)
             ->appends($request->query());
 
@@ -378,6 +421,9 @@ class AdminCon extends Controller
             'siswa' => $siswax,
             'kelasList' => $kelasList,
             'selectedKelas' => $selectedKelas,
+            'filters' => [
+                'search' => $search,
+            ],
         ]);
     }
 
@@ -472,11 +518,12 @@ class AdminCon extends Controller
         // Ambil daftar kelas unik di tingkat X RPL
         $kelasList = DB::table('siswa')->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')->where('kelas.tingkat_kelas', 'like', '2%')->pluck('kelas.nama_kelas')->unique()->values();
 
-        // Ambil filter kelas dari query string
+        // Ambil filter kelas & search dari query string
         $selectedKelas = $request->input('kelas');
+        $search = $request->input('search');
 
         // Query siswa
-        $siswaxi = DB::table('siswa')
+        $siswax = DB::table('siswa')
             ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
             ->join('jurusan', 'siswa.id_jurusan', '=', 'jurusan.id_jurusan')
             ->select('siswa.id_siswa', 'siswa.nama', 'siswa.email', 'kelas.nama_kelas as kelas', 'jurusan.nama_jurusan as jurusan')
@@ -484,13 +531,24 @@ class AdminCon extends Controller
             ->when($selectedKelas, function ($query, $kelas) {
                 return $query->where('kelas.nama_kelas', $kelas);
             })
+            ->when($search, function ($query, $search) {
+                return $query->where(function ($q) use ($search) {
+                    $q->where('siswa.nama', 'like', "%{$search}%")
+                        ->orWhere('siswa.email', 'like', "%{$search}%")
+                        ->orWhere('kelas.nama_kelas', 'like', "%{$search}%")
+                        ->orWhere('jurusan.nama_jurusan', 'like', "%{$search}%");
+                });
+            })
             ->paginate(5)
             ->appends($request->query());
 
         return Inertia::render('Admin/xirpl', [
-            'siswa' => $siswaxi,
+            'siswa' => $siswax,
             'kelasList' => $kelasList,
             'selectedKelas' => $selectedKelas,
+            'filters' => [
+                'search' => $search,
+            ],
         ]);
     }
 
@@ -586,11 +644,12 @@ class AdminCon extends Controller
         // Ambil daftar kelas unik di tingkat X RPL
         $kelasList = DB::table('siswa')->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')->where('kelas.tingkat_kelas', 'like', '3%')->pluck('kelas.nama_kelas')->unique()->values();
 
-        // Ambil filter kelas dari query string
+        // Ambil filter kelas & search dari query string
         $selectedKelas = $request->input('kelas');
+        $search = $request->input('search');
 
         // Query siswa
-        $siswaxi = DB::table('siswa')
+        $siswax = DB::table('siswa')
             ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
             ->join('jurusan', 'siswa.id_jurusan', '=', 'jurusan.id_jurusan')
             ->select('siswa.id_siswa', 'siswa.nama', 'siswa.email', 'kelas.nama_kelas as kelas', 'jurusan.nama_jurusan as jurusan')
@@ -598,13 +657,24 @@ class AdminCon extends Controller
             ->when($selectedKelas, function ($query, $kelas) {
                 return $query->where('kelas.nama_kelas', $kelas);
             })
+            ->when($search, function ($query, $search) {
+                return $query->where(function ($q) use ($search) {
+                    $q->where('siswa.nama', 'like', "%{$search}%")
+                        ->orWhere('siswa.email', 'like', "%{$search}%")
+                        ->orWhere('kelas.nama_kelas', 'like', "%{$search}%")
+                        ->orWhere('jurusan.nama_jurusan', 'like', "%{$search}%");
+                });
+            })
             ->paginate(5)
             ->appends($request->query());
 
-        return Inertia::render('Admin/xrpl', [
-            'siswa' => $siswaxi,
+        return Inertia::render('Admin/xiirpl', [
+            'siswa' => $siswax,
             'kelasList' => $kelasList,
             'selectedKelas' => $selectedKelas,
+            'filters' => [
+                'search' => $search,
+            ],
         ]);
     }
 
@@ -684,10 +754,20 @@ class AdminCon extends Controller
     }
     // Mapel section Start
     // Menampilkan Data Mapel
-    public function indexm()
+    public function indexm(Request $request)
     {
-        $mapel = DB::table('mapel')->select('id_mapel', 'nama_mapel')->paginate(5);
-        return Inertia::render('Admin/mapel', ['mapel' => $mapel]);
+                $search = $request->input('search');
+
+        $mapel = DB::table('mapel')->select('id_mapel', 'nama_mapel')->when($search, function ($query, $search) {
+                $query->where('nama_mapel', 'like', "%{$search}%");
+            })
+            ->paginate(5)
+            ->appends(['search' => $search]); // supaya pagination tetap bawa query search
+        return Inertia::render('Admin/mapel', [
+            'mapel' => $mapel,
+            'filters' => ['search' => $search], // untuk mengisi input search di Vue
+
+        ]);
     }
 
     // Menampilkan Form Tambah Mapel
@@ -753,10 +833,30 @@ class AdminCon extends Controller
 
     // Kelas section Start
     // Menampilkan Data Kelas
-    public function indexk()
+    public function indexk(Request $request)
     {
-        $kelas = DB::table('kelas')->join('jurusan', 'kelas.id_jurusan', '=', 'jurusan.id_jurusan')->join('guru', 'kelas.id_wali_kelas', '=', 'guru.id_guru')->select('kelas.id_kelas', 'kelas.tingkat_kelas', 'kelas.total_siswa', 'kelas.nama_kelas', 'jurusan.nama_jurusan as jurusan', 'guru.nama as guru')->paginate(5);
-        return Inertia::render('Admin/kelas', ['kelas' => $kelas]);
+        $search = $request->input('search');
+
+        $kelas = DB::table('kelas')
+            ->join('jurusan', 'kelas.id_jurusan', '=', 'jurusan.id_jurusan')
+            ->join('guru', 'kelas.id_wali_kelas', '=', 'guru.id_guru')
+            ->select('kelas.id_kelas', 'kelas.tingkat_kelas', 'kelas.total_siswa', 'kelas.nama_kelas', 'jurusan.nama_jurusan as jurusan', 'guru.nama as guru')
+            ->when($search, function ($query, $search) {
+                $query
+                    ->where('kelas.nama_kelas', 'like', "%{$search}%")
+                    ->orWhere('kelas.tingkat_kelas', 'like', "%{$search}%")
+                    ->orWhere('jurusan.nama_jurusan', 'like', "%{$search}%")
+                    ->orWhere('guru.nama', 'like', "%{$search}%");
+            })
+            ->paginate(5)
+            ->withQueryString(); // supaya pagination tidak hilang saat search
+
+        return Inertia::render('Admin/kelas', [
+            'kelas' => $kelas,
+            'filters' => [
+                'search' => $search,
+            ],
+        ]);
     }
 
     // Menampilkan Form Tambah Kelas
@@ -848,10 +948,22 @@ class AdminCon extends Controller
 
     // Jurusan section Start
     // Menampilkan Data Jurusan
-    public function indexj()
+    public function indexj(Request $request)
     {
-        $jurusan = DB::table('jurusan')->select('id_jurusan', 'nama_jurusan')->paginate(5);
-        return Inertia::render('Admin/jurusan', ['jurusan' => $jurusan]);
+        $search = $request->input('search');
+
+        $jurusan = DB::table('jurusan')
+            ->select('id_jurusan', 'nama_jurusan')
+            ->when($search, function ($query, $search) {
+                $query->where('nama_jurusan', 'like', "%{$search}%");
+            })
+            ->paginate(5)
+            ->appends(['search' => $search]); // supaya pagination tetap bawa query search
+
+        return Inertia::render('Admin/jurusan', [
+            'jurusan' => $jurusan,
+            'filters' => ['search' => $search], // untuk mengisi input search di Vue
+        ]);
     }
 
     // Menampilkan Form Tambah Jurusan
@@ -922,17 +1034,21 @@ class AdminCon extends Controller
         // Ambil daftar kelas unik di tingkat X
         $kelasList = DB::table('siswa')->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')->where('kelas.tingkat_kelas', 'like', '1%')->pluck('kelas.nama_kelas')->unique()->values();
 
-        // Ambil filter kelas dari query string
+        // Ambil filter kelas & search dari query string
         $selectedKelas = $request->input('kelas');
+        $search = $request->input('search');
 
         // Query absensi + siswa + kelas
         $absensi = DB::table('absensi_sekolah')
             ->join('siswa', 'absensi_sekolah.id_siswa', '=', 'siswa.id_siswa')
-            ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas') // <- tambahan join ke kelas
+            ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
             ->select('absensi_sekolah.id_absensi', 'absensi_sekolah.id_siswa', 'absensi_sekolah.tanggal', 'absensi_sekolah.jam_masuk', 'absensi_sekolah.jam_keluar', 'absensi_sekolah.status', 'absensi_sekolah.keterangan', 'siswa.nama as siswa', 'kelas.nama_kelas as kelas')
             ->where('kelas.tingkat_kelas', 'like', '1%')
             ->when($selectedKelas, function ($query, $kelas) {
                 return $query->where('kelas.nama_kelas', $kelas);
+            })
+            ->when($search, function ($query, $search) {
+                return $query->where('siswa.nama', 'like', '%' . $search . '%');
             })
             ->paginate(5)
             ->appends($request->query());
@@ -941,6 +1057,9 @@ class AdminCon extends Controller
             'absen' => $absensi,
             'kelasList' => $kelasList,
             'selectedKelas' => $selectedKelas,
+            'filters' => [
+                'search' => $search,
+            ],
         ]);
     }
 
@@ -987,20 +1106,24 @@ class AdminCon extends Controller
 
     public function absenxi(Request $request)
     {
-        // Ambil daftar kelas unik di tingkat X
-        $kelasList = DB::table('siswa')->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')->where('kelas.tingkat_kelas', 'like', '1%')->pluck('kelas.nama_kelas')->unique()->values();
+        // Ambil daftar kelas unik di tingkat XI
+        $kelasList = DB::table('siswa')->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')->where('kelas.tingkat_kelas', 'like', '2%')->pluck('kelas.nama_kelas')->unique()->values();
 
-        // Ambil filter kelas dari query string
+        // Ambil filter dari query string
         $selectedKelas = $request->input('kelas');
+        $search = $request->input('search');
 
         // Query absensi + siswa + kelas
         $absensi = DB::table('absensi_sekolah')
             ->join('siswa', 'absensi_sekolah.id_siswa', '=', 'siswa.id_siswa')
-            ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas') // <- tambahan join ke kelas
+            ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
             ->select('absensi_sekolah.id_absensi', 'absensi_sekolah.id_siswa', 'absensi_sekolah.tanggal', 'absensi_sekolah.jam_masuk', 'absensi_sekolah.jam_keluar', 'absensi_sekolah.status', 'absensi_sekolah.keterangan', 'siswa.nama as siswa', 'kelas.nama_kelas as kelas')
             ->where('kelas.tingkat_kelas', 'like', '2%')
             ->when($selectedKelas, function ($query, $kelas) {
                 return $query->where('kelas.nama_kelas', $kelas);
+            })
+            ->when($search, function ($query, $search) {
+                return $query->where('siswa.nama', 'like', "%{$search}%");
             })
             ->paginate(5)
             ->appends($request->query());
@@ -1009,6 +1132,9 @@ class AdminCon extends Controller
             'absen' => $absensi,
             'kelasList' => $kelasList,
             'selectedKelas' => $selectedKelas,
+            'filters' => [
+                'search' => $search,
+            ],
         ]);
     }
 
@@ -1055,20 +1181,24 @@ class AdminCon extends Controller
 
     public function absenxii(Request $request)
     {
-        // Ambil daftar kelas unik di tingkat X
-        $kelasList = DB::table('siswa')->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')->where('kelas.tingkat_kelas', 'like', '1%')->pluck('kelas.nama_kelas')->unique()->values();
+        // Ambil daftar kelas unik di tingkat XII
+        $kelasList = DB::table('siswa')->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')->where('kelas.tingkat_kelas', 'like', '3%')->pluck('kelas.nama_kelas')->unique()->values();
 
-        // Ambil filter kelas dari query string
+        // Ambil filter kelas & search dari query string
         $selectedKelas = $request->input('kelas');
+        $search = $request->input('search');
 
         // Query absensi + siswa + kelas
         $absensi = DB::table('absensi_sekolah')
             ->join('siswa', 'absensi_sekolah.id_siswa', '=', 'siswa.id_siswa')
-            ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas') // <- tambahan join ke kelas
+            ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
             ->select('absensi_sekolah.id_absensi', 'absensi_sekolah.id_siswa', 'absensi_sekolah.tanggal', 'absensi_sekolah.jam_masuk', 'absensi_sekolah.jam_keluar', 'absensi_sekolah.status', 'absensi_sekolah.keterangan', 'siswa.nama as siswa', 'kelas.nama_kelas as kelas')
             ->where('kelas.tingkat_kelas', 'like', '3%')
             ->when($selectedKelas, function ($query, $kelas) {
                 return $query->where('kelas.nama_kelas', $kelas);
+            })
+            ->when($search, function ($query, $search) {
+                return $query->where('siswa.nama', 'like', "%{$search}%");
             })
             ->paginate(5)
             ->appends($request->query());
@@ -1077,6 +1207,9 @@ class AdminCon extends Controller
             'absen' => $absensi,
             'kelasList' => $kelasList,
             'selectedKelas' => $selectedKelas,
+            'filters' => [
+                'search' => $search,
+            ],
         ]);
     }
 

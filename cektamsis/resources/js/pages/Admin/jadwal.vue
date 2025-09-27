@@ -4,14 +4,14 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import { Plus, Pencil, Trash2 } from 'lucide-vue-next';
-import { defineProps, ref } from 'vue'
+import { defineProps, ref, computed } from 'vue'
 
 const breadcrumbs: BreadcrumbItem[] = [
   { title: 'Dashboard', href: '/dashboard' },
   { title: 'Data Jadwal', href: '/jadwal' },
 ];
 
-interface jadwal {
+interface Jadwal {
   id_jadwal: number
   guru: string
   mapel: string
@@ -25,26 +25,38 @@ interface jadwal {
 
 const props = defineProps<{
   jadwal: {
-    data: jadwal[]
+    data: Jadwal[]
     links: { url: string | null; label: string; active: boolean }[]
   }
 }>()
 
-// State untuk modal konfirmasi
-const showConfirmModal = ref(false)
-const selectedjadwal = ref<jadwal | null>(null)
+// 🔍 Search
+const searchQuery = ref('')
+const filteredJadwal = computed(() => {
+  if (!searchQuery.value) return props.jadwal.data
+  return props.jadwal.data.filter(j =>
+    j.mapel.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+    j.guru.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+    j.kelas.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+    j.hari.toLowerCase().includes(searchQuery.value.toLowerCase())
+  )
+})
 
-const confirmDelete = (jadwal: jadwal) => {
-  selectedjadwal.value = jadwal
+// Modal konfirmasi hapus
+const showConfirmModal = ref(false)
+const selectedJadwal = ref<Jadwal | null>(null)
+
+const confirmDelete = (jadwal: Jadwal) => {
+  selectedJadwal.value = jadwal
   showConfirmModal.value = true
 }
 const cancelDelete = () => {
   showConfirmModal.value = false
-  selectedjadwal.value = null
+  selectedJadwal.value = null
 }
 const proceedDelete = () => {
-  if (selectedjadwal.value) {
-    window.location.href = route('jadwal.hapus', selectedjadwal.value.id_jadwal)
+  if (selectedJadwal.value) {
+    window.location.href = route('jadwal.hapus', selectedJadwal.value.id_jadwal)
   }
 }
 </script>
@@ -58,11 +70,22 @@ const proceedDelete = () => {
         <!-- Header -->
         <div class="flex items-center justify-between mb-6">
           <h1 class="text-xl font-semibold text-white">Data Jadwal</h1>
-          <TextLink :href="route('jadwal.tambah')"
-            class="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 transition">
-            <Plus class="h-4 w-4" />
-            Tambah Jadwal
-          </TextLink>
+          <div class="flex items-center gap-2">
+            <!-- 🔍 Search bar -->
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Cari jadwal..."
+              class="pl-3 pr-3 py-2 w-48 rounded-lg border border-zinc-700 bg-zinc-800 text-sm text-white placeholder-zinc-400 focus:ring focus:ring-green-500 focus:outline-none"
+            />
+            <TextLink
+              :href="route('jadwal.tambah')"
+              class="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 transition"
+            >
+              <Plus class="h-4 w-4" />
+              Tambah Jadwal
+            </TextLink>
+          </div>
         </div>
 
         <!-- Table (Desktop) -->
@@ -83,8 +106,7 @@ const proceedDelete = () => {
               </tr>
             </thead>
             <tbody class="divide-y divide-zinc-800 bg-zinc-900 text-sm text-zinc-200">
-              <tr v-for="jadwal in props.jadwal.data" :key="jadwal.id_jadwal"
-                class="hover:bg-zinc-800/60 transition">
+              <tr v-for="jadwal in filteredJadwal" :key="jadwal.id_jadwal" class="hover:bg-zinc-800/60 transition">
                 <td class="px-6 py-4 text-center">{{ jadwal.id_jadwal }}</td>
                 <td class="px-6 py-4 text-center">{{ jadwal.mapel }}</td>
                 <td class="px-6 py-4 text-center">{{ jadwal.guru }}</td>
@@ -95,59 +117,40 @@ const proceedDelete = () => {
                 <td class="px-6 py-4 text-center">{{ jadwal.jam_mulai }}</td>
                 <td class="px-6 py-4 text-center">{{ jadwal.jam_selesai }}</td>
                 <td class="px-6 py-4 text-center">
-  <div class="flex justify-center gap-2">
-    <TextLink
-      :href="route('user.edit', jadwal.id_jadwal)"
-      class="rounded-lg bg-yellow-500 p-2 text-white hover:bg-yellow-600"
-    >
-      <Pencil class="w-4 h-4" />
-    </TextLink>
-    <button
-      @click="confirmDelete(jadwal)"
-      class="rounded-lg bg-red-600 p-2 text-white hover:bg-red-700 transition"
-    >
-      <Trash2 class="w-4 h-4" />
-    </button>
-  </div>
-</td>
+                  <div class="flex justify-center gap-2">
+                    <TextLink
+                      :href="route('jadwal.edit', jadwal.id_jadwal)"
+                      class="rounded-lg bg-yellow-500 p-2 text-white hover:bg-yellow-600"
+                    >
+                      <Pencil class="w-4 h-4" />
+                    </TextLink>
+                    <button
+                      @click="confirmDelete(jadwal)"
+                      class="rounded-lg bg-red-600 p-2 text-white hover:bg-red-700 transition"
+                    >
+                      <Trash2 class="w-4 h-4" />
+                    </button>
+                  </div>
+                </td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <!-- Card List (Mobile) -->
-        <div class="md:hidden space-y-4">
-          <div v-for="jadwal in props.jadwal.data" :key="jadwal.id_jadwal"
-            class="rounded-lg border border-zinc-800 bg-zinc-900 p-4 shadow-sm">
-            <div class="flex justify-between items-center mb-2">
-              <h2 class="text-white font-semibold">{{ jadwal.mapel }}</h2>
-              <span class="text-xs text-zinc-400">{{ jadwal.hari }}</span>
-            </div>
-            <p class="text-sm text-zinc-300">Guru: {{ jadwal.guru }}</p>
-            <p class="text-sm text-zinc-300">Kelas: {{ jadwal.kelas }}</p>
-            <p class="text-sm text-zinc-300">Ruang: {{ jadwal.lantai }} / {{ jadwal.ruang }}</p>
-            <p class="text-sm text-zinc-300">Jam: {{ jadwal.jam_mulai }} - {{ jadwal.jam_selesai }}</p>
-            <div class="flex gap-2 mt-3">
-              <TextLink :href="route('jadwal.edit', jadwal.id_jadwal)"
-                class="rounded-lg bg-yellow-500 px-3 py-1 text-xs font-semibold text-white hover:bg-yellow-600">
-                Edit
-              </TextLink>
-              <button @click="confirmDelete(jadwal)"
-                class="rounded-lg bg-red-600 px-3 py-1 text-xs font-semibold text-white hover:bg-red-700 transition">
-                Hapus
-              </button>
-            </div>
-          </div>
-        </div>
-
         <!-- Pagination -->
         <div class="flex justify-center mt-4 gap-2">
-          <button v-for="link in props.jadwal.links" :key="link.label" v-html="link.label" :disabled="!link.url"
-            @click.prevent="link.url && $inertia.visit(link.url)" class="px-3 py-1 rounded-lg border text-sm"
+          <button
+            v-for="link in props.jadwal.links"
+            :key="link.label"
+            v-html="link.label"
+            :disabled="!link.url"
+            @click.prevent="link.url && $inertia.visit(link.url)"
+            class="px-3 py-1 rounded-lg border text-sm"
             :class="{
               'bg-zinc-700 text-white': link.active,
               'bg-zinc-900 text-zinc-400 hover:bg-zinc-800': !link.active
-            }" />
+            }"
+          />
         </div>
       </div>
     </div>
@@ -157,24 +160,23 @@ const proceedDelete = () => {
       <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" @click="cancelDelete"></div>
       <div class="relative bg-zinc-900 rounded-lg border border-zinc-800 shadow-xl max-w-md w-full mx-4">
         <div class="p-6">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-semibold text-white">Konfirmasi Hapus</h3>
-          </div>
-          <div class="mb-6">
-            <p class="text-zinc-300">
-              Apakah Anda yakin ingin menghapus jadwal <strong class="text-white">{{ selectedjadwal?.mapel }}</strong>?
-            </p>
-            <p class="text-sm text-zinc-400 mt-2">
-              Tindakan ini tidak dapat dibatalkan.
-            </p>
-          </div>
-          <div class="flex justify-end gap-3">
-            <button @click="cancelDelete"
-              class="px-4 py-2 text-sm font-medium text-zinc-300 bg-zinc-800 rounded-lg hover:bg-zinc-700 transition">
+          <h3 class="text-lg font-semibold text-white mb-4">Konfirmasi Hapus</h3>
+          <p class="text-zinc-300">
+            Apakah Anda yakin ingin menghapus jadwal
+            <strong class="text-white">{{ selectedJadwal?.mapel }}</strong>?
+          </p>
+          <p class="text-sm text-zinc-400 mt-2">Tindakan ini tidak dapat dibatalkan.</p>
+          <div class="flex justify-end gap-3 mt-6">
+            <button
+              @click="cancelDelete"
+              class="px-4 py-2 text-sm font-medium text-zinc-300 bg-zinc-800 rounded-lg hover:bg-zinc-700 transition"
+            >
               Batal
             </button>
-            <button @click="proceedDelete"
-              class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition">
+            <button
+              @click="proceedDelete"
+              class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition"
+            >
               Ya, Hapus
             </button>
           </div>
