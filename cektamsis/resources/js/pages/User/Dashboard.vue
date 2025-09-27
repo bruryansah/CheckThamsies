@@ -35,6 +35,7 @@ const checkoutDescription = ref('');
 const showEarlyCheckoutModal = ref(false);
 const checkoutDescriptionError = ref('');
 const latestCheckinStatus = ref<string | null>(null);
+const showWeekendModal = ref(false); // New modal for weekend restriction
 
 // QR Scanner
 const isScanning = ref(false);
@@ -90,6 +91,11 @@ const closeEarlyCheckoutModal = () => {
     checkoutDescriptionError.value = '';
 };
 
+// Close Weekend Modal
+const closeWeekendModal = () => {
+    showWeekendModal.value = false;
+};
+
 // Toast Notification
 const toastMessage = ref('');
 const toastType = ref<'success' | 'error'>('success');
@@ -124,6 +130,12 @@ const statColor = (color: string) => {
         case 'orange': return 'bg-orange-100 text-orange-600';
     }
     return '';
+};
+
+// Check if today is a weekend (Saturday or Sunday)
+const isWeekend = () => {
+    const today = new Date().getDay();
+    return today === 0 || today === 6; // 0 = Sunday, 6 = Saturday
 };
 
 // Fetch attendance status
@@ -173,6 +185,11 @@ const refreshAttendance = async () => {
 
 // Absen Masuk
 const checkIn = () => {
+    if (isWeekend()) {
+        showWeekendModal.value = true;
+        return;
+    }
+
     if (processingIn.value) return;
 
     // Validate description for izin or sakit
@@ -225,6 +242,11 @@ const checkIn = () => {
 
 // Absen Pulang
 const checkOut = () => {
+    if (isWeekend()) {
+        showWeekendModal.value = true;
+        return;
+    }
+
     if (processingOut.value) return;
 
     // Check if current time is before 13:30 (WIB)
@@ -485,7 +507,7 @@ onMounted(async () => {
                             <option value="izin">Izin</option>
                             <option value="sakit">Sakit</option>
                         </select>
-                         <div v-if="['izin', 'sakit'].includes(selectedStatus1)" class="mb-3">
+                        <div v-if="['izin', 'sakit'].includes(selectedStatus1)" class="mb-3">
                             <label for="checkin_description" class="block text-sm font-medium text-gray-700 mb-2">Keterangan</label>
                             <textarea id="checkin_description" v-model="checkinDescription" class="w-full rounded-lg border border-gray-300 p-3 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none" :class="{ 'border-red-500': checkinDescriptionError }" placeholder="Masukkan keterangan" required></textarea>
                             <p v-if="checkinDescriptionError" class="text-red-500 text-sm mt-1">{{ checkinDescriptionError }}</p>
@@ -512,6 +534,23 @@ onMounted(async () => {
                         <p class="text-sm font-medium text-gray-900">Status: <span :class="`text-${attendance.color}-600`">{{ attendance.status }}</span></p>
                     </div>
                     <p v-if="props.recentAttendance.length === 0" class="text-center text-gray-500">Tidak ada data absensi pelajaran terbaru.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Weekend Restriction Modal -->
+        <div v-if="showWeekendModal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" @click.self="closeWeekendModal">
+            <div class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white shadow-2xl" @click.stop>
+                <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+                    <div class="flex items-center gap-2">
+                        <Calendar class="h-4 w-4 text-red-600" />
+                        <h2 class="text-lg font-semibold text-gray-900">Aksi Tidak Diizinkan</h2>
+                    </div>
+                    <button @click="closeWeekendModal" type="button" class="text-gray-400 transition-colors hover:text-gray-600">✕</button>
+                </div>
+                <div class="p-6 space-y-4">
+                    <p class="text-gray-600">Maaf, absensi tidak dapat dilakukan pada hari Sabtu atau Minggu.</p>
+                    <button @click="closeWeekendModal" class="w-full rounded-xl bg-blue-600 py-3 text-white font-medium transition-colors hover:bg-blue-700">Tutup</button>
                 </div>
             </div>
         </div>
