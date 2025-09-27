@@ -268,14 +268,14 @@ class AdminCon extends Controller
     // Menampilkan Data Jadwal
     public function jadwal()
     {
-        $jadwal = DB::table('jadwal')->join('mapel', 'jadwal.id_mapel', '=', 'mapel.id_mapel')->join('guru', 'jadwal.id_guru', '=', 'guru.id_guru')->join('kelas', 'jadwal.id_kelas', '=', 'kelas.id_kelas')->select('jadwal.id_jadwal', 'jadwal.id_mapel', 'jadwal.id_guru', 'jadwal.id_kelas', 'jadwal.hari','jadwal.lantai','ruang', 'jadwal.jam_mulai', 'jadwal.jam_selesai', 'mapel.nama_mapel as mapel', 'guru.nama as guru', 'kelas.nama_kelas as kelas')->paginate(5);
+        $jadwal = DB::table('jadwal')->join('mapel', 'jadwal.id_mapel', '=', 'mapel.id_mapel')->join('guru', 'jadwal.id_guru', '=', 'guru.id_guru')->join('kelas', 'jadwal.id_kelas', '=', 'kelas.id_kelas')->select('jadwal.id_jadwal', 'jadwal.id_mapel', 'jadwal.id_guru', 'jadwal.id_kelas', 'jadwal.hari', 'jadwal.lantai', 'ruang', 'jadwal.jam_mulai', 'jadwal.jam_selesai', 'mapel.nama_mapel as mapel', 'guru.nama as guru', 'kelas.nama_kelas as kelas')->paginate(5);
         return Inertia::render('Admin/jadwal', ['jadwal' => $jadwal]);
     }
 
     // Menampilkan Form Tambah Jadwal
     public function tambahd()
     {
-        $jadwal = \App\Models\Jadwal::all(['hari','lantai','ruang', 'jam_mulai', 'jam_selesai']); // ambil user yang ada
+        $jadwal = \App\Models\Jadwal::all(['hari', 'lantai', 'ruang', 'jam_mulai', 'jam_selesai']); // ambil user yang ada
         $mapel = \App\Models\Mapel::all(['id_mapel', 'nama_mapel']); // ambil user yang ada
         $guru = \App\Models\guru::all(['id_guru', 'nama']); // ambil user yang ada
         $kelas = \App\Models\kelas::all(['id_kelas', 'nama_kelas']); // ambil user yang ada
@@ -350,19 +350,14 @@ class AdminCon extends Controller
         DB::table('jadwal')->where('id_jadwal', operator: $id)->delete();
         return redirect('/jadwal');
     }
-    // Jadwal Section End
+    // string Section End
 
     // Siswa X Section Start
     // Menampilkan Data Siswa Kelas X RPL
     public function siswax(Request $request)
     {
         // Ambil daftar kelas unik di tingkat X RPL
-        $kelasList = DB::table('siswa')
-            ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
-            ->where('kelas.tingkat_kelas', 'like', '1%')
-            ->pluck('kelas.nama_kelas')
-            ->unique()
-            ->values();
+        $kelasList = DB::table('siswa')->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')->where('kelas.tingkat_kelas', 'like', '1%')->pluck('kelas.nama_kelas')->unique()->values();
 
         // Ambil filter kelas dari query string
         $selectedKelas = $request->input('kelas');
@@ -472,15 +467,10 @@ class AdminCon extends Controller
 
     // Siswa XI Section Start
     // Menampilkan Data Siswa Kelas X RPL
-public function siswaxi(Request $request)
+    public function siswaxi(Request $request)
     {
         // Ambil daftar kelas unik di tingkat X RPL
-        $kelasList = DB::table('siswa')
-            ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
-            ->where('kelas.tingkat_kelas', 'like', '2%')
-            ->pluck('kelas.nama_kelas')
-            ->unique()
-            ->values();
+        $kelasList = DB::table('siswa')->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')->where('kelas.tingkat_kelas', 'like', '2%')->pluck('kelas.nama_kelas')->unique()->values();
 
         // Ambil filter kelas dari query string
         $selectedKelas = $request->input('kelas');
@@ -594,12 +584,7 @@ public function siswaxi(Request $request)
     public function siswaxii(Request $request)
     {
         // Ambil daftar kelas unik di tingkat X RPL
-        $kelasList = DB::table('siswa')
-            ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
-            ->where('kelas.tingkat_kelas', 'like', '3%')
-            ->pluck('kelas.nama_kelas')
-            ->unique()
-            ->values();
+        $kelasList = DB::table('siswa')->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')->where('kelas.tingkat_kelas', 'like', '3%')->pluck('kelas.nama_kelas')->unique()->values();
 
         // Ambil filter kelas dari query string
         $selectedKelas = $request->input('kelas');
@@ -932,24 +917,19 @@ public function siswaxi(Request $request)
 
     // Absensi Siswa X Start Section
 
-        public function absenx(Request $request)
+    public function absenx(Request $request)
     {
         // Ambil daftar kelas unik di tingkat X
-        $kelasList = DB::table('absensi_sekolah')
-            ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
-            ->where('kelas.tingkat_kelas', 'like', '1%')
-            ->pluck('kelas.nama_kelas')
-            ->unique()
-            ->values();
+        $kelasList = DB::table('siswa')->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')->where('kelas.tingkat_kelas', 'like', '1%')->pluck('kelas.nama_kelas')->unique()->values();
 
         // Ambil filter kelas dari query string
         $selectedKelas = $request->input('kelas');
 
-        // Query siswa
-        $siswax = DB::table('siswa')
-            ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
-            ->join('jurusan', 'siswa.id_jurusan', '=', 'jurusan.id_jurusan')
-            ->select('siswa.id_siswa', 'siswa.nama', 'siswa.email', 'kelas.nama_kelas as kelas', 'jurusan.nama_jurusan as jurusan')
+        // Query absensi + siswa + kelas
+        $absensi = DB::table('absensi_sekolah')
+            ->join('siswa', 'absensi_sekolah.id_siswa', '=', 'siswa.id_siswa')
+            ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas') // <- tambahan join ke kelas
+            ->select('absensi_sekolah.id_absensi', 'absensi_sekolah.id_siswa', 'absensi_sekolah.tanggal', 'absensi_sekolah.jam_masuk', 'absensi_sekolah.jam_keluar', 'absensi_sekolah.status', 'absensi_sekolah.keterangan', 'siswa.nama as siswa', 'kelas.nama_kelas as kelas')
             ->where('kelas.tingkat_kelas', 'like', '1%')
             ->when($selectedKelas, function ($query, $kelas) {
                 return $query->where('kelas.nama_kelas', $kelas);
@@ -957,12 +937,186 @@ public function siswaxi(Request $request)
             ->paginate(5)
             ->appends($request->query());
 
-        return Inertia::render('Admin/xrpl', [
-            'siswa' => $siswax,
+        return Inertia::render('Admin/absensix', [
+            'absen' => $absensi,
             'kelasList' => $kelasList,
             'selectedKelas' => $selectedKelas,
         ]);
     }
 
+    public function editabsenx($id)
+    {
+        // Ambil data absensi berdasarkan id
+        $absensi = DB::table('absensi_sekolah')->where('id_absensi', $id)->first();
+
+        // Ambil daftar siswa untuk dropdown
+        $siswa = DB::table('siswa')->select('id_siswa', 'nama')->orderBy('nama')->get();
+
+        return Inertia::render('Admin/editabsensix', [
+            'absensi' => $absensi,
+            'siswa' => $siswa,
+        ]);
+    }
+
+    public function updateabsenx(Request $request, $id)
+    {
+        // Validasi data
+        $validated = $request->validate([
+            'id_siswa' => 'required|exists:siswa,id_siswa',
+            'tanggal' => 'required|date',
+            'jam_masuk' => 'nullable|date_format:H:i:s',
+            'jam_keluar' => 'nullable|date_format:H:i:s',
+            'status' => 'required|in:hadir,izin,sakit,alpa',
+            'keterangan' => 'nullable|string|max:255',
+        ]);
+
+        // Update ke DB
+        DB::table('absensi_sekolah')->where('id_absensi', $id)->update($validated);
+
+        return redirect()->route('absenx')->with('success', 'Data absensi berhasil diperbarui.');
+    }
+
+    public function destroyabsenx($id)
+    {
+        DB::table('absensi_sekolah')->where('id_absensi', operator: $id)->delete();
+        return redirect('/absenx')->with('success', 'Data absensi berhasil dihapus.');
+    }
+
     // Absensi Siswa X End Section
+    // Absensi Siswa X Start Section
+
+    public function absenxi(Request $request)
+    {
+        // Ambil daftar kelas unik di tingkat X
+        $kelasList = DB::table('siswa')->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')->where('kelas.tingkat_kelas', 'like', '1%')->pluck('kelas.nama_kelas')->unique()->values();
+
+        // Ambil filter kelas dari query string
+        $selectedKelas = $request->input('kelas');
+
+        // Query absensi + siswa + kelas
+        $absensi = DB::table('absensi_sekolah')
+            ->join('siswa', 'absensi_sekolah.id_siswa', '=', 'siswa.id_siswa')
+            ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas') // <- tambahan join ke kelas
+            ->select('absensi_sekolah.id_absensi', 'absensi_sekolah.id_siswa', 'absensi_sekolah.tanggal', 'absensi_sekolah.jam_masuk', 'absensi_sekolah.jam_keluar', 'absensi_sekolah.status', 'absensi_sekolah.keterangan', 'siswa.nama as siswa', 'kelas.nama_kelas as kelas')
+            ->where('kelas.tingkat_kelas', 'like', '2%')
+            ->when($selectedKelas, function ($query, $kelas) {
+                return $query->where('kelas.nama_kelas', $kelas);
+            })
+            ->paginate(5)
+            ->appends($request->query());
+
+        return Inertia::render('Admin/absenxi', [
+            'absen' => $absensi,
+            'kelasList' => $kelasList,
+            'selectedKelas' => $selectedKelas,
+        ]);
+    }
+
+    public function editabsenxi($id)
+    {
+        // Ambil data absensi berdasarkan id
+        $absensi = DB::table('absensi_sekolah')->where('id_absensi', $id)->first();
+
+        // Ambil daftar siswa untuk dropdown
+        $siswa = DB::table('siswa')->select('id_siswa', 'nama')->orderBy('nama')->get();
+
+        return Inertia::render('Admin/editabsensixi', [
+            'absensi' => $absensi,
+            'siswa' => $siswa,
+        ]);
+    }
+
+    public function updateabsenxi(Request $request, $id)
+    {
+        // Validasi data
+        $validated = $request->validate([
+            'id_siswa' => 'required|exists:siswa,id_siswa',
+            'tanggal' => 'required|date',
+            'jam_masuk' => 'nullable|date_format:H:i:s',
+            'jam_keluar' => 'nullable|date_format:H:i:s',
+            'status' => 'required|in:hadir,izin,sakit,alpa',
+            'keterangan' => 'nullable|string|max:255',
+        ]);
+
+        // Update ke DB
+        DB::table('absensi_sekolah')->where('id_absensi', $id)->update($validated);
+
+        return redirect()->route('absenxi')->with('success', 'Data absensi berhasil diperbarui.');
+    }
+
+    public function destroyabsenxi($id)
+    {
+        DB::table('absensi_sekolah')->where('id_absensi', operator: $id)->delete();
+        return redirect('/absenxi')->with('success', 'Data absensi berhasil dihapus.');
+    }
+
+    // Absensi Siswa XI End Section
+    // Absensi Siswa XII Start Section
+
+    public function absenxii(Request $request)
+    {
+        // Ambil daftar kelas unik di tingkat X
+        $kelasList = DB::table('siswa')->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')->where('kelas.tingkat_kelas', 'like', '1%')->pluck('kelas.nama_kelas')->unique()->values();
+
+        // Ambil filter kelas dari query string
+        $selectedKelas = $request->input('kelas');
+
+        // Query absensi + siswa + kelas
+        $absensi = DB::table('absensi_sekolah')
+            ->join('siswa', 'absensi_sekolah.id_siswa', '=', 'siswa.id_siswa')
+            ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas') // <- tambahan join ke kelas
+            ->select('absensi_sekolah.id_absensi', 'absensi_sekolah.id_siswa', 'absensi_sekolah.tanggal', 'absensi_sekolah.jam_masuk', 'absensi_sekolah.jam_keluar', 'absensi_sekolah.status', 'absensi_sekolah.keterangan', 'siswa.nama as siswa', 'kelas.nama_kelas as kelas')
+            ->where('kelas.tingkat_kelas', 'like', '3%')
+            ->when($selectedKelas, function ($query, $kelas) {
+                return $query->where('kelas.nama_kelas', $kelas);
+            })
+            ->paginate(5)
+            ->appends($request->query());
+
+        return Inertia::render('Admin/absenxii', [
+            'absen' => $absensi,
+            'kelasList' => $kelasList,
+            'selectedKelas' => $selectedKelas,
+        ]);
+    }
+
+    public function editabsenxii($id)
+    {
+        // Ambil data absensi berdasarkan id
+        $absensi = DB::table('absensi_sekolah')->where('id_absensi', $id)->first();
+
+        // Ambil daftar siswa untuk dropdown
+        $siswa = DB::table('siswa')->select('id_siswa', 'nama')->orderBy('nama')->get();
+
+        return Inertia::render('Admin/editabsensixi', [
+            'absensi' => $absensi,
+            'siswa' => $siswa,
+        ]);
+    }
+
+    public function updateabsenxii(Request $request, $id)
+    {
+        // Validasi data
+        $validated = $request->validate([
+            'id_siswa' => 'required|exists:siswa,id_siswa',
+            'tanggal' => 'required|date',
+            'jam_masuk' => 'nullable|date_format:H:i:s',
+            'jam_keluar' => 'nullable|date_format:H:i:s',
+            'status' => 'required|in:hadir,izin,sakit,alpa',
+            'keterangan' => 'nullable|string|max:255',
+        ]);
+
+        // Update ke DB
+        DB::table('absensi_sekolah')->where('id_absensi', $id)->update($validated);
+
+        return redirect()->route('absenxii')->with('success', 'Data absensi berhasil diperbarui.');
+    }
+
+    public function destroyabsenxii($id)
+    {
+        DB::table('absensi_sekolah')->where('id_absensi', operator: $id)->delete();
+        return redirect('/absenxi')->with('success', 'Data absensi berhasil dihapus.');
+    }
+
+    // Absensi Siswa XII End Section
 }
