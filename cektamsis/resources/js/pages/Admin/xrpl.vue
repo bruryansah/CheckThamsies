@@ -98,12 +98,12 @@ const searchData = () => {
           </button>
 
           <!-- Filter Kelas -->
-          <label class="text-sm text-zinc-300 ml-4">Filter Kelas:</label>
+          <label class="text-sm text-zinc-300 ml-4">Filter Jurusan:</label>
           <select
             class="rounded-lg bg-zinc-800 border border-zinc-700 text-sm text-white px-3 py-2 focus:ring-2 focus:ring-green-600 focus:outline-none"
             @change="filterKelas(($event.target as HTMLSelectElement).value)"
           >
-            <option value="">Semua Kelas</option>
+            <option value="">Semua Jurusan</option>
             <option
               v-for="kelas in props.kelasList"
               :key="kelas"
