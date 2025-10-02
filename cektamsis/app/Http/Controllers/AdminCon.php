@@ -690,6 +690,25 @@ class AdminCon extends Controller
             'jurusan' => $jurusan,
         ]);
     }
+
+        public function storexii(Request $request)
+    {
+        // Validasi
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id', // id harus ada di tabel users
+            'nama' => 'required|string|max:255',
+            'email' => 'required|email',
+            'id_kelas' => 'required|exists:kelas,id_kelas',
+            'id_jurusan' => 'required|exists:jurusan,id_jurusan',
+        ]);
+
+        // Simpan ke tabel siswa
+        DB::table('siswa')->insert($validated);
+
+        // Redirect balik ke halaman data siswa X RPL
+        return redirect()->route('siswaxii')->with('success', 'Data Siswa XII RPL berhasil ditambahkan!');
+    }
+
     // Menampilkan Form Edit Siswa Kelas X RPL
     public function editxii($id)
     {
@@ -1048,7 +1067,14 @@ class AdminCon extends Controller
                 return $query->where('kelas.nama_kelas', $kelas);
             })
             ->when($search, function ($query, $search) {
-                return $query->where('siswa.nama', 'like', '%' . $search . '%');
+                return $query->where('absensi_sekolah.tanggal', 'like', '%' . $search . '%')
+                    ->orWhere('absensi_sekolah.jam_masuk', 'like', '%' . $search . '%')
+                    ->orWhere('absensi_sekolah.jam_keluar', 'like', '%' . $search . '%')
+                    ->orWhere('absensi_sekolah.status', 'like', '%' . $search . '%')
+                    ->orWhere('absensi_sekolah.keterangan', 'like', '%' . $search . '%')
+                    ->orWhere('siswa.nama', 'like', '%' . $search . '%')
+                    ->orWhere('kelas.nama_kelas', 'like', '%' . $search . '%');
+                    //
             })
             ->paginate(5)
             ->appends($request->query());
@@ -1123,7 +1149,13 @@ class AdminCon extends Controller
                 return $query->where('kelas.nama_kelas', $kelas);
             })
             ->when($search, function ($query, $search) {
-                return $query->where('siswa.nama', 'like', "%{$search}%");
+                return $query->where('absensi_sekolah.tanggal', 'like', '%' . $search . '%')
+                    ->orWhere('absensi_sekolah.jam_masuk', 'like', '%' . $search . '%')
+                    ->orWhere('absensi_sekolah.jam_keluar', 'like', '%' . $search . '%')
+                    ->orWhere('absensi_sekolah.status', 'like', '%' . $search . '%')
+                    ->orWhere('absensi_sekolah.keterangan', 'like', '%' . $search . '%')
+                    ->orWhere('siswa.nama', 'like', '%' . $search . '%')
+                    ->orWhere('kelas.nama_kelas', 'like', '%' . $search . '%');
             })
             ->paginate(5)
             ->appends($request->query());
@@ -1198,7 +1230,13 @@ class AdminCon extends Controller
                 return $query->where('kelas.nama_kelas', $kelas);
             })
             ->when($search, function ($query, $search) {
-                return $query->where('siswa.nama', 'like', "%{$search}%");
+                return $query->where('absensi_sekolah.tanggal', 'like', '%' . $search . '%')
+                    ->orWhere('absensi_sekolah.jam_masuk', 'like', '%' . $search . '%')
+                    ->orWhere('absensi_sekolah.jam_keluar', 'like', '%' . $search . '%')
+                    ->orWhere('absensi_sekolah.status', 'like', '%' . $search . '%')
+                    ->orWhere('absensi_sekolah.keterangan', 'like', '%' . $search . '%')
+                    ->orWhere('siswa.nama', 'like', '%' . $search . '%')
+                    ->orWhere('kelas.nama_kelas', 'like', '%' . $search . '%');
             })
             ->paginate(5)
             ->appends($request->query());

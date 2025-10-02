@@ -37,6 +37,8 @@ const filteredJadwal = computed(() => {
   return props.jadwal.data.filter(j =>
     j.mapel.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
     j.guru.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+    j.ruang.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
+    j.lantai.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
     j.kelas.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
     j.hari.toLowerCase().includes(searchQuery.value.toLowerCase())
   )
