@@ -95,7 +95,7 @@ class AbsenPelajaranController extends Controller
             'id_siswa'   => $siswa->id_siswa,
             'waktu_scan' => now('Asia/Jakarta'),
             'status'     => 'hadir',
-            'keterangan' => $isLate ? 'Terlambat' : 'Aman',
+            'keterangan' => $isLate ? '-' : '-',
         ]);
 
         return back()->with('flash', [
