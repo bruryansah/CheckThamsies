@@ -22,47 +22,55 @@ import {
 } from "lucide-vue-next";
 
 const page = usePage();
-const currentUrl = page.url; // URL aktif
+const currentUrl = page.url;
 
-const openedDropdown = ref<string | null>(null);
+const openedDropdown = ref<string | null>(null); // hanya 1 dropdown terbuka
 const sidebarContentRef = ref<HTMLElement | null>(null);
 
-// Computed property untuk menentukan dropdown mana yang harus terbuka berdasarkan URL aktif
-const activeDropdown = computed(() => {
-  // Cek apakah URL saat ini ada dalam menu Data Siswa
-  const siswaRoutes = ['/siswax', '/siswaxi', '/siswaxii'];
-  const isInSiswaRoute = siswaRoutes.some(route =>
-    currentUrl === route || currentUrl.startsWith(route + '/')
-  );
+// computed untuk cek dropdown aktif (klik + URL)
+const activeDropdowns = computed(() => {
+  const siswaRoutes = ["/siswax", "/siswaxi", "/siswaxii"];
+  const absenRoutes = ["/absenx", "/absenxi", "/absenxii"];
 
-  if (isInSiswaRoute) {
-    return 'Data Siswa';
+  const autoOpen: string[] = [];
+
+  if (siswaRoutes.some(route => currentUrl.startsWith(route))) {
+    autoOpen.push("Data Siswa");
+  }
+  if (absenRoutes.some(route => currentUrl.startsWith(route))) {
+    autoOpen.push("Data Absensi");
   }
 
-  return openedDropdown.value;
+  if (openedDropdown.value) {
+    autoOpen.push(openedDropdown.value);
+  }
+
+  return Array.from(new Set(autoOpen));
 });
 
 function toggleDropdown(title: string) {
-  openedDropdown.value = openedDropdown.value === title ? null : title;
-}
-
-// Fungsi untuk menyimpan posisi scroll ke sessionStorage
-function saveScrollPosition() {
-  if (sidebarContentRef.value) {
-    const scrollTop = sidebarContentRef.value.scrollTop;
-    sessionStorage.setItem('sidebar-scroll-position', scrollTop.toString());
+  if (openedDropdown.value === title) {
+    openedDropdown.value = null; // tutup kalau diklik lagi
+  } else {
+    openedDropdown.value = title; // hanya buka 1
   }
 }
 
-// Fungsi untuk memulihkan posisi scroll dari sessionStorage
+// scroll state
+function saveScrollPosition() {
+  if (sidebarContentRef.value) {
+    const scrollTop = sidebarContentRef.value.scrollTop;
+    sessionStorage.setItem("sidebar-scroll-position", scrollTop.toString());
+  }
+}
+
 function restoreScrollPosition() {
-  const savedPosition = sessionStorage.getItem('sidebar-scroll-position');
+  const savedPosition = sessionStorage.getItem("sidebar-scroll-position");
   if (savedPosition && sidebarContentRef.value) {
     sidebarContentRef.value.scrollTop = parseInt(savedPosition, 10);
   }
 }
 
-// Custom navigation function yang mempertahankan scroll
 function navigateWithScrollPreservation(href: string) {
   saveScrollPosition();
   router.visit(href, {
@@ -71,41 +79,40 @@ function navigateWithScrollPreservation(href: string) {
   });
 }
 
-// Event handler untuk scroll
 function handleScroll() {
   saveScrollPosition();
 }
 
-// Watch untuk perubahan URL dan restore scroll position
-watch(() => page.url, () => {
-  setTimeout(() => {
-    restoreScrollPosition();
-  }, 50);
-});
+watch(
+  () => page.url,
+  () => {
+    setTimeout(() => {
+      restoreScrollPosition();
+    }, 50);
+  }
+);
 
 onMounted(() => {
-  // Set reference ke sidebar content
-  sidebarContentRef.value = document.getElementById('sidebar-content') as HTMLElement;
+  sidebarContentRef.value = document.getElementById(
+    "sidebar-content"
+  ) as HTMLElement;
 
   if (sidebarContentRef.value) {
-    // Add scroll event listener
-    sidebarContentRef.value.addEventListener('scroll', handleScroll);
+    sidebarContentRef.value.addEventListener("scroll", handleScroll);
 
-    // Restore scroll position setelah mount
     setTimeout(() => {
       restoreScrollPosition();
     }, 100);
   }
 
-  // Save scroll position before page unload
-  window.addEventListener('beforeunload', saveScrollPosition);
+  window.addEventListener("beforeunload", saveScrollPosition);
 });
 
 onUnmounted(() => {
   if (sidebarContentRef.value) {
-    sidebarContentRef.value.removeEventListener('scroll', handleScroll);
+    sidebarContentRef.value.removeEventListener("scroll", handleScroll);
   }
-  window.removeEventListener('beforeunload', saveScrollPosition);
+  window.removeEventListener("beforeunload", saveScrollPosition);
 });
 
 const mainNavItems = [
@@ -157,7 +164,10 @@ const mainNavItems = [
     </SidebarHeader>
 
     <!-- Menu Utama -->
-    <SidebarContent class="px-2 py-4 overflow-y-auto custom-scroll" id="sidebar-content">
+    <SidebarContent
+      class="px-2 py-4 overflow-y-auto custom-scroll"
+      id="sidebar-content"
+    >
       <nav class="space-y-2">
         <div v-for="item in mainNavItems" :key="item.title">
           <!-- Jika ada children (dropdown) -->
@@ -170,10 +180,10 @@ const mainNavItems = [
                 <component :is="item.icon" class="w-5 h-5" />
                 <span>{{ item.title }}</span>
               </div>
-              <span>{{ activeDropdown === item.title ? "▾" : "▸" }}</span>
+              <span>{{ activeDropdowns.includes(item.title) ? "▾" : "▸" }}</span>
             </button>
             <div
-              v-if="activeDropdown === item.title"
+              v-if="activeDropdowns.includes(item.title)"
               class="ml-6 pl-2 border-l border-gray-700 space-y-1"
             >
               <button
