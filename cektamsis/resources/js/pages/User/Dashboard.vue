@@ -549,7 +549,7 @@ onMounted(async () => {
                     <button @click="closeWeekendModal" type="button" class="text-gray-400 transition-colors hover:text-gray-600">✕</button>
                 </div>
                 <div class="p-6 space-y-4">
-                    <p class="text-gray-600">Maaf, absensi tidak dapat dilakukan pada hari Sabtu atau Minggu.</p>
+                    <p class="text-gray-600">Maaf, Absensi tidak dapat dilakukan pada hari Sabtu atau Minggu, Selamat Berilibur.</p>
                     <button @click="closeWeekendModal" class="w-full rounded-xl bg-blue-600 py-3 text-white font-medium transition-colors hover:bg-blue-700">Tutup</button>
                 </div>
             </div>
