@@ -2,9 +2,9 @@
 import TextLink from '@/components/TextLink.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import { Plus, Pencil, Trash2 } from 'lucide-vue-next';
-import { defineProps, ref, computed } from 'vue'
+import { defineProps, ref, watch } from 'vue'
 
 const breadcrumbs: BreadcrumbItem[] = [
   { title: 'Dashboard', href: '/dashboard' },
@@ -28,21 +28,22 @@ const props = defineProps<{
     data: Jadwal[]
     links: { url: string | null; label: string; active: boolean }[]
   }
+  filters: {
+    search: string
+  }
 }>()
 
-// 🔍 Search
-const searchQuery = ref('')
-const filteredJadwal = computed(() => {
-  if (!searchQuery.value) return props.jadwal.data
-  return props.jadwal.data.filter(j =>
-    j.mapel.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-    j.guru.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-    j.ruang.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-    j.lantai.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-    j.kelas.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-    j.hari.toLowerCase().includes(searchQuery.value.toLowerCase())
-  )
-})
+// 🔍 Search (server-side)
+const searchQuery = ref(props.filters.search || "");
+
+// kirim request ke server tiap kali search berubah
+watch(searchQuery, (value) => {
+  router.get(
+    "/jadwal",
+    { search: value },
+    { preserveState: true, replace: true }
+  );
+});
 
 // Modal konfirmasi hapus
 const showConfirmModal = ref(false)
@@ -108,7 +109,7 @@ const proceedDelete = () => {
               </tr>
             </thead>
             <tbody class="divide-y divide-zinc-800 bg-zinc-900 text-sm text-zinc-200">
-              <tr v-for="jadwal in filteredJadwal" :key="jadwal.id_jadwal" class="hover:bg-zinc-800/60 transition">
+              <tr v-for="jadwal in props.jadwal.data" :key="jadwal.id_jadwal" class="hover:bg-zinc-800/60 transition">
                 <td class="px-6 py-4 text-center">{{ jadwal.id_jadwal }}</td>
                 <td class="px-6 py-4 text-center">{{ jadwal.mapel }}</td>
                 <td class="px-6 py-4 text-center">{{ jadwal.guru }}</td>
@@ -146,7 +147,7 @@ const proceedDelete = () => {
             :key="link.label"
             v-html="link.label"
             :disabled="!link.url"
-            @click.prevent="link.url && $inertia.visit(link.url)"
+            @click.prevent="link.url && router.visit(link.url, { preserveState: true })"
             class="px-3 py-1 rounded-lg border text-sm"
             :class="{
               'bg-zinc-700 text-white': link.active,

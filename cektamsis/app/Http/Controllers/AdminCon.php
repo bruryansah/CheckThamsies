@@ -18,9 +18,11 @@ use Inertia\Response;
 
 class AdminCon extends Controller
 {
-    public function dashboard(): Response
+    public function dashboard(Request $request): Response
     {
         $hariIni = now()->toDateString();
+            $bulan = $request->input('bulan'); // ex: "Oktober" atau "Semua"
+    $tahun = $request->input('tahun'); // ex: "2025"
 
         $distribusi = DB::table('kelas as k')
             ->leftJoin('siswa as s', 's.id_kelas', '=', 'k.id_kelas')
@@ -28,6 +30,7 @@ class AdminCon extends Controller
             ->select(
                 'k.nama_kelas',
                 DB::raw("COALESCE(SUM(CASE WHEN a.status = 'hadir' THEN 1 ELSE 0 END), 0) as hadir"),
+                DB::raw("COALESCE(SUM(CASE WHEN a.status = 'terlambat' THEN 1 ELSE 0 END), 0) as terlambat"),
                 DB::raw("COALESCE(SUM(CASE WHEN a.status = 'izin' THEN 1 ELSE 0 END), 0) as izin"),
                 DB::raw("COALESCE(SUM(CASE WHEN a.status = 'sakit' THEN 1 ELSE 0 END), 0) as sakit"),
                 DB::raw("COALESCE(SUM(CASE WHEN a.status = 'alfa' THEN 1 ELSE 0 END), 0) as alfa"),
@@ -38,8 +41,24 @@ class AdminCon extends Controller
             ->groupBy('k.nama_kelas')
             ->get();
 
-        // 🔹 Rekap absensi semua siswa per hari
-        $rekapHarian = DB::table('absensi_sekolah')->selectRaw('DATE(tanggal) as tanggal')->selectRaw("SUM(CASE WHEN status = 'hadir' THEN 1 ELSE 0 END) as hadir")->selectRaw("SUM(CASE WHEN status = 'izin' THEN 1 ELSE 0 END) as izin")->selectRaw("SUM(CASE WHEN status = 'sakit' THEN 1 ELSE 0 END) as sakit")->selectRaw("SUM(CASE WHEN status = 'alfa' THEN 1 ELSE 0 END) as alfa")->groupBy('tanggal')->orderBy('tanggal', 'ASC')->get();
+ $rekapHarian = DB::table('absensi_sekolah')
+        ->selectRaw('DATE(tanggal) as tanggal')
+        ->selectRaw("DATE_FORMAT(tanggal, '%M') as nama_bulan")
+        ->selectRaw("DATE_FORMAT(tanggal, '%Y') as tahun")
+        ->selectRaw("SUM(CASE WHEN status = 'hadir' THEN 1 ELSE 0 END) as hadir")
+        ->selectRaw("SUM(CASE WHEN status = 'terlambat' THEN 1 ELSE 0 END) as terlambat")
+        ->selectRaw("SUM(CASE WHEN status = 'izin' THEN 1 ELSE 0 END) as izin")
+        ->selectRaw("SUM(CASE WHEN status = 'sakit' THEN 1 ELSE 0 END) as sakit")
+        ->selectRaw("SUM(CASE WHEN status = 'alfa' THEN 1 ELSE 0 END) as alfa")
+        ->when($bulan && $bulan !== 'Semua', function ($query) use ($bulan) {
+            $query->whereRaw("DATE_FORMAT(tanggal, '%M') = ?", [$bulan]);
+        })
+        ->when($tahun, function ($query) use ($tahun) {
+            $query->whereRaw("DATE_FORMAT(tanggal, '%Y') = ?", [$tahun]);
+        })
+        ->groupBy('tanggal', 'nama_bulan', 'tahun')
+        ->orderBy('tanggal', 'ASC')
+        ->get();
 
         return Inertia::render('Admin/Dashboard', [
             'totalUsers' => User::count(),
@@ -47,6 +66,7 @@ class AdminCon extends Controller
             'totalGuru' => User::where('role', 'guru')->count(),
             'totalAdmin' => User::where('role', 'admin')->count(),
             'totalabsen' => AbsensiSekolah::where('status', 'hadir')->count(),
+            'totalterlambat' => AbsensiSekolah::where('status', 'terlambat')->count(),
             'totalizin' => AbsensiSekolah::where('status', 'izin')->count(),
             'totalsakit' => AbsensiSekolah::where('status', 'sakit')->count(),
             'totalalfa' => AbsensiSekolah::where('status', 'alfa')->count(),
@@ -300,11 +320,47 @@ class AdminCon extends Controller
 
     // Jadwal Section Start
     // Menampilkan Data Jadwal
-    public function jadwal()
-    {
-        $jadwal = DB::table('jadwal')->join('mapel', 'jadwal.id_mapel', '=', 'mapel.id_mapel')->join('guru', 'jadwal.id_guru', '=', 'guru.id_guru')->join('kelas', 'jadwal.id_kelas', '=', 'kelas.id_kelas')->select('jadwal.id_jadwal', 'jadwal.id_mapel', 'jadwal.id_guru', 'jadwal.id_kelas', 'jadwal.hari', 'jadwal.lantai', 'ruang', 'jadwal.jam_mulai', 'jadwal.jam_selesai', 'mapel.nama_mapel as mapel', 'guru.nama as guru', 'kelas.nama_kelas as kelas')->paginate(5);
-        return Inertia::render('Admin/jadwal', ['jadwal' => $jadwal]);
-    }
+public function jadwal(Request $request)
+{
+    $search = $request->input('search');
+
+    $jadwal = DB::table('jadwal')
+        ->join('mapel', 'jadwal.id_mapel', '=', 'mapel.id_mapel')
+        ->join('guru', 'jadwal.id_guru', '=', 'guru.id_guru')
+        ->join('kelas', 'jadwal.id_kelas', '=', 'kelas.id_kelas')
+        ->select(
+            'jadwal.id_jadwal',
+            'jadwal.id_mapel',
+            'jadwal.id_guru',
+            'jadwal.id_kelas',
+            'jadwal.hari',
+            'jadwal.lantai',
+            'ruang',
+            'jadwal.jam_mulai',
+            'jadwal.jam_selesai',
+            'mapel.nama_mapel as mapel',
+            'guru.nama as guru',
+            'kelas.nama_kelas as kelas'
+        )
+        ->when($search, function ($query, $search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('mapel.nama_mapel', 'like', "%{$search}%")
+                  ->orWhere('guru.nama', 'like', "%{$search}%")
+                  ->orWhere('kelas.nama_kelas', 'like', "%{$search}%")
+                  ->orWhere('jadwal.hari', 'like', "%{$search}%")
+                  ->orWhere('jadwal.lantai', 'like', "%{$search}%")
+                  ->orWhere('jadwal.ruang', 'like', "%{$search}%");
+            });
+        })
+        ->paginate(5)
+        ->appends(['search' => $search]); // supaya pagination ikut bawa query search
+
+    return Inertia::render('Admin/jadwal', [
+        'jadwal' => $jadwal,
+        'filters' => ['search' => $search],
+    ]);
+}
+
 
     // Menampilkan Form Tambah Jadwal
     public function tambahd()

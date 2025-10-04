@@ -135,7 +135,7 @@ import { identity } from '@vueuse/core'
 
                     <!-- Tombol -->
                     <div class="flex justify-end gap-3">
-                        <Link href="/Kelas"
+                        <Link href="/kelas"
                             class="rounded-lg bg-zinc-700 px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-600">
                         Batal
                         </Link>
