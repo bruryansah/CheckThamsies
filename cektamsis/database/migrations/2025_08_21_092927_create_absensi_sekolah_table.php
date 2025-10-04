@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('longitude_in', 50)->nullable();
             $table->string('latitude_out', 50)->nullable();
             $table->string('longitude_out', 50)->nullable();
-            $table->enum('status', ['hadir', 'izin', 'sakit', 'alfa']);
+            $table->enum('status', ['hadir', 'izin','terlambat', 'sakit', 'alfa']);
             $table->string('keterangan');
             $table->timestamps();
 
