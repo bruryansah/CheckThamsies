@@ -140,13 +140,13 @@ class AbsenPelajaranController extends Controller
 
         // Hitung menit dari jam_mulai jadwal
         $mulai = Carbon::parse($jadwal->jam_mulai, 'Asia/Jakarta');
-        $isPassed30Min = $now->greaterThan($mulai->copy()->addMinutes(30));
+        $isPassed45Min = $now->greaterThan($mulai->copy()->addMinutes(45));
 
         if (($mapHari[$todayHari] ?? $todayHari) !== $hariJadwal) {
             return back()->withErrors(['message' => 'Hari ini tidak sesuai dengan hari jadwal']);
         }
-        if (!$isPassed30Min) {
-            return back()->withErrors(['message' => 'Belum melewati 30 menit dari jam mulai']);
+        if (!$isPassed45Min) {
+            return back()->withErrors(['message' => 'Belum melewati 45 menit dari jam mulai']);
         }
 
         // Ambil semua siswa di kelas jadwal
