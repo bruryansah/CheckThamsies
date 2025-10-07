@@ -12,7 +12,7 @@ interface Props {
     totalSakit: number;
     totalIzin: number;
     totalAbsensi: number;
-    totalAlfa: number; // Tambahkan totalAlfa ke props
+    totalAlfa: number;
     recentAttendance: Array<{ name: string; time: string; status: string; color: string }>;
     auth: { user: UserType };
 }
@@ -27,7 +27,7 @@ const currentDate = ref('');
 const checkinStatus = ref('Belum Absen');
 const checkoutStatus = ref('Belum Pulang');
 const canCheckout = ref(false);
-const canScanQR = ref(false);
+const canScanQR = ref(false); // Default false, akan diperbarui
 const processingIn = ref(false);
 const processingOut = ref(false);
 const checkinDescription = ref('');
@@ -37,7 +37,7 @@ const showEarlyCheckoutModal = ref(false);
 const checkoutDescriptionError = ref('');
 const latestCheckinStatus = ref<string | null>(null);
 const showWeekendModal = ref(false);
-const canCheckIn = ref(false); // New ref to track if check-in is allowed based on time
+const canCheckIn = ref(true);
 
 // QR Scanner
 const isScanning = ref(false);
@@ -119,7 +119,7 @@ const stats = computed(() => ({
     totalpresentase: props.persentaseKehadiran || 0,
     totalsakit: props.totalSakit || 0,
     totalizin: props.totalIzin || 0,
-    totalalfa: props.totalAlfa || 0, // Tambahkan totalAlfa ke stats
+    totalalfa: props.totalAlfa || 0,
     absenHariIni: 'Belum Absen',
     waktuAbsen: '',
 }));
@@ -140,7 +140,7 @@ const statColor = (color: string) => {
         case 'orange':
             return 'bg-orange-100 text-orange-600';
         case 'red':
-            return 'bg-red-100 text-red-600'; // Warna untuk totalAlfa
+            return 'bg-red-100 text-red-600';
     }
     return '';
 };
@@ -148,17 +148,33 @@ const statColor = (color: string) => {
 // Check if today is a weekend (Saturday or Sunday)
 const isWeekend = () => {
     const today = new Date().getDay();
-    return today === 0 || today === 6; // 0 = Sunday, 6 = Saturday
+    return today === 0 || today === 6;
 };
 
-// Check if current time is at or after 06:40 AM
-const updateCheckInAvailability = () => {
-    const now = new Date();
-    const hours = now.getHours();
-    const minutes = now.getMinutes();
+// Update check-in status and availability
+const updateCheckInStatus = () => {
+    const now = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
+    const [datePart, timePart] = now.split(', ');
+    const [time] = timePart.split(' ');
+    const [hours, minutes] = time.split(':').map(Number);
     const timeInMinutes = hours * 60 + minutes;
+
     const startHadir = 6 * 60 + 40; // 06:40
-    canCheckIn.value = timeInMinutes >= startHadir;
+    const endTerlambat = 13 * 60 + 40; // 13:40
+
+    if (latestCheckinStatus.value === null) {
+        if (timeInMinutes > endTerlambat) {
+            checkinStatus.value = 'Alfa';
+            canCheckIn.value = false;
+            showNotification('❌ Waktu sudah melewati 13:40, status Alfa otomatis diterapkan.', 'error');
+        } else if (timeInMinutes >= startHadir && timeInMinutes <= endTerlambat) {
+            checkinStatus.value = 'Belum Absen';
+            canCheckIn.value = true;
+        }
+    } else {
+        checkinStatus.value = 'Sudah Absen';
+        canCheckIn.value = false;
+    }
 };
 
 // Fetch attendance status
@@ -176,10 +192,9 @@ const fetchStatus = async () => {
             checkinStatus.value = 'Sudah Absen';
             checkoutStatus.value = 'Belum Pulang';
             const latestStatus = await fetch(route('absen.latest-status')).then((res) => res.json());
-            console.log('Latest Status:', latestStatus.status);
             latestCheckinStatus.value = latestStatus.status;
-            canCheckout.value = !['izin', 'sakit'].includes(latestStatus.status);
-            canScanQR.value = latestStatus.status === 'hadir';
+            canCheckout.value = !['izin', 'sakit', 'alfa'].includes(latestStatus.status);
+            canScanQR.value = ['hadir', 'terlambat'].includes(latestStatus.status); // Perbarui untuk mendukung terlambat
         } else if (data.status === 'sudah_pulang') {
             checkinStatus.value = 'Sudah Absen';
             checkoutStatus.value = 'Sudah Pulang';
@@ -195,6 +210,7 @@ const fetchStatus = async () => {
         latestCheckinStatus.value = null;
         console.error('Error fetching status:', error);
     }
+    updateCheckInStatus();
 };
 
 // Refresh attendance data
@@ -218,36 +234,31 @@ const checkIn = () => {
     }
 
     if (!canCheckIn.value) {
-        showNotification('❌ Absen hanya bisa dilakukan di jam 06:40', 'error');
+        showNotification('❌ Absen tidak diizinkan, status Alfa otomatis diterapkan atau sudah absen.', 'error');
         return;
     }
 
     if (processingIn.value) return;
 
-    // Dapatkan waktu saat ini dalam zona waktu Asia/Jakarta
-    const now = new Date();
-    const hours = now.getHours();
-    const minutes = now.getMinutes();
+    const now = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
+    const [datePart, timePart] = now.split(', ');
+    const [time] = timePart.split(' ');
+    const [hours, minutes] = time.split(':').map(Number);
     const timeInMinutes = hours * 60 + minutes;
 
-    // Tentukan batas waktu dalam menit
     const startHadir = 6 * 60 + 40; // 06:40
     const endHadir = 7 * 60 + 10; // 07:10
     const endTerlambat = 13 * 60 + 40; // 13:40
 
-    // Tentukan status berdasarkan waktu, kecuali jika pengguna memilih izin/sakit
     let determinedStatus = selectedStatus.value;
     if (!['izin', 'sakit'].includes(selectedStatus.value)) {
         if (timeInMinutes >= startHadir && timeInMinutes <= endHadir) {
             determinedStatus = 'hadir';
         } else if (timeInMinutes > endHadir && timeInMinutes <= endTerlambat) {
             determinedStatus = 'terlambat';
-        } else if (timeInMinutes > endTerlambat) {
-            determinedStatus = 'alfa';
         }
     }
 
-    // Validate description for izin or sakit
     if (['izin', 'sakit'].includes(determinedStatus) && !checkinDescription.value.trim()) {
         checkinDescriptionError.value = 'Keterangan diperlukan untuk status Izin atau Sakit';
         showNotification(checkinDescriptionError.value, 'error');
@@ -271,7 +282,7 @@ const checkIn = () => {
                         fetchStatus();
                         stats.value.absenHariIni = determinedStatus;
                         latestCheckinStatus.value = determinedStatus;
-                        if (['izin', 'sakit'].includes(determinedStatus)) {
+                        if (['izin', 'sakit', 'alfa'].includes(determinedStatus)) {
                             canCheckout.value = false;
                             canScanQR.value = false;
                             checkoutStatus.value = 'Tidak Perlu Pulang';
@@ -281,15 +292,17 @@ const checkIn = () => {
                             );
                         } else {
                             canCheckout.value = true;
-                            canScanQR.value = determinedStatus === 'hadir' || determinedStatus === 'terlambat';
+                            canScanQR.value = ['hadir', 'terlambat'].includes(determinedStatus); // Perbarui untuk mendukung terlambat
                             showNotification(`✅ Absen ${determinedStatus.charAt(0).toUpperCase() + determinedStatus.slice(1)} berhasil!`, 'success');
                         }
                         checkinDescription.value = '';
                         checkinDescriptionError.value = '';
                         refreshAttendance();
                     },
-                    onError: () => {
-                        showNotification('❌ Absensi gagal mungkin data siswa tidak ditemukan, silakan hubungi admin atau guru!', 'error');
+                    onError: (errors) => {
+                        console.log('Check-in error details:', errors);
+                        const errorMessage = errors.message || 'Absensi gagal, silakan hubungi admin atau guru!';
+                        showNotification(`❌ ${errorMessage}`, 'error');
                     },
                     onFinish: () => (processingIn.value = false),
                 },
@@ -311,7 +324,6 @@ const checkOut = () => {
 
     if (processingOut.value) return;
 
-    // Check if current time is before 13:30 (WIB)
     const now = new Date();
     const hours = now.getHours();
     const minutes = now.getMinutes();
@@ -322,7 +334,11 @@ const checkOut = () => {
         return;
     }
 
-    // Proceed with normal checkout
+    if (!canCheckout.value) {
+        showNotification('❌ Anda tidak dapat absen pulang karena status Anda.', 'error');
+        return;
+    }
+
     performCheckout();
 };
 
@@ -330,7 +346,6 @@ const checkOut = () => {
 const performCheckout = () => {
     if (processingOut.value) return;
 
-    // Validate keterangan if modal is open
     if (showEarlyCheckoutModal.value && !checkoutDescription.value.trim()) {
         checkoutDescriptionError.value = 'Keterangan diperlukan untuk pulang cepat';
         showNotification(checkoutDescriptionError.value, 'error');
@@ -386,7 +401,6 @@ const onDetect = (detectedCodes: QrCodeResult[]) => {
             return;
         }
 
-        // Validate description for izin or sakit
         if (['izin', 'sakit'].includes(selectedStatus1.value) && !checkinDescription.value.trim()) {
             checkinDescriptionError.value = 'Keterangan diperlukan untuk status Izin atau Sakit';
             showNotification(checkinDescriptionError.value, 'error');
@@ -408,8 +422,8 @@ const onDetect = (detectedCodes: QrCodeResult[]) => {
                         'success',
                     );
                     refreshAttendance();
-                    checkinDescription.value = ''; // Clear description
-                    checkinDescriptionError.value = ''; // Clear error
+                    checkinDescription.value = '';
+                    checkinDescriptionError.value = '';
                 },
                 onError: (errors) => {
                     errorMessage.value = errors.message || '❌ Gagal absen, coba lagi!';
@@ -458,10 +472,12 @@ onMounted(async () => {
     currentDate.value = now;
 
     fetchStatus();
-    updateCheckInAvailability(); // Check initial check-in availability
+    updateCheckInStatus();
 
-    // Update check-in availability every minute
-    const interval = setInterval(updateCheckInAvailability, 60000);
+    const interval = setInterval(() => {
+        fetchStatus();
+        updateCheckInStatus();
+    }, 60000);
 
     const handleClick = (e: Event) => {
         const dropdown = document.querySelector('.dropdown-container');
@@ -471,7 +487,7 @@ onMounted(async () => {
 
     onUnmounted(() => {
         document.removeEventListener('click', handleClick);
-        clearInterval(interval); // Clean up interval
+        clearInterval(interval);
     });
 });
 </script>
