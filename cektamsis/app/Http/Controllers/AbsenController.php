@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -55,6 +56,34 @@ class AbsenController extends Controller
                         'color' => $attendance->status === 'hadir' ? 'green' : ($attendance->status === 'terlambat' ? 'orange' : ($attendance->status === 'izin' ? 'purple' : ($attendance->status === 'alfa' ? 'red' : 'gray'))),
                     ];
                 })->toArray();
+
+            // Logika alfa otomatis jika melewati 13:40 dan belum absen
+            $absensiHariIni = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)
+                ->whereDate('tanggal', Carbon::today())
+                ->first();
+
+            if (!$absensiHariIni) {
+                $now = Carbon::now('Asia/Jakarta');
+                $timeInMinutes = $now->hour * 60 + $now->minute;
+                $endTerlambat = 13 * 60 + 40; // 13:40
+
+                if ($timeInMinutes > $endTerlambat) {
+                    AbsensiSekolah::create([
+                        'id_siswa' => $siswa->id_siswa,
+                        'tanggal' => Carbon::today(),
+                        'jam_masuk' => $now->format('H:i:s'),
+                        'latitude_in' => 0, // Default jika tidak ada lokasi
+                        'longitude_in' => 0,
+                        'status' => 'alfa',
+                        'keterangan' => 'Absen otomatis alfa setelah 13:40',
+                    ]);
+
+                    \Log::info('Absen alfa otomatis diterapkan:', [
+                        'id_siswa' => $siswa->id_siswa,
+                        'waktu' => $now->toDateTimeString(),
+                    ]);
+                }
+            }
         }
 
         return Inertia::render('User/Dashboard', [
@@ -64,31 +93,40 @@ class AbsenController extends Controller
             'totalAbsensi' => $totalAbsensi,
             'totalSakit' => $totalSakit,
             'totalIzin' => $totalIzin,
-            'totalAlfa' => $totalAlfa, // Tambahkan total alfa untuk ditampilkan di dashboard jika diperlukan
+            'totalAlfa' => $totalAlfa,
             'recentAttendance' => $recentAttendance,
         ]);
     }
 
     public function checkIn(Request $request)
     {
-        $siswa = Siswa::where('user_id', Auth::id())->first();
+        $userId = Auth::id();
+        \Log::info('User ID saat check-in:', ['user_id' => $userId]);
 
-        if (!$siswa) {
-            return back()->withErrors(['message' => '❌ Data siswa tidak ditemukan, silakan hubungi admin!']);
+        if (!Auth::check()) {
+            \Log::error('Pengguna tidak terautentikasi');
+            return back()->withErrors(['message' => '❌ Sesi tidak valid, silakan login kembali!']);
         }
 
-        $absensi = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)
+        $siswa = Siswa::where('user_id', $userId)->first();
+
+        if (!$siswa) {
+            \Log::error('Siswa tidak ditemukan untuk user_id:', ['user_id' => $userId]);
+            return back()->withErrors(['message' => "❌ Data siswa tidak ditemukan untuk user_id: $userId. Silakan hubungi admin!"]);
+        }
+
+        $absensiHariIni = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)
             ->whereDate('tanggal', Carbon::today())
             ->first();
 
-        if ($absensi) {
+        if ($absensiHariIni) {
             return back()->with('error', 'Anda sudah absen masuk hari ini');
         }
 
         $validated = $request->validate([
             'latitude' => 'required|numeric',
             'longitude' => 'required|numeric',
-            'status' => 'required|in:hadir,izin,sakit',
+            'status' => 'required|in:hadir,terlambat,izin,sakit',
             'description' => 'nullable|string|max:1000',
         ]);
 
@@ -98,15 +136,14 @@ class AbsenController extends Controller
         $endHadir = 7 * 60 + 10;   // 07:10
         $endTerlambat = 13 * 60 + 40; // 13:40
 
-        // Tentukan status berdasarkan waktu
-        if ($timeInMinutes > $endTerlambat) {
-            $status = 'alfa'; // Alfa dihitung sebagai ketidakhadiran
-        } elseif ($timeInMinutes > $endHadir && $timeInMinutes <= $endTerlambat) {
-            $status = 'terlambat'; // Terlambat dihitung sebagai kehadiran
-        } elseif ($timeInMinutes >= $startHadir && $timeInMinutes <= $endHadir && $validated['status'] === 'hadir') {
-            $status = 'hadir';
-        } else {
-            $status = $validated['status']; // Izin atau sakit
+        // Tentukan status berdasarkan waktu jika status awal adalah 'hadir'
+        $status = $validated['status'];
+        if ($status === 'hadir') {
+            if ($timeInMinutes > $endTerlambat) {
+                return back()->with('error', 'Waktu sudah melewati 13:40, status alfa otomatis diterapkan.');
+            } elseif ($timeInMinutes > $endHadir && $timeInMinutes <= $endTerlambat) {
+                $status = 'terlambat';
+            }
         }
 
         // Validasi keterangan untuk status tertentu
@@ -122,6 +159,13 @@ class AbsenController extends Controller
             'longitude_in' => $validated['longitude'],
             'status' => $status,
             'keterangan' => $validated['description'] ?? '',
+        ]);
+
+        \Log::info('Check-in berhasil:', [
+            'id_siswa' => $siswa->id_siswa,
+            'status' => $status,
+            'keterangan' => $validated['description'] ?? '',
+            'waktu' => $now->toDateTimeString(),
         ]);
 
         return back()->with('success', 'Absen masuk berhasil sebagai ' . ucfirst($status));
@@ -147,7 +191,12 @@ class AbsenController extends Controller
             return back()->with('error', 'Anda sudah absen pulang hari ini');
         }
 
-        if (in_array($absensi->status, ['izin', 'sakit', 'alfa'])) {
+        // Blokir absen pulang jika status adalah alfa
+        if ($absensi->status === 'alfa') {
+            return back()->with('error', 'Anda tidak dapat absen pulang karena status Anda adalah Alfa.');
+        }
+
+        if (in_array($absensi->status, ['izin', 'sakit'])) {
             return back()->with('error', 'Anda tidak perlu absen pulang karena status Anda adalah ' . $absensi->status);
         }
 
