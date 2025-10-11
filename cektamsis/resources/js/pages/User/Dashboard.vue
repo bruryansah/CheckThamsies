@@ -21,6 +21,7 @@ const props = defineProps<Props>();
 const page = usePage();
 const studentName = ref(page.props.auth?.user?.name ?? 'siswa');
 
+
 console.log('Received Props:', props);
 
 const currentDate = ref('');
@@ -334,11 +335,6 @@ const checkOut = () => {
         return;
     }
 
-    if (!canCheckout.value) {
-        showNotification('❌ Anda tidak dapat absen pulang karena status Anda.', 'error');
-        return;
-    }
-
     performCheckout();
 };
 
@@ -381,6 +377,45 @@ const performCheckout = () => {
         () => {
             showNotification('❌ Akses lokasi ditolak!', 'error');
             processingOut.value = false;
+        },
+    );
+};
+
+// Absen Pelajaran tanpa QR
+const lessonCheckIn = () => {
+    if (['izin', 'sakit'].includes(selectedStatus1.value) && !checkinDescription.value.trim()) {
+        checkinDescriptionError.value = 'Keterangan diperlukan untuk status Izin atau Sakit';
+        showNotification(checkinDescriptionError.value, 'error');
+        return;
+    }
+
+    router.post(
+        '/absensi-pelajaran/checkin',
+        {
+            id_jadwal: checkinDescription.value, // Menggunakan checkinDescription sebagai id_jadwal
+            status: selectedStatus1.value,
+            description: checkinDescription.value,
+        },
+        {
+            onSuccess: () => {
+                fetchStatus();
+                showNotification(
+                    `✅ Absensi Pelajaran berhasil (${selectedStatus1.value.charAt(0).toUpperCase() + selectedStatus1.value.slice(1)})!`,
+                    'success',
+                );
+                refreshAttendance();
+                checkinDescription.value = '';
+                checkinDescriptionError.value = '';
+            },
+            onError: (errors) => {
+                errorMessage.value = errors.message || '❌ Gagal absen, coba lagi!';
+                if (errors.message === 'Kamu sudah absen di jadwal ini!') {
+                    errorMessage.value = '❌ Kamu sudah absen untuk jadwal ini.';
+                } else if (errors.message.includes('expired')) {
+                    errorMessage.value = '⏰ QR Code sudah kedaluwarsa.';
+                }
+                showNotification(errorMessage.value, 'error');
+            },
         },
     );
 };
@@ -503,7 +538,7 @@ onMounted(async () => {
                 </div>
                 <div>
                     <h1 class="text-2xl font-bold text-gray-900">Dashboard Siswa</h1>
-                    <p class="text-gray-500">Selamat datang, {{ studentName }}</p>
+                    <p class="text-gray-500">Selamat datang, {{ studentName }} </p>
                 </div>
             </div>
             <div class="dropdown-container relative">
@@ -652,6 +687,11 @@ onMounted(async () => {
                             <option value="sakit">Sakit</option>
                         </select>
                         <div v-if="['izin', 'sakit'].includes(selectedStatus1)" class="mb-3">
+                            <label for="checkin_description" class="mb-2 block text-sm font-medium text-gray-700">pilih mapel</label>
+                            <select
+                                v-model="checkinDescription"
+                                class="mb-3 w-full rounded-lg border border-gray-300 p-2 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"></select>
+
                             <label for="checkin_description" class="mb-2 block text-sm font-medium text-gray-700">Keterangan</label>
                             <textarea
                                 id="checkin_description"
@@ -664,6 +704,20 @@ onMounted(async () => {
                             <p v-if="checkinDescriptionError" class="mt-1 text-sm text-red-500">{{ checkinDescriptionError }}</p>
                         </div>
                         <button
+                            v-if="['izin', 'sakit'].includes(selectedStatus1)"
+                            @click="lessonCheckIn"
+                            :disabled="!canCheckIn || checkinStatus.includes('Sudah') || processingIn"
+                            class="flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-white transition-all duration-300"
+                            :class="
+                                canCheckIn && !checkinStatus.includes('Sudah')
+                                    ? 'bg-blue-600 hover:bg-blue-700 active:scale-95'
+                                    : 'cursor-not-allowed bg-gray-300'
+                            "
+                        >
+                            <CheckCircle class="h-5 w-5" /> OK
+                        </button>
+                        <button
+                            v-else
                             @click="
                                 isScanning = true;
                                 scanResult = '';
