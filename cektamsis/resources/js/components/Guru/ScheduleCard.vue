@@ -49,7 +49,7 @@
 
         <div class="space-y-4">
             <div
-                v-for="(schedule, index) in filteredSchedule"
+                v-for="(schedule, index) in paginatedSchedule"
                 :key="index"
                 class="group flex items-center rounded-xl border border-gray-200 bg-gradient-to-r from-gray-50 to-gray-100 p-4 transition-all duration-300 hover:border-purple-300 hover:from-purple-50 hover:to-purple-100"
                 :style="{ animationDelay: `${index * 150}ms` }"
@@ -104,12 +104,51 @@
                 </svg>
                 <p class="text-gray-500">Tidak ada jadwal untuk filter yang dipilih</p>
             </div>
+
+            <!-- Pagination -->
+            <div v-if="filteredSchedule.length > itemsPerPage" class="mt-6 flex items-center justify-between border-t border-gray-200 pt-4">
+                <div class="text-sm text-gray-600">
+                </div>
+                <div class="flex gap-2">
+                    <button
+                        @click="goToPage(currentPage - 1)"
+                        :disabled="currentPage === 1"
+                        class="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        Previous
+                    </button>
+                    <div class="flex gap-1">
+                        <button
+                            v-for="page in totalPages"
+                            :key="page"
+                            @click="goToPage(page)"
+                            :class="[
+                                'rounded-lg px-3 py-1.5 text-sm font-medium transition-colors',
+                                currentPage === page
+                                    ? 'bg-purple-600 text-white'
+                                    : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                            ]"
+                        >
+                            {{ page }}
+                        </button>
+                    </div>
+                    <button
+                        @click="goToPage(currentPage + 1)"
+                        :disabled="currentPage === totalPages"
+                        class="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        Next
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </template>
 
 <script setup>
-defineProps({
+import { computed, ref, watch } from 'vue';
+
+const props = defineProps({
     filteredSchedule: {
         type: Array,
         required: true,
@@ -123,4 +162,26 @@ defineProps({
 });
 
 defineEmits(['update:selectedHari', 'update:selectedLantai', 'update:selectedRuang']);
+
+const currentPage = ref(1);
+const itemsPerPage = 3;
+
+const totalPages = computed(() => Math.ceil(props.filteredSchedule.length / itemsPerPage));
+
+const paginatedSchedule = computed(() => {
+    const start = (currentPage.value - 1) * itemsPerPage;
+    const end = start + itemsPerPage;
+    return props.filteredSchedule.slice(start, end);
+});
+
+const goToPage = (page) => {
+    if (page >= 1 && page <= totalPages.value) {
+        currentPage.value = page;
+    }
+};
+
+// Reset to page 1 when filters change
+watch(() => props.filteredSchedule, () => {
+    currentPage.value = 1;
+});
 </script>

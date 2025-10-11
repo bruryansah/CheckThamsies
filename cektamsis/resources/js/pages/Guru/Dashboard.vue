@@ -62,7 +62,7 @@
                 <div class="space-y-8 lg:col-span-2">
                     <!-- Quick Actions Component -->
                     <QuickActions
-                        v-model:selectedJadwal="selectedJadwal"
+                        v-model="selectedJadwal"
                         :jadwalData="localJadwalData"
                         :isGeneratingQR="isGeneratingQR"
                         :isFinalized="isSelectedFinalizedToday"
@@ -75,9 +75,11 @@
                     <!-- Schedule Card Component -->
                     <ScheduleCard
                         :filteredSchedule="filteredSchedule"
-                        v-model:selectedHari="selectedHari"
-                        v-model:selectedLantai="selectedLantai"
-                        v-model:selectedRuang="selectedRuang"
+                        v-model="selectedHari"
+                        :selectedLantai="selectedLantai"
+                        @update:selectedLantai="selectedLantai = $event"
+                        :selectedRuang="selectedRuang"
+                        @update:selectedRuang="selectedRuang = $event"
                         :availableLantai="availableLantai"
                         :availableRuang="availableRuang"
                         :formatHari="formatHari"

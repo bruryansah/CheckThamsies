@@ -9,7 +9,7 @@
                     d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
                 ></path>
             </svg>
-            Statistik Siswa
+            Statistik Siswa Hari Ini
         </h2>
         <div class="space-y-4">
             <div class="flex items-center justify-between">
@@ -59,7 +59,7 @@
             </div>
 
             <div class="mt-6 border-t border-gray-200 pt-4">
-                <h3 class="mb-3 text-sm font-semibold text-gray-700">Siswa Sering Terlambat</h3>
+                <h3 class="mb-3 text-sm font-semibold text-gray-700">Siswa Sering Terlambat (Semua Waktu)</h3>
                 <div class="space-y-2">
                     <div
                         v-for="student in stats.topLateStudents"
