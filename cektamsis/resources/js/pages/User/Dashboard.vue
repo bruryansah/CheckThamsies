@@ -20,7 +20,7 @@ const props = defineProps<Props>();
 
 const page = usePage();
 const studentName = ref(page.props.auth?.user?.name ?? 'siswa');
-
+const studentClass = ref(page.props.auth?.user?.kelas ?? 'belum ada kelas');
 
 console.log('Received Props:', props);
 
@@ -524,6 +524,8 @@ onMounted(async () => {
         document.removeEventListener('click', handleClick);
         clearInterval(interval);
     });
+
+    
 });
 </script>
 

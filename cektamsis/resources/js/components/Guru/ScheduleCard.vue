@@ -61,7 +61,10 @@
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2">
                             <h3 class="font-semibold text-gray-900">{{ schedule.mata_pelajaran }}</h3>
-                            <span v-if="schedule.status_aktif" class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                            <span
+                                v-if="schedule.status_aktif"
+                                class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700"
+                            >
                                 <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 8 8">
                                     <circle cx="4" cy="4" r="3" />
                                 </svg>
@@ -78,12 +81,8 @@
                             <span class="rounded-full bg-purple-100 px-3 py-1 text-sm font-medium text-purple-700">
                                 {{ schedule.nama_kelas }}
                             </span>
-                            <span class="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-700">
-                                Lt.{{ schedule.lantai }}
-                            </span>
-                            <span class="rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-700">
-                                R.{{ schedule.ruang }}
-                            </span>
+                            <span class="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-700"> Lt.{{ schedule.lantai }} </span>
+                            <span class="rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-700"> R.{{ schedule.ruang }} </span>
                         </div>
                     </div>
                     <p class="mt-1 text-sm text-gray-600">{{ schedule.jam_mulai }} - {{ schedule.jam_selesai }}</p>
@@ -107,9 +106,9 @@
 
             <!-- Pagination -->
             <div v-if="filteredSchedule.length > itemsPerPage" class="mt-6 flex items-center justify-between border-t border-gray-200 pt-4">
-                <div class="text-sm text-gray-600">
-                </div>
-                <div class="flex gap-2">
+                <div class="text-sm text-gray-600"></div>
+                <div class="flex flex-wrap justify-center gap-2">
+                    <!-- Tombol Previous -->
                     <button
                         @click="goToPage(currentPage - 1)"
                         :disabled="currentPage === 1"
@@ -117,21 +116,27 @@
                     >
                         Previous
                     </button>
+
+                    <!-- Nomor Halaman -->
                     <div class="flex gap-1">
-                        <button
-                            v-for="page in totalPages"
-                            :key="page"
-                            @click="goToPage(page)"
-                            :class="[
-                                'rounded-lg px-3 py-1.5 text-sm font-medium transition-colors',
-                                currentPage === page
-                                    ? 'bg-purple-600 text-white'
-                                    : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-                            ]"
-                        >
-                            {{ page }}
-                        </button>
+                        <template v-for="page in visiblePages" :key="page">
+                            <button
+                                v-if="page !== '...'"
+                                @click="goToPage(page)"
+                                :class="[
+                                    'rounded-lg px-3 py-1.5 text-sm font-medium transition-colors',
+                                    currentPage === page
+                                        ? 'bg-purple-600 text-white'
+                                        : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50',
+                                ]"
+                            >
+                                {{ page }}
+                            </button>
+                            <span v-else class="px-2 text-gray-400 select-none">...</span>
+                        </template>
                     </div>
+
+                    <!-- Tombol Next -->
                     <button
                         @click="goToPage(currentPage + 1)"
                         :disabled="currentPage === totalPages"
@@ -146,7 +151,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue'
 
 const props = defineProps({
     filteredSchedule: {
@@ -159,29 +164,59 @@ const props = defineProps({
     availableLantai: Array,
     availableRuang: Array,
     formatHari: Function,
-});
+})
 
-defineEmits(['update:selectedHari', 'update:selectedLantai', 'update:selectedRuang']);
+defineEmits(['update:selectedHari', 'update:selectedLantai', 'update:selectedRuang'])
 
-const currentPage = ref(1);
-const itemsPerPage = 3;
+const currentPage = ref(1)
+const itemsPerPage = 3
 
-const totalPages = computed(() => Math.ceil(props.filteredSchedule.length / itemsPerPage));
+// Hitung total halaman
+const totalPages = computed(() => {
+    const totalItems = Array.isArray(props.filteredSchedule) ? props.filteredSchedule.length : 0
+    return Math.max(1, Math.ceil(totalItems / itemsPerPage))
+})
 
+// Data per halaman
 const paginatedSchedule = computed(() => {
-    const start = (currentPage.value - 1) * itemsPerPage;
-    const end = start + itemsPerPage;
-    return props.filteredSchedule.slice(start, end);
-});
+    const start = (currentPage.value - 1) * itemsPerPage
+    const end = start + itemsPerPage
+    return props.filteredSchedule.slice(start, end)
+})
 
+// Ganti halaman
 const goToPage = (page) => {
-    if (page >= 1 && page <= totalPages.value) {
-        currentPage.value = page;
-    }
-};
+    if (page < 1) page = 1
+    if (page > totalPages.value) page = totalPages.value
+    currentPage.value = page
+}
 
-// Reset to page 1 when filters change
-watch(() => props.filteredSchedule, () => {
-    currentPage.value = 1;
-});
+// Tampilkan minimal 1–5 halaman
+const visiblePages = computed(() => {
+    const pages = []
+    const maxVisible = 5
+
+    if (totalPages.value <= maxVisible) {
+        for (let i = 1; i <= totalPages.value; i++) pages.push(i)
+    } else {
+        let start = Math.max(1, currentPage.value - 2)
+        let end = Math.min(totalPages.value, start + 4)
+
+        if (end - start < 4) start = Math.max(1, end - 4)
+
+        for (let i = start; i <= end; i++) pages.push(i)
+
+        if (end < totalPages.value) pages.push('...')
+    }
+
+    return pages
+})
+
+// Reset ke halaman 1 setiap kali filter berubah
+watch(
+    () => props.filteredSchedule,
+    () => {
+        currentPage.value = 1
+    },
+)
 </script>
