@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login & Register - CheckThamsies</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      overflow: hidden;
+    }
+
+    /* --- animasi karakter latar --- */
+    .character {
+      position: absolute;
+      width: 80px;
+      opacity: 0.9;
+      animation: float 4s ease-in-out infinite;
+    }
+
+    .char1 { top: 10%; left: 10%; animation-delay: 0s; }
+    .char2 { top: 20%; right: 10%; animation-delay: 1s; }
+    .char3 { bottom: 10%; left: 15%; animation-delay: 2s; }
+    .char4 { bottom: 15%; right: 20%; animation-delay: 3s; }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+
+    /* --- container utama --- */
+    .container {
+      position: relative;
+      width: 420px;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+      transition: 0.6s;
+    }
+
+    .logo {
+      text-align: center;
+      padding-top: 25px;
+    }
+
+    .logo img {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+    }
+
+    .form-box {
+      padding: 40px;
+      transition: 0.6s;
+    }
+
+    h2 {
+      color: #1e3c72;
+      text-align: center;
+      margin-bottom: 25px;
+      font-size: 1.8em;
+    }
+
+    .input-box {
+      position: relative;
+      width: 100%;
+      margin: 15px 0;
+    }
+
+    .input-box input {
+      width: 100%;
+      padding: 12px 15px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      outline: none;
+      font-size: 1em;
+      transition: 0.3s;
+    }
+
+    .input-box input:focus {
+      border-color: #1e3c72;
+      box-shadow: 0 0 5px rgba(30, 60, 114, 0.3);
+    }
+
+    .input-box label {
+      position: absolute;
+      top: 50%;
+      left: 15px;
+      transform: translateY(-50%);
+      background: #fff;
+      padding: 0 4px;
+      color: #666;
+      font-size: 0.9em;
+      pointer-events: none;
+      transition: 0.3s;
+    }
+
+    .input-box input:focus ~ label,
+    .input-box input:valid ~ label {
+      top: -8px;
+      font-size: 0.75em;
+      color: #1e3c72;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background: #1e3c72;
+      color: #fff;
+      font-weight: 600;
+      font-size: 1em;
+      cursor: pointer;
+      transition: 0.3s;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background: #2a5298;
+    }
+
+    .toggle-link {
+      text-align: center;
+      margin-top: 20px;
+      color: #1e3c72;
+      font-size: 0.9em;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    /* --- animasi pergantian form --- */
+    .register-box {
+      display: none;
+    }
+
+    .container.active .register-box {
+      display: block;
+    }
+
+    .container.active .login-box {
+      display: none;
+    }
+
+    /* --- responsive --- */
+    @media (max-width: 480px) {
+      body {
+        padding: 20px;
+      }
+      .container {
+        width: 100%;
+      }
+      .character {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Karakter animasi background -->
+  <img src="https://cdn-icons-png.flaticon.com/512/4712/4712108.png" class="character char1" alt="">
+  <img src="https://cdn-icons-png.flaticon.com/512/4712/4712046.png" class="character char2" alt="">
+  <img src="https://cdn-icons-png.flaticon.com/512/4712/4712139.png" class="character char3" alt="">
+  <img src="https://cdn-icons-png.flaticon.com/512/4712/4712147.png" class="character char4" alt="">
+
+  <div class="container" id="container">
+    <div class="logo">
+      <!-- Ganti logo ini dengan logo Tamansiswa kamu -->
+      <img src="logo-tamansiswa.png" alt="Logo Tamansiswa">
+    </div>
+
+    <!-- LOGIN -->
+    <div class="form-box login-box">
+      <h2>Masuk ke CheckThamsies</h2>
+      <form action="#">
+        <div class="input-box">
+          <input type="text" required />
+          <label>Username</label>
+        </div>
+        <div class="input-box">
+          <input type="password" required />
+          <label>Password</label>
+        </div>
+        <button type="submit">Login</button>
+        <div class="toggle-link" id="toRegister">Belum punya akun? Daftar</div>
+      </form>
+    </div>
+
+    <!-- REGISTER -->
+    <div class="form-box register-box">
+      <h2>Buat Akun Baru</h2>
+      <form action="#">
+        <div class="input-box">
+          <input type="text" required />
+          <label>Nama Lengkap</label>
+        </div>
+        <div class="input-box">
+          <input type="email" required />
+          <label>Email</label>
+        </div>
+        <div class="input-box">
+          <input type="password" required />
+          <label>Password</label>
+        </div>
+        <button type="submit">Daftar</button>
+        <div class="toggle-link" id="toLogin">Sudah punya akun? Login</div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const container = document.getElementById('container');
+    const toRegister = document.getElementById('toRegister');
+    const toLogin = document.getElementById('toLogin');
+
+    toRegister.onclick = () => {
+      container.classList.add('active');
+      document.body.style.background = "linear-gradient(135deg, #2a5298, #1e3c72)";
+    };
+    toLogin.onclick = () => {
+      container.classList.remove('active');
+      document.body.style.background = "linear-gradient(135deg, #1e3c72, #2a5298)";
+    };
+  </script>
+</body>
+</html>
