@@ -22,6 +22,7 @@ const props = defineProps<{
 const form = useForm({
   user_id: '',
   nama: '',
+  nisn: '',
   email: '',
   id_kelas: '', // sekarang tidak fixed, user pilih sendiri
   id_jurusan: '', // user pilih sendiri
@@ -75,6 +76,15 @@ watch(() => form.user_id, (newId) => {
               class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 focus:ring focus:ring-green-500 focus:outline-none"
               placeholder="Masukkan nama siswa secara manual" />
             <span v-if="form.errors.nama" class="text-red-500 text-sm">{{ form.errors.nama }}</span>
+          </div>
+          
+          <!-- Nisn (Manual Input) -->
+          <div>
+            <label class="block text-sm font-medium text-zinc-300 mb-1">Nisn Siswa</label>
+            <input v-model="form.nisn" type="text"
+              class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 focus:ring focus:ring-green-500 focus:outline-none"
+              placeholder="Masukkan nisn siswa secara manual" />
+            <span v-if="form.errors.nisn" class="text-red-500 text-sm">{{ form.errors.nisn }}</span>
           </div>
 
           <!-- Email (Otomatis dari User) -->

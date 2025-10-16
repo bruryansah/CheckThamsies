@@ -62,7 +62,7 @@
                 <div class="space-y-8 lg:col-span-2">
                     <!-- Quick Actions Component -->
                     <QuickActions
-                        v-model="selectedJadwal"
+                        v-model:selectedJadwal="selectedJadwal"
                         :jadwalData="localJadwalData"
                         :isGeneratingQR="isGeneratingQR"
                         :isFinalized="isSelectedFinalizedToday"
@@ -516,18 +516,6 @@ const generateQRCode = async () => {
     }
     if (isSelectedFinalizedToday.value) {
         showNotification('Absen untuk jadwal ini sudah ditutup hari ini.', 'error');
-        return;
-    }
-
-    // Validasi hari
-    const jadwal = selectedJadwalObj.value;
-    const todayHari = getTodayHariLower();
-    const jadwalHari = normalizeHari(jadwal.hari);
-
-    if (todayHari !== jadwalHari) {
-        const hariJadwal = formatHari(jadwal.hari);
-        const hariIni = formatHari(todayHari);
-        showNotification(`QR Code hanya bisa di-generate pada hari ${hariJadwal}. Hari ini adalah ${hariIni}.`, 'error');
         return;
     }
 

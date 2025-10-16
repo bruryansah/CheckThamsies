@@ -15,20 +15,30 @@ interface Props {
     totalAlfa: number;
     recentAttendance: Array<{ name: string; time: string; status: string; color: string }>;
     auth: { user: UserType };
+    jadwalData: Array<{
+        id: number;
+        idenc: string;
+        mata_pelajaran: string;
+        hari: string;
+        jam_selesai: string;
+        jam_mulai: string;
+        nama_kelas: string;
+        nama_guru: string;
+    }>;
 }
 const props = defineProps<Props>();
 
 const page = usePage();
 const studentName = ref(page.props.auth?.user?.name ?? 'siswa');
 
-
 console.log('Received Props:', props);
+console.log('Jadwal Data:', props.jadwalData); // Debug jadwal data
 
 const currentDate = ref('');
 const checkinStatus = ref('Belum Absen');
 const checkoutStatus = ref('Belum Pulang');
 const canCheckout = ref(false);
-const canScanQR = ref(false); // Default false, akan diperbarui
+const canScanQR = ref(false);
 const processingIn = ref(false);
 const processingOut = ref(false);
 const checkinDescription = ref('');
@@ -39,6 +49,10 @@ const checkoutDescriptionError = ref('');
 const latestCheckinStatus = ref<string | null>(null);
 const showWeekendModal = ref(false);
 const canCheckIn = ref(true);
+
+// Tambahkan untuk sistem izin pelajaran
+const selectedMapel = ref('');
+const selectedStatus1 = ref('hadir');
 
 // QR Scanner
 const isScanning = ref(false);
@@ -57,6 +71,19 @@ const passwordForm = ref({
 });
 const passwordErrors = ref<Record<string, string[]>>({});
 const processingPassword = ref(false);
+
+// Computed untuk mengontrol tombol OK absensi pelajaran
+const canSubmitLessonCheckIn = computed(() => {
+    if (['izin', 'sakit'].includes(selectedStatus1.value)) {
+        return (
+            ['hadir', 'terlambat'].includes(latestCheckinStatus.value || '') && // Sudah absen sekolah
+            selectedMapel.value && // Mata pelajaran dipilih
+            checkinDescription.value.trim() && // Keterangan diisi
+            !processingIn.value // Tidak sedang memproses
+        );
+    }
+    return false; // Hanya relevan untuk izin/sakit
+});
 
 // Dropdown functions
 const toggleDropdown = () => (dropdownOpen.value = !dropdownOpen.value);
@@ -127,7 +154,6 @@ const stats = computed(() => ({
 
 // Status Select
 const selectedStatus = ref('hadir');
-const selectedStatus1 = ref('hadir');
 
 // Helper: Tailwind colors for stats
 const statColor = (color: string) => {
@@ -195,7 +221,7 @@ const fetchStatus = async () => {
             const latestStatus = await fetch(route('absen.latest-status')).then((res) => res.json());
             latestCheckinStatus.value = latestStatus.status;
             canCheckout.value = !['izin', 'sakit', 'alfa'].includes(latestStatus.status);
-            canScanQR.value = ['hadir', 'terlambat'].includes(latestStatus.status); // Perbarui untuk mendukung terlambat
+            canScanQR.value = ['hadir', 'terlambat'].includes(latestStatus.status);
         } else if (data.status === 'sudah_pulang') {
             checkinStatus.value = 'Sudah Absen';
             checkoutStatus.value = 'Sudah Pulang';
@@ -222,6 +248,7 @@ const refreshAttendance = async () => {
         {
             onSuccess: () => {
                 console.log('Attendance data refreshed');
+                console.log('Updated Jadwal Data:', props.jadwalData); // Debug jadwal data after refresh
             },
         },
     );
@@ -293,7 +320,7 @@ const checkIn = () => {
                             );
                         } else {
                             canCheckout.value = true;
-                            canScanQR.value = ['hadir', 'terlambat'].includes(determinedStatus); // Perbarui untuk mendukung terlambat
+                            canScanQR.value = ['hadir', 'terlambat'].includes(determinedStatus);
                             showNotification(`✅ Absen ${determinedStatus.charAt(0).toUpperCase() + determinedStatus.slice(1)} berhasil!`, 'success');
                         }
                         checkinDescription.value = '';
@@ -380,47 +407,70 @@ const performCheckout = () => {
         },
     );
 };
-
-// Absen Pelajaran tanpa QR
+// Absen Pelajaran tanpa QR (untuk izin/sakit, pilih mapel dari jadwalData)
 const lessonCheckIn = () => {
-    if (['izin', 'sakit'].includes(selectedStatus1.value) && !checkinDescription.value.trim()) {
-        checkinDescriptionError.value = 'Keterangan diperlukan untuk status Izin atau Sakit';
-        showNotification(checkinDescriptionError.value, 'error');
-        return;
+    // Bersihkan error lama
+    checkinDescriptionError.value = '';
+
+    // Validasi status Izin/Sakit
+    if (['izin', 'sakit'].includes(selectedStatus1.value)) {
+        if (!selectedMapel.value) {
+            checkinDescriptionError.value = 'Pilih mata pelajaran terlebih dahulu';
+            showNotification(checkinDescriptionError.value, 'error');
+            return;
+        }
+        if (!checkinDescription.value || !checkinDescription.value.trim()) {
+            checkinDescriptionError.value = 'Keterangan diperlukan untuk status Izin atau Sakit';
+            showNotification(checkinDescriptionError.value, 'error');
+            return;
+        }
     }
 
-    router.post(
-        '/absensi-pelajaran/checkin',
-        {
-            id_jadwal: checkinDescription.value, // Menggunakan checkinDescription sebagai id_jadwal
-            status: selectedStatus1.value,
-            description: checkinDescription.value,
+    // Siapkan payload
+    const payload = {
+        id_jadwal: selectedMapel.value,
+        status: selectedStatus1.value,
+        description: checkinDescription.value?.trim() || '',
+    };
+
+    console.log('🟢 Sending lesson check-in payload:', payload);
+
+    // Kirim request ke backend
+    router.post('/absensi-pelajaran/checkin', payload, {
+        onSuccess: (page) => {
+            // Update status dan absensi
+            fetchStatus?.();
+            refreshAttendance?.();
+
+            showNotification(`✅ Absensi Pelajaran berhasil (${payload.status.charAt(0).toUpperCase() + payload.status.slice(1)})!`, 'success');
+
+            // Reset form
+            selectedMapel.value = '';
+            checkinDescription.value = '';
+            checkinDescriptionError.value = '';
         },
-        {
-            onSuccess: () => {
-                fetchStatus();
-                showNotification(
-                    `✅ Absensi Pelajaran berhasil (${selectedStatus1.value.charAt(0).toUpperCase() + selectedStatus1.value.slice(1)})!`,
-                    'success',
-                );
-                refreshAttendance();
-                checkinDescription.value = '';
-                checkinDescriptionError.value = '';
-            },
-            onError: (errors) => {
-                errorMessage.value = errors.message || '❌ Gagal absen, coba lagi!';
-                if (errors.message === 'Kamu sudah absen di jadwal ini!') {
-                    errorMessage.value = '❌ Kamu sudah absen untuk jadwal ini.';
-                } else if (errors.message.includes('expired')) {
-                    errorMessage.value = '⏰ QR Code sudah kedaluwarsa.';
+        onError: (errors) => {
+            console.error('❌ Lesson Check-In Error:', errors);
+
+            let message = '❌ Gagal absen, coba lagi!';
+
+            if (errors?.message) {
+                const msg = errors.message.toLowerCase();
+                if (msg.includes('sudah absen')) {
+                    message = '❌ Kamu sudah absen untuk jadwal ini.';
+                } else if (msg.includes('expired')) {
+                    message = '⏰ QR Code sudah kedaluwarsa.';
+                } else {
+                    message = `❌ ${errors.message}`;
                 }
-                showNotification(errorMessage.value, 'error');
-            },
+            }
+
+            showNotification(message, 'error');
         },
-    );
+    });
 };
 
-// QR Scanner Detect
+// QR Scanner Detect (untuk hadir, scan QR dari guru)
 interface QrCodeResult {
     rawValue: string;
 }
@@ -441,6 +491,12 @@ const onDetect = (detectedCodes: QrCodeResult[]) => {
             showNotification(checkinDescriptionError.value, 'error');
             return;
         }
+
+        console.log('Sending QR check-in payload:', {
+            id_jadwal,
+            status: selectedStatus1.value,
+            description: checkinDescription.value,
+        }); // Debug payload
 
         router.post(
             '/absensi-pelajaran/checkin',
@@ -538,7 +594,7 @@ onMounted(async () => {
                 </div>
                 <div>
                     <h1 class="text-2xl font-bold text-gray-900">Dashboard Siswa</h1>
-                    <p class="text-gray-500">Selamat datang, {{ studentName }} </p>
+                    <p class="text-gray-500">Selamat datang, {{ studentName }}</p>
                 </div>
             </div>
             <div class="dropdown-container relative">
@@ -578,7 +634,7 @@ onMounted(async () => {
             <div
                 v-for="(stat, i) in [
                     { icon: Users, value: stats.totalkehadiran, label: 'Total Kehadiran', color: 'blue' },
-                    { icon: Users, value: stats.totalalfa, label: 'Total Alfa', color: 'red' }, // Tambahkan Total Alfa
+                    { icon: Users, value: stats.totalalfa, label: 'Total Alfa', color: 'red' },
                     { icon: Users, value: stats.totalsakit, label: 'Total Sakit', color: 'purple' },
                     { icon: Users, value: stats.totalizin, label: 'Total Izin', color: 'orange' },
                     { icon: CheckCircle, value: stats.totalpresentase + '%', label: 'Persentase Kehadiran', color: 'green' },
@@ -609,7 +665,7 @@ onMounted(async () => {
                 </div>
                 <div class="space-y-4">
                     <div class="rounded-2xl border border-gray-200 p-4 hover:bg-gray-50">
-                        <h4 class="mb-3 font-medium text-gray-900">Absen Masuk</h4>
+                        <h4 class="mb-3 font-medium text-gray-900">Absensi Masuk</h4>
                         <select
                             v-model="selectedStatus"
                             class="mb-3 w-full rounded-lg border border-gray-300 p-2 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
@@ -634,13 +690,14 @@ onMounted(async () => {
                             Status:
                             <span
                                 :class="{
-                                    'text-green-600': checkinStatus === 'Hadir' || checkinStatus === 'Sudah Absen',
-                                    'text-orange-600': checkinStatus === 'Terlambat',
-                                    'text-red-600': checkinStatus === 'Alfa' || checkinStatus === 'Belum Absen',
-                                    'text-purple-600': checkinStatus === 'Izin' || checkinStatus === 'Sakit',
+                                    'font-semibold text-green-600': checkinStatus === 'Sudah Absen' || checkinStatus === 'Hadir',
+                                    'font-semibold text-orange-600': checkinStatus === 'Terlambat',
+                                    'font-semibold text-red-600': checkinStatus === 'Alfa',
+                                    'text-gray-600': checkinStatus === 'Belum Absen',
                                 }"
-                                >{{ checkinStatus }}</span
                             >
+                                {{ checkinStatus }}
+                            </span>
                         </p>
                         <button
                             @click="checkIn"
@@ -653,14 +710,14 @@ onMounted(async () => {
                             "
                         >
                             <span v-if="processingIn">Memproses...</span>
-                            <span v-else>Absen Masuk</span>
+                            <span v-else>Absensi Masuk</span>
                         </button>
                         <p v-if="!canCheckIn && !checkinStatus.includes('Sudah')" class="mt-2 text-center text-sm text-red-500">
-                            Absen hanya bisa dilakukan di jam 06:40
+                            Absensi hanya bisa dilakukan di jam 06:40
                         </p>
                     </div>
                     <div class="rounded-2xl border border-gray-200 p-4 hover:bg-gray-50">
-                        <h4 class="mb-3 font-medium text-gray-900">Absen Pulang</h4>
+                        <h4 class="mb-3 font-medium text-gray-900">Absensi Pulang</h4>
                         <p class="mb-3 text-sm font-medium text-gray-900">
                             Status: <span :class="checkoutStatus === 'Sudah Pulang' ? 'text-green-600' : 'text-gray-600'">{{ checkoutStatus }}</span>
                         </p>
@@ -671,13 +728,15 @@ onMounted(async () => {
                             :class="
                                 !canCheckout || checkoutStatus === 'Sudah Pulang'
                                     ? 'cursor-not-allowed bg-gray-100 text-gray-500'
-                                    : 'bg-green-600 text-white hover:bg-green-700 active:scale-95'"
+                                    : 'bg-green-600 text-white hover:bg-green-700 active:scale-95'
+                            "
                         >
                             <span v-if="processingOut">Memproses...</span>
-                            <span v-else>Absen Pulang</span>
+                            <span v-else>Absensi Pulang</span>
                         </button>
                     </div>
                     <div class="mt-4">
+                        <!-- Pilihan status -->
                         <select
                             v-model="selectedStatus1"
                             class="mb-3 w-full rounded-lg border border-gray-300 p-2 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
@@ -686,13 +745,24 @@ onMounted(async () => {
                             <option value="izin">Izin</option>
                             <option value="sakit">Sakit</option>
                         </select>
-                        <div v-if="['izin', 'sakit'].includes(selectedStatus1)" class="mb-3">
-                            <label for="checkin_description" class="mb-2 block text-sm font-medium text-gray-700">pilih mapel</label>
-                            <select
-                                v-model="checkinDescription"
-                                class="mb-3 w-full rounded-lg border border-gray-300 p-2 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"></select>
 
-                            <label for="checkin_description" class="mb-2 block text-sm font-medium text-gray-700">Keterangan</label>
+                        <!-- Jika status Izin atau Sakit -->
+                        <div v-if="['izin', 'sakit'].includes(selectedStatus1)" class="mb-3">
+                            <label for="selected_mapel" class="mb-2 block text-sm font-medium text-gray-700"> Pilih Mata Pelajaran </label>
+                            <select
+                                id="selected_mapel"
+                                v-model="selectedMapel"
+                                class="mb-3 w-full rounded-lg border border-gray-300 p-2 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+                            >
+                                <option value="" disabled>Pilih mata pelajaran</option>
+                                <option v-for="jadwal in props.jadwalData" :key="jadwal.id" :value="jadwal.id">
+                                    {{ jadwal.mata_pelajaran }} - {{ jadwal.nama_guru }} ({{ jadwal.nama_kelas }}) ({{ jadwal.jam_mulai }}–{{
+                                        jadwal.jam_selesai
+                                    }})
+                                </option>
+                            </select>
+
+                            <label for="checkin_description" class="mb-2 block text-sm font-medium text-gray-700"> Keterangan </label>
                             <textarea
                                 id="checkin_description"
                                 v-model="checkinDescription"
@@ -701,46 +771,38 @@ onMounted(async () => {
                                 placeholder="Masukkan keterangan"
                                 required
                             ></textarea>
+
                             <p v-if="checkinDescriptionError" class="mt-1 text-sm text-red-500">{{ checkinDescriptionError }}</p>
+
+                            <!-- Tombol kirim Izin/Sakit -->
+                            <button
+                                @click="lessonCheckIn"
+                                :disabled="!canSubmitLessonCheckIn"
+                                class="flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-white transition-all duration-300"
+                                :class="canSubmitLessonCheckIn ? 'bg-blue-600 hover:bg-blue-700 active:scale-95' : 'cursor-not-allowed bg-gray-300'"
+                            >
+                                <CheckCircle class="h-5 w-5" /> OK
+                            </button>
                         </div>
-                        <button
-                            v-if="['izin', 'sakit'].includes(selectedStatus1)"
-                            @click="lessonCheckIn"
-                            :disabled="!canCheckIn || checkinStatus.includes('Sudah') || processingIn"
-                            class="flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-white transition-all duration-300"
-                            :class="
-                                canCheckIn && !checkinStatus.includes('Sudah')
-                                    ? 'bg-blue-600 hover:bg-blue-700 active:scale-95'
-                                    : 'cursor-not-allowed bg-gray-300'
-                            "
-                        >
-                            <CheckCircle class="h-5 w-5" /> OK
-                        </button>
-                        <button
-                            v-else
-                            @click="
-                                isScanning = true;
-                                scanResult = '';
-                            "
-                            :disabled="!canScanQR"
-                            class="flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-white transition-all duration-300"
-                            :class="
-                                canScanQR
-                                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 active:scale-95'
-                                    : 'cursor-not-allowed bg-gray-300'
-                            "
-                        >
-                            <QrCode class="h-5 w-5" /> Scan QR Absen
-                        </button>
-                        <p
-                            v-if="!canScanQR && checkinStatus === 'Sudah Absen' && ['izin', 'sakit'].includes(latestCheckinStatus ?? '')"
-                            class="mt-2 text-center text-sm text-red-500"
-                        >
-                            Kamu izin/sakit tidak bisa absen pelajaran
-                        </p>
-                        <p v-if="!canScanQR && checkinStatus === 'Belum Absen'" class="mt-2 text-center text-sm text-red-500">
-                            Absen Hadir dahulu sebelum absen pelajaran.
-                        </p>
+
+                        <!-- Jika status Hadir -->
+                        <div v-else>
+                            <button
+                                @click="
+                                    isScanning = true;
+                                    scanResult = '';
+                                "
+                                :disabled="!canScanQR"
+                                class="flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-white transition-all duration-300"
+                                :class="
+                                    canScanQR
+                                        ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 active:scale-95'
+                                        : 'cursor-not-allowed bg-gray-300'
+                                "
+                            >
+                                <QrCode class="h-5 w-5" /> Scan QR Absen
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

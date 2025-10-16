@@ -25,8 +25,8 @@
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <button
                 @click="$emit('generateQR')"
-                :disabled="!selectedJadwal || isGeneratingQR || isFinalized"
-                :class="selectedJadwal && !isGeneratingQR && !isFinalized ? 'hover:from-blue-500 hover:to-blue-600' : 'cursor-not-allowed opacity-50'"
+                :disabled="!selectedJadwal || isGeneratingQR"
+                :class="selectedJadwal && !isGeneratingQR ? 'hover:from-blue-500 hover:to-blue-600' : 'cursor-not-allowed opacity-50'"
                 class="group transform rounded-xl border border-blue-200 bg-gradient-to-r from-blue-50 to-blue-100 p-4 transition-all duration-300 hover:scale-105 hover:border-blue-500"
             >
                 <div class="flex items-center space-x-3">
