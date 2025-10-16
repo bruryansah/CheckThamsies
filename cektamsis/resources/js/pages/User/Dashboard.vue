@@ -31,6 +31,7 @@ const props = defineProps<Props>();
 const page = usePage();
 const studentName = ref(page.props.auth?.user?.name ?? 'siswa');
 
+
 console.log('Received Props:', props);
 console.log('Jadwal Data:', props.jadwalData); // Debug jadwal data
 
@@ -580,6 +581,8 @@ onMounted(async () => {
         document.removeEventListener('click', handleClick);
         clearInterval(interval);
     });
+
+    
 });
 </script>
 
