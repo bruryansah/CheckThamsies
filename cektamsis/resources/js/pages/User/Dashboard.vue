@@ -31,7 +31,7 @@ const props = defineProps<Props>();
 const page = usePage();
 const studentName = ref(page.props.auth?.user?.name ?? 'siswa');
 
-
+// s
 console.log('Received Props:', props);
 console.log('Jadwal Data:', props.jadwalData); // Debug jadwal data
 
