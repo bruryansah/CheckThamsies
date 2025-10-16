@@ -30,6 +30,7 @@
         siswa: {
             id_siswa: number; // Pastikan menggunakan id_siswa sesuai database
             user_id: number;
+            nisn: string;
             nama: string;
             email: string;
             id_kelas: number;
@@ -53,6 +54,7 @@
     // Inertia form
     const form = useForm({
         user_id: '',
+        nisn: '',
         nama: '',
         email: '',
         id_kelas: '',
@@ -64,6 +66,7 @@
         if (props.siswa) {
             form.user_id = props.siswa.user_id?.toString() || '';
             form.nama = props.siswa.nama || '';
+            form.nisn = props.siswa.nisn || '';
             form.email = props.siswa.email || '';
             form.id_kelas = props.siswa.id_kelas?.toString() || '';
             form.id_jurusan = props.siswa.id_jurusan?.toString() || '';
@@ -128,6 +131,15 @@
                             class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 focus:ring focus:ring-green-500 focus:outline-none disabled:opacity-50"
                             placeholder="Masukkan nama siswa" />
                         <span v-if="form.errors.nama" class="text-red-500 text-sm">{{ form . errors . nama }}</span>
+                    </div>
+
+                    <!-- Nisn -->
+                    <div>
+                        <label class="block text-sm font-medium text-zinc-300 mb-1">Nisn Siswa</label>
+                        <input v-model="form.nisn" type="text"
+                            class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 focus:ring focus:ring-green-500 focus:outline-none disabled:opacity-50"
+                            placeholder="Masukkan nama siswa" />
+                        <span v-if="form.errors.nisn" class="text-red-500 text-sm">{{ form . errors . nisn }}</span>
                     </div>
 
                     <!-- Email -->

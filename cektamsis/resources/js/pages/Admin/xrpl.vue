@@ -13,6 +13,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 interface Siswa {
   id_siswa: number
+  nisn: string
   nama: string
   email: string
   kelas: string
@@ -122,6 +123,7 @@ const searchData = () => {
               <tr>
                 <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Id Siswa</th>
                 <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Nama</th>
+                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Nisn</th>
                 <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Email</th>
                 <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Kelas</th>
                 <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Jurusan</th>
@@ -132,6 +134,7 @@ const searchData = () => {
               <tr v-for="siswa in props.siswa.data" :key="siswa.id_siswa" class="hover:bg-zinc-800/60 transition">
                 <td class="px-6 py-4 text-center">{{ siswa.id_siswa }}</td>
                 <td class="px-6 py-4 text-center">{{ siswa.nama }}</td>
+                <td class="px-6 py-4 text-center">{{ siswa.nisn }}</td>
                 <td class="px-6 py-4 text-center">{{ siswa.email }}</td>
                 <td class="px-6 py-4 text-center">{{ siswa.kelas }}</td>
                 <td class="px-6 py-4 text-center">{{ siswa.jurusan }}</td>

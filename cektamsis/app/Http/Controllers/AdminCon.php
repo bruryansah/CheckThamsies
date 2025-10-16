@@ -447,7 +447,10 @@ public function jadwal(Request $request)
     public function siswax(Request $request)
     {
         // Ambil daftar kelas unik di tingkat X RPL
-        $kelasList = DB::table('siswa')->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')->where('kelas.tingkat_kelas', 'like', '1%')->pluck('kelas.nama_kelas')->unique()->values();
+        $kelasList = DB::table('siswa')
+        ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
+        ->where('kelas.tingkat_kelas', 'like', '1%')
+        ->pluck('kelas.nama_kelas')->unique()->values();
 
         // Ambil filter kelas & search dari query string
         $selectedKelas = $request->input('kelas');
@@ -457,7 +460,7 @@ public function jadwal(Request $request)
         $siswax = DB::table('siswa')
             ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
             ->join('jurusan', 'siswa.id_jurusan', '=', 'jurusan.id_jurusan')
-            ->select('siswa.id_siswa', 'siswa.nama', 'siswa.email', 'kelas.nama_kelas as kelas', 'jurusan.nama_jurusan as jurusan')
+            ->select('siswa.id_siswa','siswa.nisn', 'siswa.nama', 'siswa.email', 'kelas.nama_kelas as kelas', 'jurusan.nama_jurusan as jurusan')
             ->where('kelas.tingkat_kelas', 'like', '1%')
             ->when($selectedKelas, function ($query, $kelas) {
                 return $query->where('kelas.nama_kelas', $kelas);
@@ -466,6 +469,7 @@ public function jadwal(Request $request)
                 return $query->where(function ($q) use ($search) {
                     $q->where('siswa.nama', 'like', "%{$search}%")
                         ->orWhere('siswa.email', 'like', "%{$search}%")
+                        ->orWhere('siswa.nisn', 'like', "%{$search}%")
                         ->orWhere('kelas.nama_kelas', 'like', "%{$search}%")
                         ->orWhere('jurusan.nama_jurusan', 'like', "%{$search}%");
                 });
@@ -501,6 +505,7 @@ public function jadwal(Request $request)
         // Validasi
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id', // id harus ada di tabel users
+            'nisn' => 'required|string|max:20',
             'nama' => 'required|string|max:255',
             'email' => 'required|email',
             'id_kelas' => 'required|exists:kelas,id_kelas',
@@ -533,9 +538,9 @@ public function jadwal(Request $request)
     // Memperbarui Data Siswa X RPL Yang Dikirim dari Form Edit Siswa X RPL
     public function updatex(Request $request, $id)
     {
-        // Validasi data
-        $validated = $request->validate([
+                $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
+            'nisn' => 'required|string|max:20',
             'nama' => 'required|string|max:255',
             'email' => 'required|email',
             'id_kelas' => 'required|exists:kelas,id_kelas',
@@ -546,6 +551,7 @@ public function jadwal(Request $request)
             ->where('id_siswa', $id)
             ->update([
                 'user_id' => $request->user_id,
+                'nisn' => $request->nisn,
                 'nama' => $request->nama,
                 'email' => $request->email,
                 'id_kelas' => $request->id_kelas,
@@ -582,7 +588,7 @@ public function jadwal(Request $request)
         $siswax = DB::table('siswa')
             ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
             ->join('jurusan', 'siswa.id_jurusan', '=', 'jurusan.id_jurusan')
-            ->select('siswa.id_siswa', 'siswa.nama', 'siswa.email', 'kelas.nama_kelas as kelas', 'jurusan.nama_jurusan as jurusan')
+            ->select('siswa.id_siswa','siswa.nisn', 'siswa.nama', 'siswa.email', 'kelas.nama_kelas as kelas', 'jurusan.nama_jurusan as jurusan')
             ->where('kelas.tingkat_kelas', 'like', '2%')
             ->when($selectedKelas, function ($query, $kelas) {
                 return $query->where('kelas.nama_kelas', $kelas);
@@ -590,6 +596,7 @@ public function jadwal(Request $request)
             ->when($search, function ($query, $search) {
                 return $query->where(function ($q) use ($search) {
                     $q->where('siswa.nama', 'like', "%{$search}%")
+                        ->orWhere('siswa.nisn', 'like', "%{$search}%")
                         ->orWhere('siswa.email', 'like', "%{$search}%")
                         ->orWhere('kelas.nama_kelas', 'like', "%{$search}%")
                         ->orWhere('jurusan.nama_jurusan', 'like', "%{$search}%");
@@ -627,6 +634,7 @@ public function jadwal(Request $request)
         // Validasi
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id', // id harus ada di tabel users
+            'nisn' => 'required|string|max:20',
             'nama' => 'required|string|max:255',
             'email' => 'required|email',
             'id_kelas' => 'required|exists:kelas,id_kelas',
@@ -659,9 +667,9 @@ public function jadwal(Request $request)
     // Memperbarui Data Siswa X RPL Yang Dikirim dari Form Edit Siswa X RPL
     public function updatexi(Request $request, $id)
     {
-        // Validasi data
-        $validated = $request->validate([
+                $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
+            'nisn' => 'required|string|max:20',
             'nama' => 'required|string|max:255',
             'email' => 'required|email',
             'id_kelas' => 'required|exists:kelas,id_kelas',
@@ -672,6 +680,7 @@ public function jadwal(Request $request)
             ->where('id_siswa', $id)
             ->update([
                 'user_id' => $request->user_id,
+                'nisn' => $request->nisn,
                 'nama' => $request->nama,
                 'email' => $request->email,
                 'id_kelas' => $request->id_kelas,
@@ -708,7 +717,7 @@ public function jadwal(Request $request)
         $siswax = DB::table('siswa')
             ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
             ->join('jurusan', 'siswa.id_jurusan', '=', 'jurusan.id_jurusan')
-            ->select('siswa.id_siswa', 'siswa.nama', 'siswa.email', 'kelas.nama_kelas as kelas', 'jurusan.nama_jurusan as jurusan')
+            ->select('siswa.id_siswa','siswa.nisn', 'siswa.nama', 'siswa.email', 'kelas.nama_kelas as kelas', 'jurusan.nama_jurusan as jurusan')
             ->where('kelas.tingkat_kelas', 'like', '3%')
             ->when($selectedKelas, function ($query, $kelas) {
                 return $query->where('kelas.nama_kelas', $kelas);
@@ -717,6 +726,7 @@ public function jadwal(Request $request)
                 return $query->where(function ($q) use ($search) {
                     $q->where('siswa.nama', 'like', "%{$search}%")
                         ->orWhere('siswa.email', 'like', "%{$search}%")
+                        ->orWhere('siswa.nisn', 'like', "%{$search}%")
                         ->orWhere('kelas.nama_kelas', 'like', "%{$search}%")
                         ->orWhere('jurusan.nama_jurusan', 'like', "%{$search}%");
                 });
@@ -752,6 +762,7 @@ public function jadwal(Request $request)
         // Validasi
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id', // id harus ada di tabel users
+            'nisn' => 'required|string|max:20',
             'nama' => 'required|string|max:255',
             'email' => 'required|email',
             'id_kelas' => 'required|exists:kelas,id_kelas',
@@ -785,6 +796,7 @@ public function jadwal(Request $request)
         // Validasi data
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
+            'nisn' => 'required|string|max:20',
             'nama' => 'required|string|max:255',
             'email' => 'required|email',
             'id_kelas' => 'required|exists:kelas,id_kelas',
@@ -795,6 +807,7 @@ public function jadwal(Request $request)
             ->where('id_siswa', $id)
             ->update([
                 'user_id' => $request->user_id,
+                'nisn' => $request->nisn,
                 'nama' => $request->nama,
                 'email' => $request->email,
                 'id_kelas' => $request->id_kelas,
