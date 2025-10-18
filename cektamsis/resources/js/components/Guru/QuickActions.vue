@@ -42,7 +42,7 @@
                         <li
                             v-for="j in jadwalData"
                             :key="j.id_jadwal"
-                            @click="selectJadwal(j)"
+                            @click.stop="selectJadwal(j)"
                             class="cursor-pointer px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors duration-200"
                         >
                             <div class="text-sm font-medium">
@@ -153,7 +153,8 @@ const toggleDropdown = () => {
 
 // Saat pilih jadwal
 const selectJadwal = (jadwal) => {
-    emit('update:selectedJadwal', jadwal.idenc);
+    // Kirimkan id_jadwal asli agar backend bisa menemukan jadwal dengan benar
+    emit('update:selectedJadwal', String(jadwal.id_jadwal));
     selectedLabel.value = `${jadwal.mata_pelajaran} - ${jadwal.nama_kelas} (${props.formatHari(jadwal.hari)} ${jadwal.jam_mulai} - ${jadwal.jam_selesai})`;
     isOpen.value = false;
 };
