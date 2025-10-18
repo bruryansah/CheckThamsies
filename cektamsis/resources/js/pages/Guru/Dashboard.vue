@@ -421,7 +421,7 @@ const filteredKelasData = computed(() => {
 
 const selectedJadwalObj = computed(() => {
     if (!selectedJadwal.value) return null;
-    return jadwalData.value.find((j) => j.idenc == selectedJadwal.value) || null;
+    return jadwalData.value.find((j) => String(j.id_jadwal) === String(selectedJadwal.value)) || null;
 });
 
 const selectedJadwalLabel = computed(() => {

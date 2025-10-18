@@ -76,13 +76,20 @@ class JadwalController extends Controller
                 ];
             });
 
+        $todayDate = \Carbon\Carbon::today('Asia/Jakarta')->toDateString();
+
         $absensi = DB::table('siswa')
             ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
+            ->whereIn('kelas.nama_kelas', $teacherClasses) // Filter hanya kelas yang guru ajar
             ->leftJoin('absensi_pelajaran', function ($join) {
                 $join->on('siswa.id_siswa', '=', 'absensi_pelajaran.id_siswa');
             })
             ->leftJoin('jadwal', 'absensi_pelajaran.id_jadwal', '=', 'jadwal.id_jadwal')
             ->leftJoin('mapel', 'jadwal.id_mapel', '=', 'mapel.id_mapel')
+            ->leftJoin('absensi_sekolah as ask', function ($join) use ($todayDate) {
+                $join->on('siswa.id_siswa', '=', 'ask.id_siswa')
+                     ->where('ask.tanggal', '=', $todayDate);
+            })
             ->select(
                 'siswa.id_siswa',
                 'siswa.nama as nama_siswa',
@@ -93,10 +100,39 @@ class JadwalController extends Controller
                 'jadwal.ruang',
                 'absensi_pelajaran.waktu_scan',
                 'absensi_pelajaran.status',
-                'absensi_pelajaran.keterangan'
+                'absensi_pelajaran.keterangan',
+                'ask.status as sekolah_status',
+                'ask.keterangan as sekolah_keterangan'
             )
             ->get()
             ->map(function ($row) {
+                // Fallback status pelajaran dengan status sekolah (izin/sakit) pada hari yang sama
+                $statusPel = $row->status ?? null;
+                $ketPel = $row->keterangan ?? null;
+                
+                // Debug log
+                if ($row->sekolah_status) {
+                    \Log::info('Siswa dengan status sekolah', [
+                        'nama' => $row->nama_siswa,
+                        'sekolah_status' => $row->sekolah_status,
+                        'sekolah_keterangan' => $row->sekolah_keterangan,
+                        'status_pelajaran' => $statusPel
+                    ]);
+                }
+                
+                if (!$statusPel || strtolower($statusPel) === 'belum absen') {
+                    $sekolahStatus = strtolower((string)($row->sekolah_status ?? ''));
+                    if (in_array($sekolahStatus, ['izin', 'sakit'], true)) {
+                        $statusPel = $row->sekolah_status;
+                        $ketPel = $row->sekolah_keterangan ?? ucfirst($row->sekolah_status);
+                        \Log::info('Status diubah ke izin/sakit', [
+                            'nama' => $row->nama_siswa,
+                            'status_baru' => $statusPel,
+                            'keterangan' => $ketPel
+                        ]);
+                    }
+                }
+
                 return [
                     'name'   => $row->nama_siswa,
                     'class'  => $row->nama_kelas,
@@ -106,8 +142,8 @@ class JadwalController extends Controller
                     'ruang'  => $row->ruang ?? '-',
                     'date'   => $row->waktu_scan ? date('Y-m-d', strtotime($row->waktu_scan)) : date('Y-m-d'),
                     'time'   => $row->waktu_scan ? date('H:i', strtotime($row->waktu_scan)) : 'Belum Absen',
-                    'status' => $row->status ?? 'Belum Absen',
-                    'keterangan' => $row->keterangan ?? null,
+                    'status' => $statusPel ?? 'Belum Absen',
+                    'keterangan' => $ketPel,
                 ];
             });
 

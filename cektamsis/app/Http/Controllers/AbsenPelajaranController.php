@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use App\Models\Siswa;
 use App\Models\Jadwal;
 use App\Models\AbsensiPelajaran;
+use App\Models\AbsensiSekolah;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
@@ -161,34 +162,61 @@ public function checkIn(Request $request)
     // Finalize absensi
     $kelasId = $jadwal->id_kelas;
     $siswaList = \App\Models\Siswa::where('id_kelas', $kelasId)->get(['id_siswa']);
-    $created = 0;
+    $createdAlpha = 0;
+    $createdExcused = 0;
 
     foreach ($siswaList as $s) {
+        // Cek apakah sudah ada absensi pelajaran untuk hari ini
         $exists = AbsensiPelajaran::where('id_jadwal', $id_jadwal)
             ->where('id_siswa', $s->id_siswa)
+            ->whereDate('waktu_scan', $now->toDateString())
             ->exists();
 
-        if (!$exists) {
+        if ($exists) {
+            continue;
+        }
+
+        // Cek absensi sekolah: jika izin/sakit pada hari ini, buat record izin/sakit di absensi pelajaran
+        $school = AbsensiSekolah::where('id_siswa', $s->id_siswa)
+            ->whereDate('tanggal', $now->toDateString())
+            ->first();
+
+        if ($school && in_array(strtolower($school->status), ['izin', 'sakit'], true)) {
             try {
                 AbsensiPelajaran::create([
                     'id_jadwal'  => $id_jadwal,
                     'id_siswa'   => $s->id_siswa,
                     'waktu_scan' => $now,
-                    'status'     => 'alfa',
-                    'keterangan' => 'Otomatis alfa',
+                    'status'     => strtolower($school->status),
+                    'keterangan' => $school->keterangan ?? ucfirst($school->status),
                 ]);
-                $created++;
+                $createdExcused++;
             } catch (\Exception $e) {
-                Log::error('Gagal menyimpan finalize absensi untuk siswa id ' . $s->id_siswa . ': ' . $e->getMessage());
+                Log::error('Gagal menyimpan izin/sakit finalize untuk siswa id ' . $s->id_siswa . ': ' . $e->getMessage());
             }
+            continue;
+        }
+
+        // Selain itu, tandai ALFA otomatis
+        try {
+            AbsensiPelajaran::create([
+                'id_jadwal'  => $id_jadwal,
+                'id_siswa'   => $s->id_siswa,
+                'waktu_scan' => $now,
+                'status'     => 'alfa',
+                'keterangan' => 'Otomatis alfa',
+            ]);
+            $createdAlpha++;
+        } catch (\Exception $e) {
+            Log::error('Gagal menyimpan finalize absensi untuk siswa id ' . $s->id_siswa . ': ' . $e->getMessage());
         }
     }
 
-    Log::info("Finalize selesai, total siswa ditandai alfa: $created");
+    Log::info("Finalize selesai, Alfa: $createdAlpha, Izin/Sakit: $createdExcused");
 
     return back()->with('flash', [
         'success' => true,
-        'message' => "Finalize berhasil. Ditandai Alfa: {$created} siswa.",
+        'message' => "Finalize berhasil. Alfa: {$createdAlpha}, Izin/Sakit: {$createdExcused}.",
     ]);
 }
 
