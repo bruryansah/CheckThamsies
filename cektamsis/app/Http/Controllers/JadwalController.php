@@ -37,25 +37,24 @@ class JadwalController extends Controller
         $teacherClasses = $jadwal->pluck('kelas.nama_kelas')->unique();
 
         $jadwalFormatted = $jadwal->map(function ($item) {
-            // Cek apakah jadwal sudah ditutup hari ini
-            $today = \Carbon\Carbon::today('Asia/Jakarta');
-            $sudahDitutup = \App\Models\AbsensiPelajaran::where('id_jadwal', $item->id_jadwal)
-                ->whereDate('waktu_scan', $today)
-                ->where('keterangan', 'like', 'Otomatis alfa%')
-                ->exists();
+            // Tentukan status jadwal berdasarkan hari dan finalize
+            $isActive = $item->isActiveToday();
+            $status = $isActive ? 'aktif' : 'tutup';
 
             return [
                 'id_jadwal'      => $item->id_jadwal,
                 'mata_pelajaran' => $item->mapel->nama_mapel ?? '-',
                 'nama_kelas'     => $item->kelas->nama_kelas ?? '-',
                 'kelas_id'       => $item->kelas->id_kelas ?? null,
-                'hari'           => $item->hari, // Use hari instead of tanggal
+                'hari'           => $item->hari,
                 'lantai'         => $item->lantai,
                 'ruang'          => $item->ruang,
                 'jam_mulai'      => $item->jam_mulai,
                 'jam_selesai'    => $item->jam_selesai,
                 'guru_id'        => $item->id_guru,
-                'status_aktif'   => !$sudahDitutup, // true jika belum ditutup
+                'status'         => $status,
+                'status_aktif'   => $isActive,
+                'last_finalized_at' => $item->last_finalized_at,
                 'idenc' => Crypt::encryptString(
                     $item->id_jadwal . '|' . $item->id_guru . '|' . $item->id_qr . '|' . now()->addMinutes(5)->format('Y-m-d H:i:s')
                 )

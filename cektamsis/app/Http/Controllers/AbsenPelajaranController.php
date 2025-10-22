@@ -214,6 +214,11 @@ public function checkIn(Request $request)
 
     Log::info("Finalize selesai, Alfa: $createdAlpha, Izin/Sakit: $createdExcused");
 
+    // Update last_finalized_at untuk menandai jadwal sudah ditutup hari ini
+    $jadwal->update([
+        'last_finalized_at' => $now,
+    ]);
+
     return back()->with('flash', [
         'success' => true,
         'message' => "Finalize berhasil. Alfa: {$createdAlpha}, Izin/Sakit: {$createdExcused}.",
