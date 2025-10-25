@@ -497,7 +497,7 @@ const submitPasswordChange = () => {
     processingPassword.value = true;
     passwordErrors.value = {};
 
-    router.put('/guru/password/update', passwordForm.value, {
+    router.put('/guru/password', passwordForm.value, {
         onSuccess: () => {
             showNotification('Password berhasil diubah!', 'success');
             closePasswordModal();
