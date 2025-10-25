@@ -43,13 +43,19 @@
                             v-for="j in jadwalData"
                             :key="j.id_jadwal"
                             @click.stop="selectJadwal(j)"
-                            class="cursor-pointer px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors duration-200"
+                            :class="[
+                                'cursor-pointer px-4 py-2 transition-colors duration-200',
+                                j.status === 'aktif'
+                                    ? 'text-gray-700 hover:bg-blue-50 hover:text-blue-700'
+                                    : 'text-gray-400 cursor-not-allowed opacity-50'
+                            ]"
                         >
                             <div class="text-sm font-medium">
                                 {{ j.mata_pelajaran }} - {{ j.nama_kelas }}
                             </div>
-                            <div class="text-xs text-gray-500">
+                            <div class="text-xs" :class="j.status === 'aktif' ? 'text-gray-500' : 'text-gray-400'">
                                 ({{ formatHari(j.hari) }} {{ j.jam_mulai }} - {{ j.jam_selesai }}) - Lt.{{ j.lantai }} R.{{ j.ruang }}
+                                <span v-if="j.status === 'tutup'" class="ml-2 font-semibold text-red-500">[Tutup]</span>
                             </div>
                         </li>
                         <li

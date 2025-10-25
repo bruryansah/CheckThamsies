@@ -62,19 +62,17 @@
                         <div class="flex items-center gap-2">
                             <h3 class="font-semibold text-gray-900">{{ schedule.mata_pelajaran }}</h3>
                             <span
-                                v-if="schedule.status_aktif"
-                                class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700"
+                                :class="[
+                                    'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium',
+                                    schedule.status === 'aktif'
+                                        ? 'bg-green-100 text-green-700'
+                                        : 'bg-red-100 text-red-700'
+                                ]"
                             >
                                 <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 8 8">
                                     <circle cx="4" cy="4" r="3" />
                                 </svg>
-                                Aktif
-                            </span>
-                            <span v-else class="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
-                                <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 8 8">
-                                    <circle cx="4" cy="4" r="3" />
-                                </svg>
-                                Ditutup
+                                {{ schedule.status === 'aktif' ? 'Aktif' : 'Tutup' }}
                             </span>
                         </div>
                         <div class="flex flex-wrap gap-2">
