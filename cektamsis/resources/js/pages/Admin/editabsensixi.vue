@@ -33,6 +33,7 @@
             jam_keluar: string | null
             status: string
             keterangan: string
+            verifikasi: string
         },
         siswa: {
             id_siswa: number
@@ -48,6 +49,7 @@
         jam_keluar: '',
         status: '',
         keterangan: '',
+        verifikasi: '',
     })
 
     // Isi form dengan data absensi saat component dimount
@@ -58,7 +60,8 @@
             form.jam_masuk = props.absensi.jam_masuk || ''
             form.jam_keluar = props.absensi.jam_keluar || ''
             form.status = props.absensi.status || ''
-            form.keterangan = props.absensi.keterangan || ''
+            form.keterangan = props.absensi. keterangan || ''
+            form.verifikasi = props.absensi. verifikasi || ''
         }
     })
 </script>
@@ -133,6 +136,8 @@
                             <option value="izin">Izin</option>
                             <option value="sakit">Sakit</option>
                             <option value="alfa">Alpa</option>
+                            <option value="pulang cepat">Pulang Cepat</option>
+
                         </select>
                         <span v-if="form.errors.status" class="text-red-500 text-sm">{{ form . errors . status }}</span>
                     </div>
@@ -145,6 +150,18 @@
                             placeholder="Tambahkan keterangan jika perlu"></textarea>
                         <span v-if="form.errors.keterangan"
                             class="text-red-500 text-sm">{{ form . errors . keterangan }}</span>
+                    </div>
+
+                                                            <!-- Verifikasi -->
+                    <div>
+                        <label class="block text-sm font-medium text-zinc-300 mb-1">Verifikasi</label>
+                        <select v-model="form.verifikasi"
+                            class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2">
+                            <option value="">-- Pilih Status --</option>
+                            <option value="approve">Approve</option>
+                            <option value="disapprove">Disapprove</option>
+                        </select>
+                        <span v-if="form.errors.status" class="text-red-500 text-sm">{{ form . errors . verifikasi }}</span>
                     </div>
 
                     <!-- Tombol -->

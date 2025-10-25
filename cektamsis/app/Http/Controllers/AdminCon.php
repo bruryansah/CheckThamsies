@@ -748,7 +748,7 @@ public function jadwal(Request $request)
     public function tambahxii()
     {
         $users = \App\Models\User::where('role', 'user')->select('id', 'name', 'email')->get();
-        $kelas = \App\Models\kelas::all(['id_kelas', 'nama_kelas']);
+        $kelas = \App\Models\kelas::all(['id_kelas', 'nama_kelas',]);
         $jurusan = \App\Models\Jurusan::all(['id_jurusan', 'nama_jurusan']);
         return inertia('Admin/tambahxii', [
             'users' => $users,
@@ -1130,21 +1130,24 @@ public function jadwal(Request $request)
         $absensi = DB::table('absensi_sekolah')
             ->join('siswa', 'absensi_sekolah.id_siswa', '=', 'siswa.id_siswa')
             ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
-            ->select('absensi_sekolah.id_absensi', 'absensi_sekolah.id_siswa', 'absensi_sekolah.tanggal', 'absensi_sekolah.jam_masuk', 'absensi_sekolah.jam_keluar', 'absensi_sekolah.status', 'absensi_sekolah.keterangan', 'siswa.nama as siswa', 'kelas.nama_kelas as kelas')
+            ->select('absensi_sekolah.id_absensi', 'absensi_sekolah.id_siswa', 'absensi_sekolah.tanggal', 'absensi_sekolah.jam_masuk', 'absensi_sekolah.jam_keluar', 'absensi_sekolah.status', 'absensi_sekolah.keterangan','absensi_sekolah.verifikasi', 'siswa.nama as siswa', 'kelas.nama_kelas as kelas')
             ->where('kelas.tingkat_kelas', 'like', '1%')
             ->when($selectedKelas, function ($query, $kelas) {
                 return $query->where('kelas.nama_kelas', $kelas);
             })
             ->when($search, function ($query, $search) {
-                return $query->where('absensi_sekolah.tanggal', 'like', '%' . $search . '%')
-                    ->orWhere('absensi_sekolah.jam_masuk', 'like', '%' . $search . '%')
-                    ->orWhere('absensi_sekolah.jam_keluar', 'like', '%' . $search . '%')
-                    ->orWhere('absensi_sekolah.status', 'like', '%' . $search . '%')
-                    ->orWhere('absensi_sekolah.keterangan', 'like', '%' . $search . '%')
-                    ->orWhere('siswa.nama', 'like', '%' . $search . '%')
-                    ->orWhere('kelas.nama_kelas', 'like', '%' . $search . '%');
+                return $query->where(function ($q) use ($search) {
+                    $q->where('absensi_sekolah.tanggal', 'like', "%{$search}%")
+                    ->orWhere('absensi_sekolah.jam_masuk', 'like', "%{$search}%")
+                    ->orWhere('absensi_sekolah.jam_keluar', 'like', "%{$search}%")
+                    ->orWhere('absensi_sekolah.status', 'like', "%{$search}%")
+                    ->orWhere('absensi_sekolah.keterangan', 'like', "%{$search}%")
+                    ->orWhere('absensi_sekolah.verifikasi', 'like', "%{$search}%")
+                    ->orWhere('siswa.nama', 'like', "%{$search}%")
+                    ->orWhere('kelas.nama_kelas', 'like', "%{$search}%");
                     //
-            })
+            });
+        })
             ->paginate(5)
             ->appends($request->query());
 
@@ -1180,8 +1183,9 @@ public function jadwal(Request $request)
             'tanggal' => 'required|date',
             'jam_masuk' => 'nullable|date_format:H:i:s',
             'jam_keluar' => 'nullable|date_format:H:i:s',
-            'status' => 'required|in:hadir,izin,sakit,alpa',
+            'status' => 'required|in:hadir,izin,sakit,alpa,pulang cepat',
             'keterangan' => 'nullable|string|max:255',
+            'verifikasi' => 'required|string|max:255',
         ]);
 
         // Update ke DB
@@ -1212,20 +1216,24 @@ public function jadwal(Request $request)
         $absensi = DB::table('absensi_sekolah')
             ->join('siswa', 'absensi_sekolah.id_siswa', '=', 'siswa.id_siswa')
             ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
-            ->select('absensi_sekolah.id_absensi', 'absensi_sekolah.id_siswa', 'absensi_sekolah.tanggal', 'absensi_sekolah.jam_masuk', 'absensi_sekolah.jam_keluar', 'absensi_sekolah.status', 'absensi_sekolah.keterangan', 'siswa.nama as siswa', 'kelas.nama_kelas as kelas')
+            ->select('absensi_sekolah.id_absensi', 'absensi_sekolah.id_siswa', 'absensi_sekolah.tanggal', 'absensi_sekolah.jam_masuk', 'absensi_sekolah.jam_keluar', 'absensi_sekolah.status', 'absensi_sekolah.keterangan','absensi_sekolah.verifikasi', 'siswa.nama as siswa', 'kelas.nama_kelas as kelas')
             ->where('kelas.tingkat_kelas', 'like', '2%')
             ->when($selectedKelas, function ($query, $kelas) {
                 return $query->where('kelas.nama_kelas', $kelas);
             })
             ->when($search, function ($query, $search) {
-                return $query->where('absensi_sekolah.tanggal', 'like', '%' . $search . '%')
-                    ->orWhere('absensi_sekolah.jam_masuk', 'like', '%' . $search . '%')
-                    ->orWhere('absensi_sekolah.jam_keluar', 'like', '%' . $search . '%')
-                    ->orWhere('absensi_sekolah.status', 'like', '%' . $search . '%')
-                    ->orWhere('absensi_sekolah.keterangan', 'like', '%' . $search . '%')
-                    ->orWhere('siswa.nama', 'like', '%' . $search . '%')
-                    ->orWhere('kelas.nama_kelas', 'like', '%' . $search . '%');
-            })
+                return $query->where(function ($q) use ($search) {
+                    $q->where('absensi_sekolah.tanggal', 'like', "%{$search}%")
+                    ->orWhere('absensi_sekolah.jam_masuk', 'like', "%{$search}%")
+                    ->orWhere('absensi_sekolah.jam_keluar', 'like', "%{$search}%")
+                    ->orWhere('absensi_sekolah.status', 'like', "%{$search}%")
+                    ->orWhere('absensi_sekolah.keterangan', 'like', "%{$search}%")
+                    ->orWhere('absensi_sekolah.verifikasi', 'like', "%{$search}%")
+                    ->orWhere('siswa.nama', 'like', "%{$search}%")
+                    ->orWhere('kelas.nama_kelas', 'like', "%{$search}%");
+                    //
+            });
+        })
             ->paginate(5)
             ->appends($request->query());
 
@@ -1261,8 +1269,10 @@ public function jadwal(Request $request)
             'tanggal' => 'required|date',
             'jam_masuk' => 'nullable|date_format:H:i:s',
             'jam_keluar' => 'nullable|date_format:H:i:s',
-            'status' => 'required|in:hadir,izin,sakit,alpa',
+            'status' => 'required|in:hadir,izin,sakit,alpa,pulang cepat',
             'keterangan' => 'nullable|string|max:255',
+            'verifikasi' => 'required|string|max:255',
+
         ]);
 
         // Update ke DB
@@ -1293,20 +1303,24 @@ public function jadwal(Request $request)
         $absensi = DB::table('absensi_sekolah')
             ->join('siswa', 'absensi_sekolah.id_siswa', '=', 'siswa.id_siswa')
             ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
-            ->select('absensi_sekolah.id_absensi', 'absensi_sekolah.id_siswa', 'absensi_sekolah.tanggal', 'absensi_sekolah.jam_masuk', 'absensi_sekolah.jam_keluar', 'absensi_sekolah.status', 'absensi_sekolah.keterangan', 'siswa.nama as siswa', 'kelas.nama_kelas as kelas')
+            ->select('absensi_sekolah.id_absensi', 'absensi_sekolah.id_siswa', 'absensi_sekolah.tanggal', 'absensi_sekolah.jam_masuk', 'absensi_sekolah.jam_keluar', 'absensi_sekolah.status', 'absensi_sekolah.keterangan','absensi_sekolah.verifikasi', 'siswa.nama as siswa', 'kelas.nama_kelas as kelas')
             ->where('kelas.tingkat_kelas', 'like', '3%')
             ->when($selectedKelas, function ($query, $kelas) {
                 return $query->where('kelas.nama_kelas', $kelas);
             })
             ->when($search, function ($query, $search) {
-                return $query->where('absensi_sekolah.tanggal', 'like', '%' . $search . '%')
-                    ->orWhere('absensi_sekolah.jam_masuk', 'like', '%' . $search . '%')
-                    ->orWhere('absensi_sekolah.jam_keluar', 'like', '%' . $search . '%')
-                    ->orWhere('absensi_sekolah.status', 'like', '%' . $search . '%')
-                    ->orWhere('absensi_sekolah.keterangan', 'like', '%' . $search . '%')
-                    ->orWhere('siswa.nama', 'like', '%' . $search . '%')
-                    ->orWhere('kelas.nama_kelas', 'like', '%' . $search . '%');
-            })
+                return $query->where(function ($q) use ($search) {
+                    $q->where('absensi_sekolah.tanggal', 'like', "%{$search}%")
+                    ->orWhere('absensi_sekolah.jam_masuk', 'like', "%{$search}%")
+                    ->orWhere('absensi_sekolah.jam_keluar', 'like', "%{$search}%")
+                    ->orWhere('absensi_sekolah.status', 'like', "%{$search}%")
+                    ->orWhere('absensi_sekolah.keterangan', 'like', "%{$search}%")
+                    ->orWhere('absensi_sekolah.verifikasi', 'like', "%{$search}%")
+                    ->orWhere('siswa.nama', 'like', "%{$search}%")
+                    ->orWhere('kelas.nama_kelas', 'like', "%{$search}%");
+                    //
+            });
+        })
             ->paginate(5)
             ->appends($request->query());
 
@@ -1328,7 +1342,7 @@ public function jadwal(Request $request)
         // Ambil daftar siswa untuk dropdown
         $siswa = DB::table('siswa')->select('id_siswa', 'nama')->orderBy('nama')->get();
 
-        return Inertia::render('Admin/editabsensixi', [
+        return Inertia::render('Admin/editabsensixii', [
             'absensi' => $absensi,
             'siswa' => $siswa,
         ]);
@@ -1342,8 +1356,10 @@ public function jadwal(Request $request)
             'tanggal' => 'required|date',
             'jam_masuk' => 'nullable|date_format:H:i:s',
             'jam_keluar' => 'nullable|date_format:H:i:s',
-            'status' => 'required|in:hadir,izin,sakit,alpa',
+            'status' => 'required|in:hadir,izin,sakit,alpa,pulang cepat',
             'keterangan' => 'nullable|string|max:255',
+            'verifikasi' => 'required|string|max:255',
+
         ]);
 
         // Update ke DB

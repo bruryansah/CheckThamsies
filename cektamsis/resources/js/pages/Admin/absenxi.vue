@@ -18,6 +18,7 @@ interface Absen {
   jam_keluar: string
   status: string
   keterangan: string | null
+  verifikasi: string
   siswa: string
   kelas: string
 }
@@ -97,6 +98,7 @@ const performSearch = () => {
                 <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Jam Keluar</th>
                 <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Status</th>
                 <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Ketarangan</th>
+                <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300">Verifikasi</th>
                 <th class="px-6 py-3 text-center text-xs font-semibold uppercase text-zinc-300 w-32">Aksi</th>
               </tr>
             </thead>
@@ -110,6 +112,7 @@ const performSearch = () => {
                 <td class="px-6 py-4 text-center">{{ ab.jam_keluar || 'Kosong'}}</td>
                 <td class="px-6 py-4 text-center">{{ ab.status }}</td>
                 <td class="px-6 py-4 text-center">{{ ab.keterangan || 'Tidak ada'}}</td>
+                <td class="px-6 py-4 text-center">{{ ab.verifikasi }}</td>
                 <td class="px-6 py-4 text-center">
                   <div class="flex justify-center gap-2">
                     <TextLink

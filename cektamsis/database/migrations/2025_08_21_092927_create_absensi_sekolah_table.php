@@ -23,6 +23,7 @@ return new class extends Migration
             $table->string('longitude_out', 50)->nullable();
             $table->enum('status', ['hadir', 'izin','terlambat', 'sakit', 'alfa']);
             $table->string('keterangan');
+            $table->enum('verifikasi', ['Cek', 'approve','disapprove']);
             $table->timestamps();
 
             $table->foreign('id_siswa')->references('id_siswa')->on('siswa');

@@ -265,7 +265,7 @@ class AbsenController extends Controller
         }
 
         $now = Carbon::now('Asia/Jakarta');
-        $cutoffTime = Carbon::today('Asia/Jakarta')->setHour(13)->setMinute(30);
+        $cutoffTime = Carbon::today('Asia/Jakarta')->setHour(13)->setMinute(39);
         $isEarlyCheckout = $now->lessThan($cutoffTime);
 
         $rules = [
@@ -284,6 +284,8 @@ class AbsenController extends Controller
             'latitude_out' => $validated['latitude'],
             'longitude_out' => $validated['longitude'],
             'keterangan' => $isEarlyCheckout ? $validated['keterangan'] : $absensi->keterangan,
+            'status' => $isEarlyCheckout ? 'pulang cepat' : $absensi->status,
+
         ]);
 
         Log::info('Check-out berhasil:', [
