@@ -356,7 +356,7 @@ const checkOut = () => {
     const now = new Date();
     const hours = now.getHours();
     const minutes = now.getMinutes();
-    const isEarlyCheckout = hours < 13 || (hours === 13 && minutes < 30);
+    const isEarlyCheckout = hours < 13 || (hours === 13 && minutes < 39);
 
     if (isEarlyCheckout) {
         showEarlyCheckoutModal.value = true;

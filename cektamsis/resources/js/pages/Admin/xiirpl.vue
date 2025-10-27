@@ -63,6 +63,8 @@ const filterKelas = (kelas: string) => {
 const searchData = () => {
   router.get(route('siswaxii'), { search: searchQuery.value, kelas: props.selectedKelas }, { preserveState: true })
 }
+
+
 </script>
 
 <template>

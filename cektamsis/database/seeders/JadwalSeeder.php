@@ -14,7 +14,7 @@ class JadwalSeeder extends Seeder
     {
         $now = Carbon::now();
 
-        // Daftar mapel (ID harus sesuai MapelSeeder yang kamu punya)
+        // Daftar mata pelajaran (ID harus sesuai dengan MapelSeeder)
         $mapel = [
             1 => 'Bahasa Indonesia',
             2 => 'Bahasa Inggris',
@@ -32,122 +32,105 @@ class JadwalSeeder extends Seeder
             14 => 'Samsung Tech Institute',
         ];
 
-        // Hanya seminggu: Senin - Jumat
+        // Hari-hari sekolah
         $hariList = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat'];
 
         // Definisi ruang per lantai (total 25 ruang)
         $ruangan = [
-            1 => [1, 2, 3, 4],                 // lantai 1 (4 ruang)
-            2 => [5, 6, 7, 8, 9, 10, 11],      // lantai 2 (7 ruang)
-            3 => [12, 13, 14, 15, 16, 17, 18], // lantai 3 (7 ruang)
-            4 => [19, 20, 21, 22, 23, 24, 25], // lantai 4 (7 ruang)
+            1 => [1, 2, 3, 4],                 // lantai 1
+            2 => [5, 6, 7, 8, 9, 10, 11],      // lantai 2
+            3 => [12, 13, 14, 15, 16, 17, 18], // lantai 3
+            4 => [19, 20, 21, 22, 23, 24, 25], // lantai 4
         ];
 
-        $insertData = [];
-
-        // Ambil semua kelas dari tabel kelas
+        // Ambil semua kelas dari database
         $kelasList = Kelas::all();
 
-        // Ambil semua guru
-        $guruList = Guru::all();
-
-        if ($guruList->isEmpty()) {
-            return; // stop kalau tidak ada guru
-        }
-
-        // Mapping guru -> 2 mapel random
-        $guruMapel = [];
-        foreach ($guruList as $guru) {
-            $guruMapel[$guru->id_guru] = array_rand($mapel, 2);
-            // array_rand bisa return int kalau jumlahnya 1, jadi pastikan jadi array
-            if (!is_array($guruMapel[$guru->id_guru])) {
-                $guruMapel[$guru->id_guru] = [$guruMapel[$guru->id_guru]];
-            }
-        }
-
-        // Batasi total jadwal mingguan
-        $maxTotal = 50;
+        $insertData = [];
+        $maxTotal = 50; // total jadwal yang ingin di-generate
         $totalCount = 0;
 
-        foreach ($hariList as $hari) {
-            $jadwalRuangan = []; // tracking ruang per hari
+        // Tracking jadwal ruangan agar tidak bentrok
+        $jadwalRuangan = [];
 
-            foreach ($kelasList as $kelas) {
-                $mulai = Carbon::createFromTime(6, 45, 0);
+        while ($totalCount < $maxTotal) {
+            $hari = $hariList[array_rand($hariList)]; // hari acak
+            $kelas = $kelasList->random(); // kelas acak
 
-                while ($mulai->lt(Carbon::createFromTime(15, 10, 0))) {
-                    if ($totalCount >= $maxTotal) {
-                        break 3; // keluar semua loop
-                    }
+            $mulai = Carbon::createFromTime(6, 45, 0)
+                ->addMinutes(rand(0, 450)); // waktu mulai acak antara 06:45 dan 14:15
+            $durasi = rand(45, 60);
+            $selesai = $mulai->copy()->addMinutes($durasi);
 
-                    // Durasi pelajaran acak (45 - 60 menit)
-                    $durasi = rand(45, 60);
-                    $selesai = $mulai->copy()->addMinutes($durasi);
+            // pastikan tidak lewat jam 15:10
+            if ($selesai->gt(Carbon::createFromTime(15, 10, 0))) {
+                continue;
+            }
 
-                    if ($selesai->gt(Carbon::createFromTime(15, 10, 0))) {
-                        break;
-                    }
+            // cari ruang kosong
+            $tries = 0;
+            $found = false;
 
-                    // Cari ruang kosong
-                    $found = false;
-                    $tries = 0;
-                    while ($tries < 50) {
-                        $lantaiRandom = rand(1, 4);
-                        $ruangCandidates = $ruangan[$lantaiRandom];
-                        $ruangRandom = $ruangCandidates[array_rand($ruangCandidates)];
+            while ($tries < 50) {
+                $lantaiRandom = rand(1, 4);
+                $ruangCandidates = $ruangan[$lantaiRandom];
+                $ruangRandom = $ruangCandidates[array_rand($ruangCandidates)];
 
-                        $bentrok = false;
-                        if (isset($jadwalRuangan[$ruangRandom])) {
-                            foreach ($jadwalRuangan[$ruangRandom] as $slot) {
-                                if ($mulai->lt($slot['selesai']) && $selesai->gt($slot['mulai'])) {
-                                    $bentrok = true;
-                                    break;
-                                }
-                            }
-                        }
-
-                        if (!$bentrok) {
-                            $jadwalRuangan[$ruangRandom][] = [
-                                'mulai' => $mulai->copy(),
-                                'selesai' => $selesai->copy(),
-                            ];
-                            $lantai = $lantaiRandom;
-                            $ruang = $ruangRandom;
-                            $found = true;
+                // cek bentrok ruangan di jam yang sama
+                $bentrok = false;
+                if (isset($jadwalRuangan[$hari][$ruangRandom])) {
+                    foreach ($jadwalRuangan[$hari][$ruangRandom] as $slot) {
+                        if ($mulai->lt($slot['selesai']) && $selesai->gt($slot['mulai'])) {
+                            $bentrok = true;
                             break;
                         }
-
-                        $tries++;
                     }
-
-                    if (!$found) {
-                        break;
-                    }
-
-                    // Ambil mapel acak
-                    $id_mapel = array_rand($mapel);
-
-                    $insertData[] = [
-                        'id_guru'     => $guru->id_guru,
-                        'id_mapel'    => $id_mapel,
-                        'id_kelas'    => $kelas->id_kelas,
-                        'hari'        => $hari,
-                        'jam_mulai'   => $mulai->format('H:i:s'),
-                        'jam_selesai' => $selesai->format('H:i:s'),
-                        'lantai'      => $lantai,
-                        'ruang'       => $ruang,
-                        'created_at'  => $now,
-                        'updated_at'  => $now,
-                    ];
-
-                    $totalCount++;
-                    $mulai = $selesai;
                 }
+
+                if (!$bentrok) {
+                    $jadwalRuangan[$hari][$ruangRandom][] = [
+                        'mulai' => $mulai->copy(),
+                        'selesai' => $selesai->copy(),
+                    ];
+                    $lantai = $lantaiRandom;
+                    $ruang = $ruangRandom;
+                    $found = true;
+                    break;
+                }
+
+                $tries++;
             }
+
+            if (!$found) {
+                continue; // kalau gak dapat ruang kosong, coba generate ulang
+            }
+
+            // pilih mapel dan guru acak
+            $id_mapel = array_rand($mapel);
+            $id_guru = Guru::inRandomOrder()->first()->id_guru;
+
+            // simpan data
+            $insertData[] = [
+                'id_guru'     => $id_guru,
+                'id_mapel'    => $id_mapel,
+                'id_kelas'    => $kelas->id_kelas,
+                'hari'        => $hari,
+                'jam_mulai'   => $mulai->format('H:i:s'),
+                'jam_selesai' => $selesai->format('H:i:s'),
+                'lantai'      => $lantai,
+                'ruang'       => $ruang,
+                'created_at'  => $now,
+                'updated_at'  => $now,
+            ];
+
+            $totalCount++;
         }
 
+        // Masukkan ke database
         if (!empty($insertData)) {
             DB::table('jadwal')->insert($insertData);
         }
+
+        echo "✅ Seeder Jadwal selesai. Total jadwal dibuat: {$totalCount}\n";
     }
 }

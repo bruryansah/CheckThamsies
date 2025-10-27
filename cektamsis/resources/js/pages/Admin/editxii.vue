@@ -73,6 +73,46 @@
         }
     });
 
+    watch(
+    () => form.id_kelas,
+    (newKelasId) => {
+        if (newKelasId) {
+            const selectedKelas = props.kelas.find((k) => k.id_kelas === Number(newKelasId));
+            if (selectedKelas) {
+                const namaKelas = selectedKelas.nama_kelas.toUpperCase();
+
+                // Peta kode singkat kelas ke nama jurusan di database
+                const jurusanMapping: Record<string, string> = {
+                    RPL: 'Rekayasa Perangkat Lunak',
+                    TKJ: 'Teknik Komputer dan Jaringan',
+                    TBSM: 'Teknik Bisnis Sepeda Motor',
+                    TITL: 'Teknik Instalasi Tenaga Listrik',
+                    TP: 'Teknik Pemesinan',
+                    TKR: 'Teknik Kendaraan Ringan',
+                };
+
+                // Cari jurusan berdasarkan kode yang muncul di nama_kelas
+                const kode = Object.keys(jurusanMapping).find((k) => namaKelas.includes(k));
+
+                if (kode) {
+                    const namaJurusan = jurusanMapping[kode];
+                    const jurusan = props.jurusan.find((j) => j.nama_jurusan.toLowerCase() === namaJurusan.toLowerCase());
+                    if (jurusan) {
+                        form.id_jurusan = jurusan.id_jurusan;
+                    } else {
+                        form.id_jurusan = '';
+                    }
+                } else {
+                    // Jika nama kelas tidak mengandung kode jurusan apa pun
+                    form.id_jurusan = '';
+                }
+            }
+        } else {
+            form.id_jurusan = '';
+        }
+    },
+);
+
     // Auto isi nama & email kalau ganti user
     watch(() => form.user_id, (newId) => {
         if (newId) {
@@ -142,7 +182,7 @@
                         <select v-model="form.id_kelas"
                             class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2 focus:ring focus:ring-green-500 focus:outline-none">
                             <option value="">-- Pilih Kelas --</option>
-                            <option v-for="k in props.kelas" :key="k.id_kelas" :value="k.id_kelas">
+                            <option v-for="k in props.kelas.filter((k) => k.nama_kelas.includes('XII'))" :key="k.id_kelas" :value="k.id_kelas">
                                 {{ k . nama_kelas }}
                             </option>
                         </select>
