@@ -514,6 +514,14 @@ const generateQRCode = async () => {
         showNotification('Silakan pilih jadwal terlebih dahulu!', 'error');
         return;
     }
+    
+    // Cek status jadwal
+    const selectedJadwalObj = jadwalData.value.find(j => String(j.id_jadwal) === String(selectedJadwal.value));
+    if (selectedJadwalObj && selectedJadwalObj.status === 'tutup') {
+        showNotification('Jadwal ini sudah ditutup. Tidak bisa generate QR Code.', 'error');
+        return;
+    }
+    
     if (isSelectedFinalizedToday.value) {
         showNotification('Absen untuk jadwal ini sudah ditutup hari ini.', 'error');
         return;

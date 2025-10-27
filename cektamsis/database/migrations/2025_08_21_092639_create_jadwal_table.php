@@ -22,6 +22,8 @@ return new class extends Migration
             $table->string('ruang')->default('-');
             $table->time('jam_mulai');
             $table->time('jam_selesai');
+            $table->enum('status', ['aktif', 'tutup'])->default('aktif');
+            $table->dateTime('last_finalized_at')->nullable();
             $table->timestamps();
 
             $table->foreign('id_guru')->references('id_guru')->on('guru');
