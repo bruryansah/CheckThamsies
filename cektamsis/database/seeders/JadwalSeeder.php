@@ -47,7 +47,7 @@ class JadwalSeeder extends Seeder
         $kelasList = Kelas::all();
 
         $insertData = [];
-        $maxTotal = 50; // total jadwal yang ingin di-generate
+        $maxTotal = 100; // total jadwal yang ingin di-generate
         $totalCount = 0;
 
         // Tracking jadwal ruangan agar tidak bentrok
@@ -71,7 +71,7 @@ class JadwalSeeder extends Seeder
             $tries = 0;
             $found = false;
 
-            while ($tries < 50) {
+            while ($tries < 100) {
                 $lantaiRandom = rand(1, 4);
                 $ruangCandidates = $ruangan[$lantaiRandom];
                 $ruangRandom = $ruangCandidates[array_rand($ruangCandidates)];
