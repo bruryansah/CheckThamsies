@@ -348,7 +348,19 @@ const dynamicStats = computed(() => {
 });
 
 const recentAttendance = computed(() => {
+    // Dapatkan hari ini dalam format lowercase (senin, selasa, dll)
+    const todayHari = getTodayHariLower();
+    const todayStr = new Date().toISOString().split('T')[0];
+    
     return [...filteredAbsensiData.value]
+        // Filter: hanya data hari ini (tanggal dan hari harus sesuai)
+        .filter((a) => {
+            const recordDate = a.date || a.tanggal;
+            const recordHari = normalizeHari(a.hari || '');
+            
+            // Harus tanggal hari ini DAN hari sesuai
+            return recordDate === todayStr && recordHari === todayHari;
+        })
         .sort((a, b) => new Date(b.tanggal + ' ' + b.waktu) - new Date(a.tanggal + ' ' + a.waktu))
         .slice(0, 5)
         .map((attendance) => processAttendanceStatus(attendance))
