@@ -246,32 +246,6 @@ const features = ref([
                 </div>
             </section>
 
-            <!-- Current Time Display -->
-            <section class="time-section animate-on-scroll">
-                <div class="time-container">
-                    <div class="time-icon">🕐</div>
-                    <div class="time-info">
-                        <div class="current-time">
-                            {{ currentTime.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) }}
-                        </div>
-                        <div class="current-date">
-                            {{
-                                currentTime.toLocaleDateString('id-ID', {
-                                    weekday: 'long',
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric',
-                                })
-                            }}
-                        </div>
-                    </div>
-                    <div class="attendance-status">
-                        <div class="status-indicator active"></div>
-                        <span>Sistem Aktif</span>
-                    </div>
-                </div>
-            </section>
-
             <!-- How It Works Section -->
             <section class="process-section animate-on-scroll">
                 <div class="section-container">
