@@ -34,7 +34,7 @@ function submitForm() {
     form.post(route('kontak.store'), {
         onSuccess: () => {
             form.reset();
-            submitMessage.value = 'Pesan Anda berhasil dikirim! Tim kami akan merespons dalam 24 jam.';
+            submitMessage.value = 'Pesan Anda berhasil dikirim!';
 
             setTimeout(() => {
                 submitMessage.value = '';

@@ -8,7 +8,7 @@
         </h2>
 
         <!-- Dropdown Pilih Jadwal -->
-        <div class="mb-6 relative">
+        <div class="mb-6 relative" ref="dropdownContainer">
             <label class="mb-2 block text-sm font-semibold text-gray-700 flex items-center">
                 <svg class="mr-2 h-4 w-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -137,7 +137,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted, onUnmounted } from 'vue';
 
 const props = defineProps({
     selectedJadwal: String,
@@ -151,14 +151,24 @@ const emit = defineEmits(['update:selectedJadwal', 'generateQR', 'showAttendance
 
 const isOpen = ref(false);
 const selectedLabel = ref('');
+const dropdownContainer = ref(null);
 
 // Toggle dropdown
 const toggleDropdown = () => {
     isOpen.value = !isOpen.value;
 };
 
+// Close dropdown ketika klik di luar
+const handleClickOutside = (event) => {
+    if (dropdownContainer.value && !dropdownContainer.value.contains(event.target)) {
+        isOpen.value = false;
+    }
+};
+
 // Saat pilih jadwal
 const selectJadwal = (jadwal) => {
+    if (jadwal.status === 'tutup') return; // Jangan pilih jadwal yang tutup
+    
     // Kirimkan id_jadwal asli agar backend bisa menemukan jadwal dengan benar
     emit('update:selectedJadwal', String(jadwal.id_jadwal));
     selectedLabel.value = `${jadwal.mata_pelajaran} - ${jadwal.nama_kelas} (${props.formatHari(jadwal.hari)} ${jadwal.jam_mulai} - ${jadwal.jam_selesai})`;
@@ -172,24 +182,45 @@ watch(
         if (!val) selectedLabel.value = '';
     }
 );
+
+// Lifecycle hooks
+onMounted(() => {
+    document.addEventListener('click', handleClickOutside);
+});
+
+onUnmounted(() => {
+    document.removeEventListener('click', handleClickOutside);
+});
 </script>
 
-<style>
-  /* Batasi tinggi dropdown */
-  select {
-    max-height: 160px; /* kira-kira cukup untuk 4 item */
-    overflow-y: auto;
-  }
+<style scoped>
+/* Transition untuk dropdown */
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+    transition: all 0.2s ease;
+}
 
-  /* Scrollbar halus dan elegan */
-  select::-webkit-scrollbar {
+.fade-slide-enter-from {
+    opacity: 0;
+    transform: translateY(-10px);
+}
+
+.fade-slide-leave-to {
+    opacity: 0;
+    transform: translateY(-10px);
+}
+
+/* Scrollbar halus dan elegan */
+ul::-webkit-scrollbar {
     width: 6px;
-  }
-  select::-webkit-scrollbar-thumb {
+}
+
+ul::-webkit-scrollbar-thumb {
     background-color: rgba(156, 163, 175, 0.6);
     border-radius: 8px;
-  }
-  select::-webkit-scrollbar-thumb:hover {
+}
+
+ul::-webkit-scrollbar-thumb:hover {
     background-color: rgba(107, 114, 128, 0.8);
-  }
+}
 </style>
