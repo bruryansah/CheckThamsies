@@ -227,27 +227,26 @@ import RecentAttendance from '@/components/Guru/RecentAttendance.vue';
 import StatisticsCard from '@/components/Guru/StatisticsCard.vue';
 import AttendanceModal from '@/components/Guru/AttendanceModal.vue';
 
-// Props
+// Props - tambahkan absensiHistory
 const props = defineProps({
     auth: Object,
     flash: Object,
     guru: Object,
     jadwalData: { type: Array, default: () => [] },
-    absensiData: { type: Array, default: () => [] },
+    absensiData: { type: Array, default: () => [] },      // Untuk hari ini
+    absensiHistory: { type: Array, default: () => [] },   // Untuk semua waktu
     kelasData: { type: Array, default: () => [] },
     lantai: { type: Number, default: 0 },
     ruang: { type: Number, default: 0 },
 });
 
-// Setup Composables
-const { showNotification, toastMessage, toastType, showToast } = useNotification();
-
 // Reactive data
 const jadwalData = ref(Array.isArray(props.jadwalData) ? props.jadwalData : []);
-const absensiData = ref(Array.isArray(props.absensiData) ? props.absensiData : []);
+const absensiData = ref(Array.isArray(props.absensiData) ? props.absensiData : []); // Hari ini
+const absensiHistory = ref(Array.isArray(props.absensiHistory) ? props.absensiHistory : []); // Semua waktu
 const kelasData = ref(Array.isArray(props.kelasData) ? props.kelasData : []);
 
-// Use Attendance Composable
+// Update useAttendance untuk menggunakan absensiData (hari ini)
 const {
     formatHari,
     getTodayHariLower,
@@ -255,7 +254,7 @@ const {
     processAttendanceStatus,
     getAttendanceStatusClass,
     filteredAbsensiData,
-} = useAttendance(jadwalData, absensiData);
+} = useAttendance(jadwalData, absensiData); // Gunakan absensiData untuk Stats & Recent
 
 // Use Schedule Composable
 const {
@@ -362,37 +361,37 @@ const recentAttendance = computed(() => {
         });
 });
 
+// attendanceStats tetap menggunakan filteredAbsensiData (hari ini)
 const attendanceStats = computed(() => {
+    // Filter hanya untuk hari ini
+    const todayStr = new Date().toISOString().split('T')[0];
     const todayData = filteredAbsensiData.value.filter((a) => {
-        const recordDate = a.tanggal || a.date;
-        return recordDate === today || recordDate === new Date().toLocaleDateString('en-CA');
+        const recordDate = a.date || a.tanggal;
+        return recordDate === todayStr;
     });
 
-    const dataToProcess = todayData.length > 0 ? todayData : filteredAbsensiData.value;
-    const total = dataToProcess.length || 1;
+    const total = todayData.length || 1;
 
     let hadirCount = 0, terlambatCount = 0, alphaCount = 0, izinCount = 0, sakitCount = 0;
     const lateMap = {};
 
-    dataToProcess.forEach((a) => {
+    // Proses data hari ini saja
+    todayData.forEach((a) => {
         const processedAttendance = processAttendanceStatus(a);
         const status = processedAttendance.displayStatus.toLowerCase();
-
-        if (status === 'hadir') hadirCount++;
-        else if (status === 'terlambat') terlambatCount++;
-        else if (status === 'alfa') alphaCount++;
-
         const originalStatus = (a.status || '').toLowerCase();
-        if (originalStatus === 'izin') izinCount++;
-        else if (originalStatus === 'sakit') sakitCount++;
-    });
 
-    filteredAbsensiData.value.forEach((a) => {
-        const processedAttendance = processAttendanceStatus(a);
-        const studentName = a.name || a.nama_siswa || 'Unknown';
-        if (processedAttendance.displayStatus.toLowerCase() === 'terlambat') {
+        // Hitung berdasarkan status yang diproses
+        if (status === 'hadir') hadirCount++;
+        else if (status === 'terlambat') {
+            terlambatCount++;
+            // Untuk siswa sering terlambat
+            const studentName = a.name || a.nama_siswa || 'Unknown';
             lateMap[studentName] = (lateMap[studentName] || 0) + 1;
         }
+        else if (status === 'alfa' || status === 'alpha') alphaCount++;
+        else if (status === 'izin' || originalStatus === 'izin') izinCount++;
+        else if (status === 'sakit' || originalStatus === 'sakit') sakitCount++;
     });
 
     const topLateStudents = Object.entries(lateMap)
@@ -450,7 +449,7 @@ const isSelectedFinalizedToday = computed(() => {
 });
 
 const filteredAttendanceData = computed(() => {
-    let data = filteredAbsensiData.value;
+    let data = absensiHistory.value; // Gunakan history untuk modal
 
     if (attendanceFilter.value.class) {
         data = data.filter((a) => (a.class || a.nama_kelas) === attendanceFilter.value.class);
