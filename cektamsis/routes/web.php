@@ -130,6 +130,27 @@ Route::put('/absenxii/update/{id}', [AdminCon::class, 'updateabsenxii']);
 Route::get('/absenxii/delete/{id}', [AdminCon::class, 'destroyabsenxii'])->name('absenxii.hapus');
 // Absen Siswa XII Route End
 
+// Absen pelajaran Siswa X Route Start
+Route::get('/pelajaranx', [AdminCon::class, 'pelajaranx'])->name('pelajaranx');
+Route::get('/pelajaranx/edit/{id}', [AdminCon::class, 'editpelajaranx'])->name('pelajaranx.edit');
+Route::put('/pelajaranx/update/{id}', [AdminCon::class, 'updatepelajaranx']);
+Route::get('/pelajaranx/delete/{id}', [AdminCon::class, 'destroypelajaranx'])->name('pelajaranx.hapus');
+// Absen pelajaran Siswa X Route End
+
+// Absen pelajaran Siswa XI Route Start
+Route::get('/pelajaranxi', [AdminCon::class, 'pelajaranxi'])->name('pelajaranxi');
+Route::get('/pelajaranxi/edit/{id}', [AdminCon::class, 'editpelajaranxi'])->name('pelajaranxi.edit');
+Route::put('/pelajaranxi/update/{id}', [AdminCon::class, 'updatepelajaranxi']);
+Route::get('/pelajaranxi/delete/{id}', [AdminCon::class, 'destroypelajaranxi'])->name('pelajaranxi.hapus');
+// Absen pelajaran Siswa XI Route End
+
+// Absen pelajaran Siswa XII Route Start
+Route::get('/pelajaranxii', [AdminCon::class, 'pelajaranxii'])->name('pelajaranxii');
+Route::get('/pelajaranxii/edit/{id}', [AdminCon::class, 'editpelajaranxii'])->name('pelajaranxii.edit');
+Route::put('/pelajaranxii/update/{id}', [AdminCon::class, 'updatepelajaranxii']);
+Route::get('/pelajaranxii/delete/{id}', [AdminCon::class, 'destroypelajaranxii'])->name('pelajaranxii.hapus');
+// Absen pelajaran Siswa XII Route End
+
 //Aksi Cepat
 Route::get('/siswa/tambah', [AdminCon::class, 'create'])->name(name: 'siswa.tambah');
 

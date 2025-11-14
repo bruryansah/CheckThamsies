@@ -12,7 +12,7 @@
                             <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
                             </svg>
-                        </div>
+                        </div>  
                         <div>
                             <h1 class="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-xl font-bold text-transparent">Dashboard Guru</h1>
                             <p class="text-sm text-gray-500">Selamat datang, {{ teacherName }}</p>
@@ -351,13 +351,13 @@ const recentAttendance = computed(() => {
     // Dapatkan hari ini dalam format lowercase (senin, selasa, dll)
     const todayHari = getTodayHariLower();
     const todayStr = new Date().toISOString().split('T')[0];
-    
+
     return [...filteredAbsensiData.value]
         // Filter: hanya data hari ini (tanggal dan hari harus sesuai)
         .filter((a) => {
             const recordDate = a.date || a.tanggal;
             const recordHari = normalizeHari(a.hari || '');
-            
+
             // Harus tanggal hari ini DAN hari sesuai
             return recordDate === todayStr && recordHari === todayHari;
         })
@@ -502,7 +502,7 @@ const closePasswordModal = () => {
     passwordForm.value = { current_password: '', new_password: '', new_password_confirmation: '' };
     passwordErrors.value = {};
 };
-    
+
 const submitPasswordChange = () => {
     if (processingPassword.value) return;
     processingPassword.value = true;
@@ -525,14 +525,14 @@ const generateQRCode = async () => {
         showNotification('Silakan pilih jadwal terlebih dahulu!', 'error');
         return;
     }
-    
+
     // Cek status jadwal
     const selectedJadwalObj = jadwalData.value.find(j => String(j.id_jadwal) === String(selectedJadwal.value));
     if (selectedJadwalObj && selectedJadwalObj.status === 'tutup') {
         showNotification('Jadwal ini sudah ditutup. Tidak bisa generate QR Code.', 'error');
         return;
     }
-    
+
     if (isSelectedFinalizedToday.value) {
         showNotification('Absen untuk jadwal ini sudah ditutup hari ini.', 'error');
         return;

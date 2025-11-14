@@ -31,6 +31,7 @@ const sidebarContentRef = ref<HTMLElement | null>(null);
 const activeDropdowns = computed(() => {
   const siswaRoutes = ["/siswax", "/siswaxi", "/siswaxii"];
   const absenRoutes = ["/absenx", "/absenxi", "/absenxii"];
+  const pelajaranRoutes = ["/pelajaranx", "/pelajaranxi", "/pelajaranxii"];
 
   const autoOpen: string[] = [];
 
@@ -133,12 +134,21 @@ const mainNavItems = [
     ],
   },
   {
-    title: "Data Absensi",
+    title: "Absen Sekolah",
     icon: GraduationCap,
     children: [
       { title: "Kelas X", href: "/absenx" },
       { title: "Kelas XI", href: "/absenxi" },
       { title: "Kelas XII", href: "/absenxii" },
+    ],
+  },
+  {
+    title: "Absen Pelajaran",
+    icon: GraduationCap,
+    children: [
+      { title: "Kelas X", href: "/pelajaranx" },
+      { title: "Kelas XI", href: "/pelajaranxi" },
+      { title: "Kelas XII", href: "/pelajaranxii" },
     ],
   },
 ];

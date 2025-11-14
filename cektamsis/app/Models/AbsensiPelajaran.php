@@ -16,6 +16,7 @@ class AbsensiPelajaran extends Model
         'waktu_scan',
         'status',
         'keterangan',
+        'verifikasi',
     ];
 
     public function jadwal()

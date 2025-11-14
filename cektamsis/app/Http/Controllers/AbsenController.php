@@ -20,7 +20,7 @@ class AbsenController extends Controller
         $user = Auth::user();
         $siswa = Siswa::where('user_id', $user->id)->with('kelas')->first();
 
-        // Default values jika siswa tidak ditemukan
+        // Default values
         $kehadiransekolah = 0;
         $totalAbsensi = 0;
         $persentaseKehadiran = 0;
@@ -29,6 +29,7 @@ class AbsenController extends Controller
         $totalAlfa = 0;
         $recentAttendance = [];
         $jadwalData = [];
+        $absensiSekolahData = [];
 
         if ($siswa) {
             // Statistik absensi sekolah
@@ -36,18 +37,20 @@ class AbsenController extends Controller
             $kehadiransekolah = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)
                 ->whereIn('status', ['hadir', 'terlambat'])
                 ->count();
-            $totalSakit = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)
-                ->where('status', 'sakit')
-                ->count();
-            $totalIzin = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)
-                ->where('status', 'izin')
-                ->count();
-            $totalAlfa = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)
-                ->where('status', 'alfa')
-                ->count();
+            $totalSakit = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)->where('status', 'sakit')->count();
+            $totalIzin = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)->where('status', 'izin')->count();
+            $totalAlfa = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)->where('status', 'alfa')->count();
+
             $persentaseKehadiran = $totalAbsensi > 0 ? round(($kehadiransekolah / $totalAbsensi) * 100, 1) : 0;
 
-            // Recent attendance pelajaran
+            // 🔹 Ambil semua data absensi sekolah (untuk popup)
+            $absensiSekolahData = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)->select('tanggal', 'jam_masuk', 'jam_keluar', 'status', 'keterangan', 'verifikasi')->orderBy('tanggal', 'desc')->get();
+            Log::info('Absensi sekolah ditemukan:', [
+                'id_siswa' => $siswa->id_siswa,
+                'count' => count($absensiSekolahData),
+            ]);
+
+            // 🔹 Recent attendance pelajaran
             $recentAttendance = AbsensiPelajaran::with(['jadwal.mapel'])
                 ->where('id_siswa', $siswa->id_siswa)
                 ->orderBy('waktu_scan', 'desc')
@@ -58,34 +61,30 @@ class AbsenController extends Controller
                         'name' => $attendance->jadwal->mapel->nama_mapel ?? 'Unknown',
                         'time' => $attendance->waktu_scan ? $attendance->waktu_scan->format('d-M-Y H:i') : 'N/A',
                         'status' => ucfirst($attendance->status ?? 'N/A'),
+                        'verifikasi' => $attendance->verifikasi,
                         'color' => match ($attendance->status) {
                             'hadir' => 'green',
                             'terlambat' => 'orange',
                             'izin', 'sakit' => 'purple',
                             'alfa' => 'red',
-                            default => 'gray'
+                            default => 'gray',
                         },
                     ];
-                })->toArray();
+                })
+                ->toArray();
 
-            // Ambil jadwal untuk kelas siswa dan hari ini
+            // 🔹 Jadwal hari ini
             $today = Carbon::today('Asia/Jakarta');
-            $hari = strtolower($today->locale('id')->dayName); // misal: "selasa"
-            $jadwalData = Jadwal::with(['mapel', 'kelas','guru'])
+            $hari = strtolower($today->locale('id')->dayName);
+
+            $jadwalData = Jadwal::with(['mapel', 'kelas', 'guru'])
                 ->where('id_kelas', $siswa->id_kelas)
                 ->whereRaw('LOWER(hari) = ?', [$hari])
                 ->get()
                 ->map(function ($item) use ($today) {
-                    // Buat idenc dengan format id_kelas|id_guru|id_qr|expiredAt
-                    $idenc = Crypt::encryptString(
-                        "{$item->id_kelas}|{$item->id_guru}|{$item->id_qr}|" . now()->addMinutes(5)->format('Y-m-d H:i:s')
-                    );
+                    $idenc = Crypt::encryptString("{$item->id_kelas}|{$item->id_guru}|{$item->id_qr}|" . now()->addMinutes(5)->format('Y-m-d H:i:s'));
 
-                    // Cek apakah jadwal sudah ditutup
-                    $sudahDitutup = AbsensiPelajaran::where('id_jadwal', $item->id_jadwal)
-                        ->whereDate('waktu_scan', $today)
-                        ->where('keterangan', 'like', 'Otomatis alfa%')
-                        ->exists();
+                    $sudahDitutup = AbsensiPelajaran::where('id_jadwal', $item->id_jadwal)->whereDate('waktu_scan', $today)->where('keterangan', 'like', 'Otomatis alfa%')->exists();
 
                     return [
                         'id' => $item->id_jadwal,
@@ -100,21 +99,11 @@ class AbsenController extends Controller
                         'ruang' => $item->ruang,
                         'status_aktif' => !$sudahDitutup,
                     ];
-                })->toArray();
+                })
+                ->toArray();
 
-            // Log untuk debugging
-            Log::info('Jadwal Data untuk Siswa Dashboard:', [
-                'siswa_id' => $siswa->id_siswa,
-                'id_kelas' => $siswa->id_kelas,
-                'hari' => $hari,
-                'jadwal_count' => count($jadwalData),
-                'jadwal_sample' => $jadwalData ? array_slice($jadwalData, 0, 2) : [],
-            ]);
-
-            // Logika alfa otomatis untuk absensi sekolah
-            $absensiHariIni = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)
-                ->whereDate('tanggal', $today)
-                ->first();
+            // 🔹 Log alfa otomatis
+            $absensiHariIni = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)->whereDate('tanggal', $today)->first();
 
             if (!$absensiHariIni) {
                 $now = Carbon::now('Asia/Jakarta');
@@ -130,6 +119,7 @@ class AbsenController extends Controller
                         'longitude_in' => 0,
                         'status' => 'alfa',
                         'keterangan' => 'Absen otomatis alfa setelah 13:40',
+                        'verifikasi' => '-',
                     ]);
 
                     Log::info('Absen alfa otomatis diterapkan:', [
@@ -142,15 +132,18 @@ class AbsenController extends Controller
             Log::error('Siswa tidak ditemukan untuk user_id:', ['user_id' => $user->id]);
         }
 
+        // 🔹 Kirim semua data ke Inertia (termasuk absensiSekolahData baru)
         return Inertia::render('User/Dashboard', [
             'auth' => [
                 'user' => $user,
-                'siswa' => $siswa ? [
-                    'id_siswa' => $siswa->id_siswa,
-                    'nama' => $siswa->nama,
-                    'id_kelas' => $siswa->id_kelas,
-                    'nama_kelas' => $siswa->kelas->nama_kelas ?? 'Unknown',
-                ] : null,
+                'siswa' => $siswa
+                    ? [
+                        'id_siswa' => $siswa->id_siswa,
+                        'nama' => $siswa->nama,
+                        'id_kelas' => $siswa->id_kelas,
+                        'nama_kelas' => $siswa->kelas->nama_kelas ?? 'Unknown',
+                    ]
+                    : null,
             ],
             'kehadiransekolah' => $kehadiransekolah,
             'persentaseKehadiran' => $persentaseKehadiran,
@@ -160,6 +153,7 @@ class AbsenController extends Controller
             'totalAlfa' => $totalAlfa,
             'recentAttendance' => $recentAttendance,
             'jadwalData' => $jadwalData,
+            'absensiSekolah' => $absensiSekolahData, // 👈 data baru untuk popup Vue
         ]);
     }
 
@@ -180,9 +174,7 @@ class AbsenController extends Controller
             return back()->withErrors(['message' => "❌ Data siswa tidak ditemukan untuk user_id: $userId. Silakan hubungi admin!"]);
         }
 
-        $absensiHariIni = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)
-            ->whereDate('tanggal', Carbon::today())
-            ->first();
+        $absensiHariIni = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)->whereDate('tanggal', Carbon::today())->first();
 
         if ($absensiHariIni) {
             return back()->with('error', 'Anda sudah absen masuk hari ini');
@@ -198,7 +190,7 @@ class AbsenController extends Controller
         $now = Carbon::now('Asia/Jakarta');
         $timeInMinutes = $now->hour * 60 + $now->minute;
         $startHadir = 6 * 60 + 40; // 06:40
-        $endHadir = 7 * 60 + 10;   // 07:10
+        $endHadir = 7 * 60 + 10; // 07:10
         $endTerlambat = 13 * 60 + 40; // 13:40
 
         // Tentukan status berdasarkan waktu jika status awal adalah 'hadir'
@@ -216,6 +208,12 @@ class AbsenController extends Controller
             return back()->withErrors(['description' => 'Keterangan diperlukan untuk status Izin atau Sakit']);
         }
 
+        $verifikasi = '-';
+        if (in_array($status, ['izin', 'sakit'])) {
+            $verifikasi = 'cek';
+        } else {
+            $verifikasi = '-';
+        }
         AbsensiSekolah::create([
             'id_siswa' => $siswa->id_siswa,
             'tanggal' => Carbon::today(),
@@ -224,6 +222,7 @@ class AbsenController extends Controller
             'longitude_in' => $validated['longitude'],
             'status' => $status,
             'keterangan' => $validated['description'] ?? '',
+            'verifikasi' => $verifikasi,
         ]);
 
         Log::info('Check-in berhasil:', [
@@ -244,9 +243,7 @@ class AbsenController extends Controller
             return back()->with('error', 'Data siswa tidak ditemukan.');
         }
 
-        $absensi = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)
-            ->whereDate('tanggal', Carbon::today())
-            ->first();
+        $absensi = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)->whereDate('tanggal', Carbon::today())->first();
 
         if (!$absensi) {
             return back()->with('error', 'Anda belum absen masuk hari ini');
@@ -277,6 +274,16 @@ class AbsenController extends Controller
             $rules['keterangan'] = 'required|string|max:1000';
         }
 
+        $verifikasi = $absensi->verifikasi; // default: pakai dari check-in
+
+        if ($isEarlyCheckout) {
+            // Pulang cepat → verifikasi cek
+            $verifikasi = 'cek';
+        } else {
+            // Pulang normal → verifikasi tetap '-'
+            $verifikasi = '-';
+        }
+
         $validated = $request->validate($rules);
 
         $absensi->update([
@@ -285,7 +292,7 @@ class AbsenController extends Controller
             'longitude_out' => $validated['longitude'],
             'keterangan' => $isEarlyCheckout ? $validated['keterangan'] : $absensi->keterangan,
             'status' => $isEarlyCheckout ? 'pulang cepat' : $absensi->status,
-
+            'verifikasi' => $verifikasi,
         ]);
 
         Log::info('Check-out berhasil:', [
@@ -303,9 +310,7 @@ class AbsenController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Siswa tidak ditemukan']);
         }
 
-        $absensi = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)
-            ->whereDate('tanggal', Carbon::today())
-            ->first();
+        $absensi = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)->whereDate('tanggal', Carbon::today())->first();
 
         if (!$absensi) {
             return response()->json(['status' => 'belum_masuk']);
@@ -325,14 +330,10 @@ class AbsenController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Siswa tidak ditemukan']);
         }
 
-        $absensi = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)
-            ->whereDate('tanggal', Carbon::today())
-            ->first();
+        $absensi = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)->whereDate('tanggal', Carbon::today())->first();
 
         return response()->json([
             'status' => $absensi ? $absensi->status : null,
         ]);
     }
-
-    
 }

@@ -21,8 +21,8 @@ class AdminCon extends Controller
     public function dashboard(Request $request): Response
     {
         $hariIni = now()->toDateString();
-            $bulan = $request->input('bulan'); // ex: "Oktober" atau "Semua"
-    $tahun = $request->input('tahun'); // ex: "2025"
+        $bulan = $request->input('bulan'); // ex: "Oktober" atau "Semua"
+        $tahun = $request->input('tahun'); // ex: "2025"
 
         $distribusi = DB::table('kelas as k')
             ->leftJoin('siswa as s', 's.id_kelas', '=', 'k.id_kelas')
@@ -41,24 +41,24 @@ class AdminCon extends Controller
             ->groupBy('k.nama_kelas')
             ->get();
 
- $rekapHarian = DB::table('absensi_sekolah')
-        ->selectRaw('DATE(tanggal) as tanggal')
-        ->selectRaw("DATE_FORMAT(tanggal, '%M') as nama_bulan")
-        ->selectRaw("DATE_FORMAT(tanggal, '%Y') as tahun")
-        ->selectRaw("SUM(CASE WHEN status = 'hadir' THEN 1 ELSE 0 END) as hadir")
-        ->selectRaw("SUM(CASE WHEN status = 'terlambat' THEN 1 ELSE 0 END) as terlambat")
-        ->selectRaw("SUM(CASE WHEN status = 'izin' THEN 1 ELSE 0 END) as izin")
-        ->selectRaw("SUM(CASE WHEN status = 'sakit' THEN 1 ELSE 0 END) as sakit")
-        ->selectRaw("SUM(CASE WHEN status = 'alfa' THEN 1 ELSE 0 END) as alfa")
-        ->when($bulan && $bulan !== 'Semua', function ($query) use ($bulan) {
-            $query->whereRaw("DATE_FORMAT(tanggal, '%M') = ?", [$bulan]);
-        })
-        ->when($tahun, function ($query) use ($tahun) {
-            $query->whereRaw("DATE_FORMAT(tanggal, '%Y') = ?", [$tahun]);
-        })
-        ->groupBy('tanggal', 'nama_bulan', 'tahun')
-        ->orderBy('tanggal', 'ASC')
-        ->get();
+        $rekapHarian = DB::table('absensi_sekolah')
+            ->selectRaw('DATE(tanggal) as tanggal')
+            ->selectRaw("DATE_FORMAT(tanggal, '%M') as nama_bulan")
+            ->selectRaw("DATE_FORMAT(tanggal, '%Y') as tahun")
+            ->selectRaw("SUM(CASE WHEN status = 'hadir' THEN 1 ELSE 0 END) as hadir")
+            ->selectRaw("SUM(CASE WHEN status = 'terlambat' THEN 1 ELSE 0 END) as terlambat")
+            ->selectRaw("SUM(CASE WHEN status = 'izin' THEN 1 ELSE 0 END) as izin")
+            ->selectRaw("SUM(CASE WHEN status = 'sakit' THEN 1 ELSE 0 END) as sakit")
+            ->selectRaw("SUM(CASE WHEN status = 'alfa' THEN 1 ELSE 0 END) as alfa")
+            ->when($bulan && $bulan !== 'Semua', function ($query) use ($bulan) {
+                $query->whereRaw("DATE_FORMAT(tanggal, '%M') = ?", [$bulan]);
+            })
+            ->when($tahun, function ($query) use ($tahun) {
+                $query->whereRaw("DATE_FORMAT(tanggal, '%Y') = ?", [$tahun]);
+            })
+            ->groupBy('tanggal', 'nama_bulan', 'tahun')
+            ->orderBy('tanggal', 'ASC')
+            ->get();
 
         return Inertia::render('Admin/Dashboard', [
             'totalUsers' => User::count(),
@@ -217,9 +217,9 @@ class AdminCon extends Controller
         $search = $request->input('search');
 
         $guru = DB::table('guru')
-        ->join('mapel', 'guru.id_mapel', '=', 'mapel.id_mapel')
-        ->select('guru.id_guru', 'guru.nama', 'guru.nip', 'guru.email', 'mapel.nama_mapel as mapel')
-        ->when($search, function ($query, $search) {
+            ->join('mapel', 'guru.id_mapel', '=', 'mapel.id_mapel')
+            ->select('guru.id_guru', 'guru.nama', 'guru.nip', 'guru.email', 'mapel.nama_mapel as mapel')
+            ->when($search, function ($query, $search) {
                 $query
                     ->where('name', 'like', "%{$search}%")
                     ->where('nip', 'like', "%{$search}%")
@@ -320,47 +320,33 @@ class AdminCon extends Controller
 
     // Jadwal Section Start
     // Menampilkan Data Jadwal
-public function jadwal(Request $request)
-{
-    $search = $request->input('search');
+    public function jadwal(Request $request)
+    {
+        $search = $request->input('search');
 
-    $jadwal = DB::table('jadwal')
-        ->join('mapel', 'jadwal.id_mapel', '=', 'mapel.id_mapel')
-        ->join('guru', 'jadwal.id_guru', '=', 'guru.id_guru')
-        ->join('kelas', 'jadwal.id_kelas', '=', 'kelas.id_kelas')
-        ->select(
-            'jadwal.id_jadwal',
-            'jadwal.id_mapel',
-            'jadwal.id_guru',
-            'jadwal.id_kelas',
-            'jadwal.hari',
-            'jadwal.lantai',
-            'ruang',
-            'jadwal.jam_mulai',
-            'jadwal.jam_selesai',
-            'mapel.nama_mapel as mapel',
-            'guru.nama as guru',
-            'kelas.nama_kelas as kelas'
-        )
-        ->when($search, function ($query, $search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('mapel.nama_mapel', 'like', "%{$search}%")
-                  ->orWhere('guru.nama', 'like', "%{$search}%")
-                  ->orWhere('kelas.nama_kelas', 'like', "%{$search}%")
-                  ->orWhere('jadwal.hari', 'like', "%{$search}%")
-                  ->orWhere('jadwal.lantai', 'like', "%{$search}%")
-                  ->orWhere('jadwal.ruang', 'like', "%{$search}%");
-            });
-        })
-        ->paginate(5)
-        ->appends(['search' => $search]); // supaya pagination ikut bawa query search
+        $jadwal = DB::table('jadwal')
+            ->join('mapel', 'jadwal.id_mapel', '=', 'mapel.id_mapel')
+            ->join('guru', 'jadwal.id_guru', '=', 'guru.id_guru')
+            ->join('kelas', 'jadwal.id_kelas', '=', 'kelas.id_kelas')
+            ->select('jadwal.id_jadwal', 'jadwal.id_mapel', 'jadwal.id_guru', 'jadwal.id_kelas', 'jadwal.hari', 'jadwal.lantai', 'ruang', 'jadwal.jam_mulai', 'jadwal.jam_selesai', 'mapel.nama_mapel as mapel', 'guru.nama as guru', 'kelas.nama_kelas as kelas')
+            ->when($search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('mapel.nama_mapel', 'like', "%{$search}%")
+                        ->orWhere('guru.nama', 'like', "%{$search}%")
+                        ->orWhere('kelas.nama_kelas', 'like', "%{$search}%")
+                        ->orWhere('jadwal.hari', 'like', "%{$search}%")
+                        ->orWhere('jadwal.lantai', 'like', "%{$search}%")
+                        ->orWhere('jadwal.ruang', 'like', "%{$search}%");
+                });
+            })
+            ->paginate(5)
+            ->appends(['search' => $search]); // supaya pagination ikut bawa query search
 
-    return Inertia::render('Admin/jadwal', [
-        'jadwal' => $jadwal,
-        'filters' => ['search' => $search],
-    ]);
-}
-
+        return Inertia::render('Admin/jadwal', [
+            'jadwal' => $jadwal,
+            'filters' => ['search' => $search],
+        ]);
+    }
 
     // Menampilkan Form Tambah Jadwal
     public function tambahd()
@@ -447,10 +433,7 @@ public function jadwal(Request $request)
     public function siswax(Request $request)
     {
         // Ambil daftar kelas unik di tingkat X RPL
-        $kelasList = DB::table('siswa')
-        ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
-        ->where('kelas.tingkat_kelas', 'like', '1%')
-        ->pluck('kelas.nama_kelas')->unique()->values();
+        $kelasList = DB::table('siswa')->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')->where('kelas.tingkat_kelas', 'like', '1%')->pluck('kelas.nama_kelas')->unique()->values();
 
         // Ambil filter kelas & search dari query string
         $selectedKelas = $request->input('kelas');
@@ -460,7 +443,7 @@ public function jadwal(Request $request)
         $siswax = DB::table('siswa')
             ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
             ->join('jurusan', 'siswa.id_jurusan', '=', 'jurusan.id_jurusan')
-            ->select('siswa.id_siswa','siswa.nisn', 'siswa.nama', 'siswa.email', 'kelas.nama_kelas as kelas', 'jurusan.nama_jurusan as jurusan')
+            ->select('siswa.id_siswa', 'siswa.nisn', 'siswa.nama', 'siswa.email', 'kelas.nama_kelas as kelas', 'jurusan.nama_jurusan as jurusan')
             ->where('kelas.tingkat_kelas', 'like', '1%')
             ->when($selectedKelas, function ($query, $kelas) {
                 return $query->where('kelas.nama_kelas', $kelas);
@@ -538,7 +521,7 @@ public function jadwal(Request $request)
     // Memperbarui Data Siswa X RPL Yang Dikirim dari Form Edit Siswa X RPL
     public function updatex(Request $request, $id)
     {
-                $validated = $request->validate([
+        $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
             'nisn' => 'required|string|max:20',
             'nama' => 'required|string|max:255',
@@ -588,7 +571,7 @@ public function jadwal(Request $request)
         $siswax = DB::table('siswa')
             ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
             ->join('jurusan', 'siswa.id_jurusan', '=', 'jurusan.id_jurusan')
-            ->select('siswa.id_siswa','siswa.nisn', 'siswa.nama', 'siswa.email', 'kelas.nama_kelas as kelas', 'jurusan.nama_jurusan as jurusan')
+            ->select('siswa.id_siswa', 'siswa.nisn', 'siswa.nama', 'siswa.email', 'kelas.nama_kelas as kelas', 'jurusan.nama_jurusan as jurusan')
             ->where('kelas.tingkat_kelas', 'like', '2%')
             ->when($selectedKelas, function ($query, $kelas) {
                 return $query->where('kelas.nama_kelas', $kelas);
@@ -667,7 +650,7 @@ public function jadwal(Request $request)
     // Memperbarui Data Siswa X RPL Yang Dikirim dari Form Edit Siswa X RPL
     public function updatexi(Request $request, $id)
     {
-                $validated = $request->validate([
+        $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
             'nisn' => 'required|string|max:20',
             'nama' => 'required|string|max:255',
@@ -717,7 +700,7 @@ public function jadwal(Request $request)
         $siswax = DB::table('siswa')
             ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
             ->join('jurusan', 'siswa.id_jurusan', '=', 'jurusan.id_jurusan')
-            ->select('siswa.id_siswa','siswa.nisn', 'siswa.nama', 'siswa.email', 'kelas.nama_kelas as kelas', 'jurusan.nama_jurusan as jurusan')
+            ->select('siswa.id_siswa', 'siswa.nisn', 'siswa.nama', 'siswa.email', 'kelas.nama_kelas as kelas', 'jurusan.nama_jurusan as jurusan')
             ->where('kelas.tingkat_kelas', 'like', '3%')
             ->when($selectedKelas, function ($query, $kelas) {
                 return $query->where('kelas.nama_kelas', $kelas);
@@ -748,7 +731,7 @@ public function jadwal(Request $request)
     public function tambahxii()
     {
         $users = \App\Models\User::where('role', 'user')->select('id', 'name', 'email')->get();
-        $kelas = \App\Models\kelas::all(['id_kelas', 'nama_kelas',]);
+        $kelas = \App\Models\kelas::all(['id_kelas', 'nama_kelas']);
         $jurusan = \App\Models\Jurusan::all(['id_jurusan', 'nama_jurusan']);
         return inertia('Admin/tambahxii', [
             'users' => $users,
@@ -757,7 +740,7 @@ public function jadwal(Request $request)
         ]);
     }
 
-        public function storexii(Request $request)
+    public function storexii(Request $request)
     {
         // Validasi
         $validated = $request->validate([
@@ -844,9 +827,11 @@ public function jadwal(Request $request)
     // Menampilkan Data Mapel
     public function indexm(Request $request)
     {
-                $search = $request->input('search');
+        $search = $request->input('search');
 
-        $mapel = DB::table('mapel')->select('id_mapel', 'nama_mapel')->when($search, function ($query, $search) {
+        $mapel = DB::table('mapel')
+            ->select('id_mapel', 'nama_mapel')
+            ->when($search, function ($query, $search) {
                 $query->where('nama_mapel', 'like', "%{$search}%");
             })
             ->paginate(5)
@@ -854,7 +839,6 @@ public function jadwal(Request $request)
         return Inertia::render('Admin/mapel', [
             'mapel' => $mapel,
             'filters' => ['search' => $search], // untuk mengisi input search di Vue
-
         ]);
     }
 
@@ -1130,7 +1114,7 @@ public function jadwal(Request $request)
         $absensi = DB::table('absensi_sekolah')
             ->join('siswa', 'absensi_sekolah.id_siswa', '=', 'siswa.id_siswa')
             ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
-            ->select('absensi_sekolah.id_absensi', 'absensi_sekolah.id_siswa', 'absensi_sekolah.tanggal', 'absensi_sekolah.jam_masuk', 'absensi_sekolah.jam_keluar', 'absensi_sekolah.status', 'absensi_sekolah.keterangan','absensi_sekolah.verifikasi', 'siswa.nama as siswa', 'kelas.nama_kelas as kelas')
+            ->select('absensi_sekolah.id_absensi', 'absensi_sekolah.id_siswa', 'absensi_sekolah.tanggal', 'absensi_sekolah.jam_masuk', 'absensi_sekolah.jam_keluar', 'absensi_sekolah.status', 'absensi_sekolah.keterangan', 'absensi_sekolah.verifikasi', 'siswa.nama as siswa', 'kelas.nama_kelas as kelas')
             ->where('kelas.tingkat_kelas', 'like', '1%')
             ->when($selectedKelas, function ($query, $kelas) {
                 return $query->where('kelas.nama_kelas', $kelas);
@@ -1138,16 +1122,16 @@ public function jadwal(Request $request)
             ->when($search, function ($query, $search) {
                 return $query->where(function ($q) use ($search) {
                     $q->where('absensi_sekolah.tanggal', 'like', "%{$search}%")
-                    ->orWhere('absensi_sekolah.jam_masuk', 'like', "%{$search}%")
-                    ->orWhere('absensi_sekolah.jam_keluar', 'like', "%{$search}%")
-                    ->orWhere('absensi_sekolah.status', 'like', "%{$search}%")
-                    ->orWhere('absensi_sekolah.keterangan', 'like', "%{$search}%")
-                    ->orWhere('absensi_sekolah.verifikasi', 'like', "%{$search}%")
-                    ->orWhere('siswa.nama', 'like', "%{$search}%")
-                    ->orWhere('kelas.nama_kelas', 'like', "%{$search}%");
+                        ->orWhere('absensi_sekolah.jam_masuk', 'like', "%{$search}%")
+                        ->orWhere('absensi_sekolah.jam_keluar', 'like', "%{$search}%")
+                        ->orWhere('absensi_sekolah.status', 'like', "%{$search}%")
+                        ->orWhere('absensi_sekolah.keterangan', 'like', "%{$search}%")
+                        ->orWhere('absensi_sekolah.verifikasi', 'like', "%{$search}%")
+                        ->orWhere('siswa.nama', 'like', "%{$search}%")
+                        ->orWhere('kelas.nama_kelas', 'like', "%{$search}%");
                     //
-            });
-        })
+                });
+            })
             ->paginate(5)
             ->appends($request->query());
 
@@ -1216,7 +1200,7 @@ public function jadwal(Request $request)
         $absensi = DB::table('absensi_sekolah')
             ->join('siswa', 'absensi_sekolah.id_siswa', '=', 'siswa.id_siswa')
             ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
-            ->select('absensi_sekolah.id_absensi', 'absensi_sekolah.id_siswa', 'absensi_sekolah.tanggal', 'absensi_sekolah.jam_masuk', 'absensi_sekolah.jam_keluar', 'absensi_sekolah.status', 'absensi_sekolah.keterangan','absensi_sekolah.verifikasi', 'siswa.nama as siswa', 'kelas.nama_kelas as kelas')
+            ->select('absensi_sekolah.id_absensi', 'absensi_sekolah.id_siswa', 'absensi_sekolah.tanggal', 'absensi_sekolah.jam_masuk', 'absensi_sekolah.jam_keluar', 'absensi_sekolah.status', 'absensi_sekolah.keterangan', 'absensi_sekolah.verifikasi', 'siswa.nama as siswa', 'kelas.nama_kelas as kelas')
             ->where('kelas.tingkat_kelas', 'like', '2%')
             ->when($selectedKelas, function ($query, $kelas) {
                 return $query->where('kelas.nama_kelas', $kelas);
@@ -1224,16 +1208,16 @@ public function jadwal(Request $request)
             ->when($search, function ($query, $search) {
                 return $query->where(function ($q) use ($search) {
                     $q->where('absensi_sekolah.tanggal', 'like', "%{$search}%")
-                    ->orWhere('absensi_sekolah.jam_masuk', 'like', "%{$search}%")
-                    ->orWhere('absensi_sekolah.jam_keluar', 'like', "%{$search}%")
-                    ->orWhere('absensi_sekolah.status', 'like', "%{$search}%")
-                    ->orWhere('absensi_sekolah.keterangan', 'like', "%{$search}%")
-                    ->orWhere('absensi_sekolah.verifikasi', 'like', "%{$search}%")
-                    ->orWhere('siswa.nama', 'like', "%{$search}%")
-                    ->orWhere('kelas.nama_kelas', 'like', "%{$search}%");
+                        ->orWhere('absensi_sekolah.jam_masuk', 'like', "%{$search}%")
+                        ->orWhere('absensi_sekolah.jam_keluar', 'like', "%{$search}%")
+                        ->orWhere('absensi_sekolah.status', 'like', "%{$search}%")
+                        ->orWhere('absensi_sekolah.keterangan', 'like', "%{$search}%")
+                        ->orWhere('absensi_sekolah.verifikasi', 'like', "%{$search}%")
+                        ->orWhere('siswa.nama', 'like', "%{$search}%")
+                        ->orWhere('kelas.nama_kelas', 'like', "%{$search}%");
                     //
-            });
-        })
+                });
+            })
             ->paginate(5)
             ->appends($request->query());
 
@@ -1272,7 +1256,6 @@ public function jadwal(Request $request)
             'status' => 'required|in:hadir,izin,sakit,alpa,pulang cepat',
             'keterangan' => 'nullable|string|max:255',
             'verifikasi' => 'required|string|max:255',
-
         ]);
 
         // Update ke DB
@@ -1303,7 +1286,7 @@ public function jadwal(Request $request)
         $absensi = DB::table('absensi_sekolah')
             ->join('siswa', 'absensi_sekolah.id_siswa', '=', 'siswa.id_siswa')
             ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
-            ->select('absensi_sekolah.id_absensi', 'absensi_sekolah.id_siswa', 'absensi_sekolah.tanggal', 'absensi_sekolah.jam_masuk', 'absensi_sekolah.jam_keluar', 'absensi_sekolah.status', 'absensi_sekolah.keterangan','absensi_sekolah.verifikasi', 'siswa.nama as siswa', 'kelas.nama_kelas as kelas')
+            ->select('absensi_sekolah.id_absensi', 'absensi_sekolah.id_siswa', 'absensi_sekolah.tanggal', 'absensi_sekolah.jam_masuk', 'absensi_sekolah.jam_keluar', 'absensi_sekolah.status', 'absensi_sekolah.keterangan', 'absensi_sekolah.verifikasi', 'siswa.nama as siswa', 'kelas.nama_kelas as kelas')
             ->where('kelas.tingkat_kelas', 'like', '3%')
             ->when($selectedKelas, function ($query, $kelas) {
                 return $query->where('kelas.nama_kelas', $kelas);
@@ -1311,16 +1294,16 @@ public function jadwal(Request $request)
             ->when($search, function ($query, $search) {
                 return $query->where(function ($q) use ($search) {
                     $q->where('absensi_sekolah.tanggal', 'like', "%{$search}%")
-                    ->orWhere('absensi_sekolah.jam_masuk', 'like', "%{$search}%")
-                    ->orWhere('absensi_sekolah.jam_keluar', 'like', "%{$search}%")
-                    ->orWhere('absensi_sekolah.status', 'like', "%{$search}%")
-                    ->orWhere('absensi_sekolah.keterangan', 'like', "%{$search}%")
-                    ->orWhere('absensi_sekolah.verifikasi', 'like', "%{$search}%")
-                    ->orWhere('siswa.nama', 'like', "%{$search}%")
-                    ->orWhere('kelas.nama_kelas', 'like', "%{$search}%");
+                        ->orWhere('absensi_sekolah.jam_masuk', 'like', "%{$search}%")
+                        ->orWhere('absensi_sekolah.jam_keluar', 'like', "%{$search}%")
+                        ->orWhere('absensi_sekolah.status', 'like', "%{$search}%")
+                        ->orWhere('absensi_sekolah.keterangan', 'like', "%{$search}%")
+                        ->orWhere('absensi_sekolah.verifikasi', 'like', "%{$search}%")
+                        ->orWhere('siswa.nama', 'like', "%{$search}%")
+                        ->orWhere('kelas.nama_kelas', 'like', "%{$search}%");
                     //
-            });
-        })
+                });
+            })
             ->paginate(5)
             ->appends($request->query());
 
@@ -1359,7 +1342,6 @@ public function jadwal(Request $request)
             'status' => 'required|in:hadir,izin,sakit,alpa,pulang cepat',
             'keterangan' => 'nullable|string|max:255',
             'verifikasi' => 'required|string|max:255',
-
         ]);
 
         // Update ke DB
@@ -1373,6 +1355,269 @@ public function jadwal(Request $request)
         DB::table('absensi_sekolah')->where('id_absensi', operator: $id)->delete();
         return redirect('/absenxi')->with('success', 'Data absensi berhasil dihapus.');
     }
-
     // Absensi Siswa XII End Section
+
+    // Absensi Pelajaran Siswa X Start Section
+    public function pelajaranx(Request $request)
+    {
+        // Ambil daftar kelas unik di tingkat XII
+        $kelasList = DB::table('siswa')->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')->where('kelas.tingkat_kelas', 'like', '3%')->pluck('kelas.nama_kelas')->unique()->values();
+    
+        // Ambil filter kelas & search dari query string
+        $selectedKelas = $request->input('kelas');
+        $search = $request->input('search');
+    
+        // Query absensi + siswa + kelas
+        $absensi = DB::table('absensi_pelajaran')
+            ->join('siswa', 'absensi_pelajaran.id_siswa', '=', 'siswa.id_siswa')
+            ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
+            ->join('jadwal', 'absensi_pelajaran.id_jadwal', '=', 'jadwal.id_jadwal')
+            ->join('mapel', 'jadwal.id_mapel', '=', 'mapel.id_mapel')
+            ->select('absensi_pelajaran.id_absensi_pelajaran', 'absensi_pelajaran.id_siswa', 'absensi_pelajaran.id_jadwal', 'absensi_pelajaran.waktu_scan', 'absensi_pelajaran.status', 'absensi_pelajaran.keterangan', 'absensi_pelajaran.verifikasi', 'siswa.nama as siswa', 'kelas.nama_kelas as kelas', 'mapel.nama_mapel as mapel')
+            ->where('kelas.tingkat_kelas', 'like', '1%')
+            ->when($selectedKelas, function ($query, $kelas) {
+                return $query->where('kelas.nama_kelas', $kelas);
+            })
+            ->when($search, function ($query, $search) {
+                return $query->where(function ($q) use ($search) {
+                    $q->where('absensi_pelajaran.waktu_scan', 'like', "%{$search}%")
+                        ->orWhere('absensi_pelajaran.status', 'like', "%{$search}%")
+                        ->orWhere('absensi_pelajaran.keterangan', 'like', "%{$search}%")
+                        ->orWhere('absensi_pelajaran.verifikasi', 'like', "%{$search}%")
+                        ->orWhere('siswa.nama', 'like', "%{$search}%")
+                        ->orWhere('mapel.nama_mapel', 'like', "%{$search}%")
+                        ->orWhere('kelas.nama_kelas', 'like', "%{$search}%");
+                    //
+                });
+            })
+            ->paginate(5)
+            ->appends($request->query());
+    
+        return Inertia::render('Admin/pelajaranx', [
+            'absen' => $absensi,
+            'kelasList' => $kelasList,
+            'selectedKelas' => $selectedKelas,
+            'filters' => [
+                'search' => $search,
+            ],
+        ]);
+    }
+    
+    public function editpelajaranx($id)
+    {
+        // Ambil data absensi berdasarkan id
+        $absensi = DB::table('absensi_pelajaran')->where('id_absensi_pelajaran', $id)->first();
+    
+        // Ambil data jadwal untuk dropdown
+        $jadwal = DB::table('jadwal')->join('mapel', 'jadwal.id_mapel', '=', 'mapel.id_mapel')->select('jadwal.id_jadwal', 'mapel.nama_mapel')->orderBy('mapel.nama_mapel')->get();
+        // Ambil daftar siswa untuk dropdown
+        $siswa = DB::table('siswa')->select('id_siswa', 'nama')->orderBy('nama')->get();
+    
+        return Inertia::render('Admin/editpelx', [
+            'absensi' => $absensi,
+            'siswa' => $siswa,
+            'jadwal' => $jadwal,
+        ]);
+    }
+    
+    public function updatepelajaranx(Request $request, $id)
+    {
+        // Validasi data
+        $validated = $request->validate([
+            'id_siswa' => 'required|exists:siswa,id_siswa',
+            'id_jadwal' => 'required|exists:jadwal,id_jadwal',
+            'waktu_scan' => 'required|date',
+            'status' => 'required|in:hadir,izin,sakit,alpa,pulang cepat',
+            'keterangan' => 'nullable|string|max:255',
+            'verifikasi' => 'required|string|max:255',
+        ]);
+    
+        // Update ke DB
+        DB::table('absensi_pelajaran')->where('id_absensi_pelajaran', $id)->update($validated);
+    
+        return redirect()->route('pelajaranx')->with('success', 'Data absensi berhasil diperbarui.');
+    }
+    
+    public function destroypelajaranx($id)
+    {
+        DB::table('absensi_pelajaran')->where('id_absensi_pelajaran', operator: $id)->delete();
+        return redirect('/pelajaranx')->with('success', 'Data absensi berhasil dihapus.');
+    }
+    // Absensi Pelajaran Siswa X End Section
+
+    // Absensi Pelajaran Siswa XI Start Section
+    public function pelajaranxi(Request $request)
+    {
+        // Ambil daftar kelas unik di tingkat XII
+        $kelasList = DB::table('siswa')->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')->where('kelas.tingkat_kelas', 'like', '3%')->pluck('kelas.nama_kelas')->unique()->values();
+    
+        // Ambil filter kelas & search dari query string
+        $selectedKelas = $request->input('kelas');
+        $search = $request->input('search');
+    
+        // Query absensi + siswa + kelas
+        $absensi = DB::table('absensi_pelajaran')
+            ->join('siswa', 'absensi_pelajaran.id_siswa', '=', 'siswa.id_siswa')
+            ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
+            ->join('jadwal', 'absensi_pelajaran.id_jadwal', '=', 'jadwal.id_jadwal')
+            ->join('mapel', 'jadwal.id_mapel', '=', 'mapel.id_mapel')
+            ->select('absensi_pelajaran.id_absensi_pelajaran', 'absensi_pelajaran.id_siswa', 'absensi_pelajaran.id_jadwal', 'absensi_pelajaran.waktu_scan', 'absensi_pelajaran.status', 'absensi_pelajaran.keterangan', 'absensi_pelajaran.verifikasi', 'siswa.nama as siswa', 'kelas.nama_kelas as kelas', 'mapel.nama_mapel as mapel')
+            ->where('kelas.tingkat_kelas', 'like', '2%')
+            ->when($selectedKelas, function ($query, $kelas) {
+                return $query->where('kelas.nama_kelas', $kelas);
+            })
+            ->when($search, function ($query, $search) {
+                return $query->where(function ($q) use ($search) {
+                    $q->where('absensi_pelajaran.waktu_scan', 'like', "%{$search}%")
+                        ->orWhere('absensi_pelajaran.status', 'like', "%{$search}%")
+                        ->orWhere('absensi_pelajaran.keterangan', 'like', "%{$search}%")
+                        ->orWhere('absensi_pelajaran.verifikasi', 'like', "%{$search}%")
+                        ->orWhere('siswa.nama', 'like', "%{$search}%")
+                        ->orWhere('mapel.nama_mapel', 'like', "%{$search}%")
+                        ->orWhere('kelas.nama_kelas', 'like', "%{$search}%");
+                    //
+                });
+            })
+            ->paginate(5)
+            ->appends($request->query());
+    
+        return Inertia::render('Admin/pelajaranxi', [
+            'absen' => $absensi,
+            'kelasList' => $kelasList,
+            'selectedKelas' => $selectedKelas,
+            'filters' => [
+                'search' => $search,
+            ],
+        ]);
+    }
+    
+    public function editpelajaranxi($id)
+    {
+        // Ambil data absensi berdasarkan id
+        $absensi = DB::table('absensi_pelajaran')->where('id_absensi_pelajaran', $id)->first();
+    
+        // Ambil data jadwal untuk dropdown
+        $jadwal = DB::table('jadwal')->join('mapel', 'jadwal.id_mapel', '=', 'mapel.id_mapel')->select('jadwal.id_jadwal', 'mapel.nama_mapel')->orderBy('mapel.nama_mapel')->get();
+        // Ambil daftar siswa untuk dropdown
+        $siswa = DB::table('siswa')->select('id_siswa', 'nama')->orderBy('nama')->get();
+    
+        return Inertia::render('Admin/editpelxi', [
+            'absensi' => $absensi,
+            'siswa' => $siswa,
+            'jadwal' => $jadwal,
+        ]);
+    }
+    
+    public function updatepelajaranxi(Request $request, $id)
+    {
+        // Validasi data
+        $validated = $request->validate([
+            'id_siswa' => 'required|exists:siswa,id_siswa',
+            'id_jadwal' => 'required|exists:jadwal,id_jadwal',
+            'waktu_scan' => 'required|date',
+            'status' => 'required|in:hadir,izin,sakit,alpa,pulang cepat',
+            'keterangan' => 'nullable|string|max:255',
+            'verifikasi' => 'required|string|max:255',
+        ]);
+    
+        // Update ke DB
+        DB::table('absensi_pelajaran')->where('id_absensi_pelajaran', $id)->update($validated);
+    
+        return redirect()->route('pelajaranxi')->with('success', 'Data absensi berhasil diperbarui.');
+    }
+    
+    public function destroypelajaranxi($id)
+    {
+        DB::table('absensi_pelajaran')->where('id_absensi_pelajaran', operator: $id)->delete();
+        return redirect('/pelajaranxi')->with('success', 'Data absensi berhasil dihapus.');
+    }
+    // Absensi Pelajaran Siswa XI End Section
+
+    // Absensi Pelajaran Siswa XII Start Section
+    public function pelajaranxii(Request $request)
+    {
+        // Ambil daftar kelas unik di tingkat XII
+        $kelasList = DB::table('siswa')->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')->where('kelas.tingkat_kelas', 'like', '3%')->pluck('kelas.nama_kelas')->unique()->values();
+
+        // Ambil filter kelas & search dari query string
+        $selectedKelas = $request->input('kelas');
+        $search = $request->input('search');
+
+        // Query absensi + siswa + kelas
+        $absensi = DB::table('absensi_pelajaran')
+            ->join('siswa', 'absensi_pelajaran.id_siswa', '=', 'siswa.id_siswa')
+            ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
+            ->join('jadwal', 'absensi_pelajaran.id_jadwal', '=', 'jadwal.id_jadwal')
+            ->join('mapel', 'jadwal.id_mapel', '=', 'mapel.id_mapel')
+            ->select('absensi_pelajaran.id_absensi_pelajaran', 'absensi_pelajaran.id_siswa', 'absensi_pelajaran.id_jadwal', 'absensi_pelajaran.waktu_scan', 'absensi_pelajaran.status', 'absensi_pelajaran.keterangan', 'absensi_pelajaran.verifikasi', 'siswa.nama as siswa', 'kelas.nama_kelas as kelas', 'mapel.nama_mapel as mapel')
+            ->where('kelas.tingkat_kelas', 'like', '3%')
+            ->when($selectedKelas, function ($query, $kelas) {
+                return $query->where('kelas.nama_kelas', $kelas);
+            })
+            ->when($search, function ($query, $search) {
+                return $query->where(function ($q) use ($search) {
+                    $q->where('absensi_pelajaran.waktu_scan', 'like', "%{$search}%")
+                        ->orWhere('absensi_pelajaran.status', 'like', "%{$search}%")
+                        ->orWhere('absensi_pelajaran.keterangan', 'like', "%{$search}%")
+                        ->orWhere('absensi_pelajaran.verifikasi', 'like', "%{$search}%")
+                        ->orWhere('siswa.nama', 'like', "%{$search}%")
+                        ->orWhere('mapel.nama_mapel', 'like', "%{$search}%")
+                        ->orWhere('kelas.nama_kelas', 'like', "%{$search}%");
+                    //
+                });
+            })
+            ->paginate(5)
+            ->appends($request->query());
+
+        return Inertia::render('Admin/pelajaranxii', [
+            'absen' => $absensi,
+            'kelasList' => $kelasList,
+            'selectedKelas' => $selectedKelas,
+            'filters' => [
+                'search' => $search,
+            ],
+        ]);
+    }
+
+    public function editpelajaranxii($id)
+    {
+        // Ambil data absensi berdasarkan id
+        $absensi = DB::table('absensi_pelajaran')->where('id_absensi_pelajaran', $id)->first();
+
+        // Ambil data jadwal untuk dropdown
+        $jadwal = DB::table('jadwal')->join('mapel', 'jadwal.id_mapel', '=', 'mapel.id_mapel')->select('jadwal.id_jadwal', 'mapel.nama_mapel')->orderBy('mapel.nama_mapel')->get();
+        // Ambil daftar siswa untuk dropdown
+        $siswa = DB::table('siswa')->select('id_siswa', 'nama')->orderBy('nama')->get();
+
+        return Inertia::render('Admin/editpelxii', [
+            'absensi' => $absensi,
+            'siswa' => $siswa,
+            'jadwal' => $jadwal,
+        ]);
+    }
+
+    public function updatepelajaranxii(Request $request, $id)
+    {
+        // Validasi data
+        $validated = $request->validate([
+            'id_siswa' => 'required|exists:siswa,id_siswa',
+            'id_jadwal' => 'required|exists:jadwal,id_jadwal',
+            'waktu_scan' => 'required|date',
+            'status' => 'required|in:hadir,izin,sakit,alpa,pulang cepat',
+            'keterangan' => 'nullable|string|max:255',
+            'verifikasi' => 'required|string|max:255',
+        ]);
+
+        // Update ke DB
+        DB::table('absensi_pelajaran')->where('id_absensi_pelajaran', $id)->update($validated);
+
+        return redirect()->route('pelajaranxii')->with('success', 'Data absensi berhasil diperbarui.');
+    }
+
+    public function destroypelajaranxii($id)
+    {
+        DB::table('absensi_pelajaran')->where('id_absensi_pelajaran', operator: $id)->delete();
+        return redirect('/pelajaranxii')->with('success', 'Data absensi berhasil dihapus.');
+    }
+    // Absensi Pelajaran Siswa XII End Section
 }
