@@ -169,9 +169,22 @@ defineEmits(['update:selectedHari', 'update:selectedLantai', 'update:selectedRua
 const currentPage = ref(1)
 const itemsPerPage = 3
 
+// Sorted schedule: aktif dulu, baru tutup
+const sortedSchedule = computed(() => {
+    return [...props.filteredSchedule].sort((a, b) => {
+        const statusA = (a.status || '').toLowerCase()
+        const statusB = (b.status || '').toLowerCase()
+        
+        // Jadwal aktif di atas
+        if (statusA === 'aktif' && statusB !== 'aktif') return -1
+        if (statusA !== 'aktif' && statusB === 'aktif') return 1
+        return 0
+    })
+})
+
 // Hitung total halaman
 const totalPages = computed(() => {
-    const totalItems = Array.isArray(props.filteredSchedule) ? props.filteredSchedule.length : 0
+    const totalItems = Array.isArray(sortedSchedule.value) ? sortedSchedule.value.length : 0
     return Math.max(1, Math.ceil(totalItems / itemsPerPage))
 })
 
@@ -179,7 +192,7 @@ const totalPages = computed(() => {
 const paginatedSchedule = computed(() => {
     const start = (currentPage.value - 1) * itemsPerPage
     const end = start + itemsPerPage
-    return props.filteredSchedule.slice(start, end)
+    return sortedSchedule.value.slice(start, end)
 })
 
 // Ganti halaman
