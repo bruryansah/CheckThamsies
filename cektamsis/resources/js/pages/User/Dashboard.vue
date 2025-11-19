@@ -60,9 +60,9 @@
     const studentName = ref(page.props.auth?.user?.name ?? 'siswa');
 
     const showAbsensiModal = ref(false)
-    // s
+    
     console.log('Received Props:', props);
-    console.log('Jadwal Data:', props.jadwalData); // Debug jadwal data
+    console.log('Jadwal Data:', props.jadwalData);
 
     const currentDate = ref('');
     const checkinStatus = ref('Belum Absen');
@@ -79,6 +79,11 @@
     const latestCheckinStatus = ref < string | null > (null);
     const showWeekendModal = ref(false);
     const canCheckIn = ref(true);
+
+    // 🔹 Tambahan untuk modal terlambat
+    const showLateModal = ref(false);
+    const lateDescription = ref('');
+    const lateDescriptionError = ref('');
 
     // Tambahkan untuk sistem izin pelajaran
     const selectedMapel = ref('');
@@ -107,13 +112,13 @@
     const canSubmitLessonCheckIn = computed(() => {
         if (['izin', 'sakit'].includes(selectedStatus1.value)) {
             return (
-                ['hadir', 'terlambat'].includes(latestCheckinStatus.value || '') && // Sudah absen sekolah
-                selectedMapel.value && // Mata pelajaran dipilih
-                checkinDescription.value.trim() && // Keterangan diisi
-                !processingIn.value // Tidak sedang memproses
+                ['hadir', 'terlambat'].includes(latestCheckinStatus.value || '') &&
+                selectedMapel.value &&
+                checkinDescription.value.trim() &&
+                !processingIn.value
             );
         }
-        return false; // Hanya relevan untuk izin/sakit
+        return false;
     });
 
     // Dropdown functions
@@ -157,6 +162,13 @@
     // Close Weekend Modal
     const closeWeekendModal = () => {
         showWeekendModal.value = false;
+    };
+
+    // 🔹 Close Late Modal
+    const closeLateModal = () => {
+        showLateModal.value = false;
+        lateDescription.value = '';
+        lateDescriptionError.value = '';
     };
 
     // Toast Notification
@@ -209,23 +221,25 @@
 
     // Update check-in status and availability
     const updateCheckInStatus = () => {
-        const now = new Date().toLocaleString('id-ID', {
-            timeZone: 'Asia/Jakarta'
-        });
-        const [datePart, timePart] = now.split(', ');
-        const [time] = timePart.split(' ');
-        const [hours, minutes] = time.split(':').map(Number);
+        const now = new Date();
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
         const timeInMinutes = hours * 60 + minutes;
 
         const startHadir = 6 * 60 + 40; // 06:40
         const endTerlambat = 13 * 60 + 40; // 13:40
 
         if (latestCheckinStatus.value === null) {
-            if (timeInMinutes > endTerlambat) {
+            if (timeInMinutes < startHadir) {
+                // Terlalu pagi
+                checkinStatus.value = 'Belum Bisa Absen';
+                canCheckIn.value = false;
+            } else if (timeInMinutes > endTerlambat) {
+                // Terlalu sore, otomatis alfa
                 checkinStatus.value = 'Alfa';
                 canCheckIn.value = false;
-                showNotification('❌ Waktu sudah melewati 13:40, status Alfa otomatis diterapkan.', 'error');
-            } else if (timeInMinutes >= startHadir && timeInMinutes <= endTerlambat) {
+            } else {
+                // Waktu absen tersedia (06:40 - 13:40)
                 checkinStatus.value = 'Belum Absen';
                 canCheckIn.value = true;
             }
@@ -277,8 +291,7 @@
             route('user.dashboard'), {}, {
                 onSuccess: () => {
                     console.log('Attendance data refreshed');
-                    console.log('Updated Jadwal Data:', props
-                        .jadwalData); // Debug jadwal data after refresh
+                    console.log('Updated Jadwal Data:', props.jadwalData);
                 },
             },
         );
@@ -286,6 +299,8 @@
 
     // Absen Masuk
     const checkIn = () => {
+        console.log('🔵 checkIn() called');
+        
         if (isWeekend()) {
             showWeekendModal.value = true;
             return;
@@ -298,69 +313,138 @@
 
         if (processingIn.value) return;
 
-        const now = new Date().toLocaleString('id-ID', {
-            timeZone: 'Asia/Jakarta'
-        });
-        const [datePart, timePart] = now.split(', ');
-        const [time] = timePart.split(' ');
-        const [hours, minutes] = time.split(':').map(Number);
+        const now = new Date();
+        const hours = now.getHours();
+        const minutes = now.getMinutes();
         const timeInMinutes = hours * 60 + minutes;
 
-        const startHadir = 6 * 60 + 40; // 06:40
-        const endHadir = 7 * 60 + 10; // 07:10
-        const endTerlambat = 13 * 60 + 40; // 13:40
+        console.log('🔵 Current time:', { hours, minutes, timeInMinutes });
+
+        const startHadir = 6 * 60 + 40; // 06:40 = 400
+        const endHadir = 7 * 60 + 10; // 07:10 = 430
+        const endTerlambat = 13 * 60 + 40; // 13:40 = 820
 
         let determinedStatus = selectedStatus.value;
+        
+        console.log('🔵 selectedStatus:', selectedStatus.value);
+        console.log('🔵 Time check:', {
+            startHadir,
+            endHadir,
+            endTerlambat,
+            timeInMinutes,
+            isTooEarly: timeInMinutes < startHadir,
+            isOnTime: timeInMinutes >= startHadir && timeInMinutes <= endHadir,
+            isLate: timeInMinutes > endHadir && timeInMinutes <= endTerlambat,
+            isTooLate: timeInMinutes > endTerlambat
+        });
+        
+        // 🔹 Cek apakah waktu terlambat dan status bukan izin/sakit
         if (!['izin', 'sakit'].includes(selectedStatus.value)) {
-            if (timeInMinutes >= startHadir && timeInMinutes <= endHadir) {
+            // Terlalu pagi (sebelum 06:40)
+            if (timeInMinutes < startHadir) {
+                console.log('⏰ Terlalu pagi, belum bisa absen');
+                showNotification('⏰ Absensi hanya bisa dilakukan mulai jam 06:40', 'error');
+                return;
+            }
+            // Tepat waktu (06:40 - 07:10)
+            else if (timeInMinutes >= startHadir && timeInMinutes <= endHadir) {
+                console.log('✅ Status: HADIR');
                 determinedStatus = 'hadir';
-            } else if (timeInMinutes > endHadir && timeInMinutes <= endTerlambat) {
-                determinedStatus = 'terlambat';
+                // Langsung proses check-in untuk hadir
+                performCheckIn(determinedStatus, '');
+                return;
+            }
+            // Terlambat (07:11 - 13:40)
+            else if (timeInMinutes > endHadir && timeInMinutes <= endTerlambat) {
+                // Tampilkan modal terlambat
+                console.log('⏰ Status: TERLAMBAT - Showing modal');
+                showLateModal.value = true;
+                console.log('⏰ showLateModal.value:', showLateModal.value);
+                return;
+            }
+            // Terlalu sore (setelah 13:40)
+            else if (timeInMinutes > endTerlambat) {
+                console.log('❌ Waktu sudah melewati batas');
+                showNotification('❌ Waktu sudah melewati 13:40, status Alfa otomatis diterapkan.', 'error');
+                return;
             }
         }
 
+        // Validasi keterangan untuk izin/sakit
         if (['izin', 'sakit'].includes(determinedStatus) && !checkinDescription.value.trim()) {
             checkinDescriptionError.value = 'Keterangan diperlukan untuk status Izin atau Sakit';
             showNotification(checkinDescriptionError.value, 'error');
             return;
         }
 
+        // Proses check-in untuk izin/sakit
+        console.log('📝 Processing izin/sakit');
+        performCheckIn(determinedStatus, checkinDescription.value);
+    };
+
+    // 🔹 Fungsi untuk submit dari modal terlambat
+    const submitLateCheckIn = () => {
+        lateDescriptionError.value = '';
+        
+        if (!lateDescription.value.trim()) {
+            lateDescriptionError.value = 'Keterangan diperlukan untuk status Terlambat';
+            showNotification(lateDescriptionError.value, 'error');
+            return;
+        }
+
+        // Tutup modal dan proses check-in
+        showLateModal.value = false;
+        performCheckIn('terlambat', lateDescription.value);
+    };
+
+    // 🔹 Fungsi terpisah untuk perform check-in
+    const performCheckIn = (status: string, description: string) => {
         processingIn.value = true;
+
+        console.log('🟢 performCheckIn called with:', { status, description }); // Debug log
 
         navigator.geolocation.getCurrentPosition(
             (pos) => {
+                const payload = {
+                    latitude: pos.coords.latitude,
+                    longitude: pos.coords.longitude,
+                    status: status,
+                    description: description || '', // Pastikan description dikirim
+                };
+
+                console.log('🟢 Sending payload:', payload); // Debug log
+
                 router.post(
-                    route('absen.checkin'), {
-                        latitude: pos.coords.latitude,
-                        longitude: pos.coords.longitude,
-                        status: determinedStatus,
-                        description: checkinDescription.value,
-                    }, {
+                    route('absen.checkin'), 
+                    payload, 
+                    {
                         onSuccess: () => {
                             fetchStatus();
-                            stats.value.absenHariIni = determinedStatus;
-                            latestCheckinStatus.value = determinedStatus;
-                            if (['izin', 'sakit', 'alfa'].includes(determinedStatus)) {
+                            stats.value.absenHariIni = status;
+                            latestCheckinStatus.value = status;
+                            if (['izin', 'sakit', 'alfa'].includes(status)) {
                                 canCheckout.value = false;
                                 canScanQR.value = false;
                                 checkoutStatus.value = 'Tidak Perlu Pulang';
                                 showNotification(
-                                    `✅ Absen ${determinedStatus.charAt(0).toUpperCase() + determinedStatus.slice(1)} berhasil! Anda tidak perlu absen pulang.`,
+                                    `✅ Absen ${status.charAt(0).toUpperCase() + status.slice(1)} berhasil! Anda tidak perlu absen pulang.`,
                                     'success',
                                 );
                             } else {
                                 canCheckout.value = true;
-                                canScanQR.value = ['hadir', 'terlambat'].includes(determinedStatus);
+                                canScanQR.value = ['hadir', 'terlambat'].includes(status);
                                 showNotification(
-                                    `✅ Absen ${determinedStatus.charAt(0).toUpperCase() + determinedStatus.slice(1)} berhasil!`,
+                                    `✅ Absen ${status.charAt(0).toUpperCase() + status.slice(1)} berhasil!`,
                                     'success');
                             }
                             checkinDescription.value = '';
                             checkinDescriptionError.value = '';
+                            lateDescription.value = '';
+                            lateDescriptionError.value = '';
                             refreshAttendance();
                         },
                         onError: (errors) => {
-                            console.log('Check-in error details:', errors);
+                            console.log('❌ Check-in error details:', errors);
                             const errorMessage = errors.message ||
                                 'Absensi gagal, silakan hubungi admin atau guru!';
                             showNotification(`❌ ${errorMessage}`, 'error');
@@ -441,12 +525,11 @@
             },
         );
     };
+    
     // Absen Pelajaran tanpa QR (untuk izin/sakit, pilih mapel dari jadwalData)
     const lessonCheckIn = () => {
-        // Bersihkan error lama
         checkinDescriptionError.value = '';
 
-        // Validasi status Izin/Sakit
         if (['izin', 'sakit'].includes(selectedStatus1.value)) {
             if (!selectedMapel.value) {
                 checkinDescriptionError.value = 'Pilih mata pelajaran terlebih dahulu';
@@ -460,7 +543,6 @@
             }
         }
 
-        // Siapkan payload
         const payload = {
             id_jadwal: selectedMapel.value,
             status: selectedStatus1.value,
@@ -469,10 +551,8 @@
 
         console.log('🟢 Sending lesson check-in payload:', payload);
 
-        // Kirim request ke backend
         router.post('/absensi-pelajaran/checkin', payload, {
             onSuccess: (page) => {
-                // Update status dan absensi
                 fetchStatus?.();
                 refreshAttendance?.();
 
@@ -480,7 +560,6 @@
                     `✅ Absensi Pelajaran berhasil (${payload.status.charAt(0).toUpperCase() + payload.status.slice(1)})!`,
                     'success');
 
-                // Reset form
                 selectedMapel.value = '';
                 checkinDescription.value = '';
                 checkinDescriptionError.value = '';
@@ -532,7 +611,7 @@
                 id_jadwal,
                 status: selectedStatus1.value,
                 description: checkinDescription.value,
-            }); // Debug payload
+            });
 
             router.post(
                 '/absensi-pelajaran/checkin', {
@@ -616,13 +695,10 @@
             document.removeEventListener('click', handleClick);
             clearInterval(interval);
         });
-
-
     });
 </script>
 
 <template>
-
     <Head title="Dashboard Siswa" />
     <div class="min-h-screen bg-gray-50 p-6">
         <!-- Header -->
@@ -647,10 +723,7 @@
                         class="absolute top-full right-0 z-10 mt-2 w-48 rounded-xl border border-gray-200 bg-white shadow-lg">
                         <div class="p-2">
                             <button
-                                @click="
-                                    showChangePasswordModal = true;
-                                    closeDropdown();
-                                "
+                                @click="showChangePasswordModal = true; closeDropdown();"
                                 class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-gray-700 hover:bg-gray-100">
                                 <Lock class="h-4 w-4" /> Ubah Password
                             </button>
@@ -682,8 +755,8 @@
                     </div>
                 </div>
                 <div class="mt-4">
-                    <p class="text-3xl font-bold text-gray-900">{{ stat . value }}</p>
-                    <p class="text-sm text-gray-600">{{ stat . label }}</p>
+                    <p class="text-3xl font-bold text-gray-900">{{ stat.value }}</p>
+                    <p class="text-sm text-gray-600">{{ stat.label }}</p>
                 </div>
             </div>
         </div>
@@ -699,11 +772,13 @@
                         </div>
                         <h3 class="text-lg font-semibold text-gray-900">Aksi Cepat</h3>
                     </div>
-                    <button @click="showAbsensiModal = true"
+                                        <button @click="showAbsensiModal = true"
                         class="inline-block bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-xl shadow-sm transition-colors duration-200">
                         Lihat Data Absensi
                     </button>
-
+                    
+               
+                
                 </div>
                 <div class="space-y-4">
                     <div class="rounded-2xl border border-gray-200 p-4 hover:bg-gray-50">
@@ -747,7 +822,9 @@
                         </button>
                         <p v-if="!canCheckIn && !checkinStatus.includes('Sudah')"
                             class="mt-2 text-center text-sm text-red-500">
-                            Absensi hanya bisa dilakukan di jam 06:40
+                            <span v-if="checkinStatus === 'Alfa'">Waktu sudah melewati 13:40</span>
+                            <span v-else-if="checkinStatus === 'Belum Bisa Absen'">Absensi dimulai jam 06:40</span>
+                            <span v-else>Absensi tidak tersedia</span>
                         </p>
                     </div>
                     <div class="rounded-2xl border border-gray-200 p-4 hover:bg-gray-50">
@@ -767,7 +844,6 @@
                         </button>
                     </div>
                     <div class="mt-4">
-                        <!-- Pilihan status -->
                         <select v-model="selectedStatus1"
                             class="mb-3 w-full rounded-lg border border-gray-300 p-2 text-gray-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500">
                             <option value="hadir">Hadir</option>
@@ -775,7 +851,6 @@
                             <option value="sakit">Sakit</option>
                         </select>
 
-                        <!-- Jika status Izin atau Sakit -->
                         <div v-if="['izin', 'sakit'].includes(selectedStatus1)" class="mb-3">
                             <label for="selected_mapel" class="mb-2 block text-sm font-medium text-gray-700"> Pilih Mata
                                 Pelajaran </label>
@@ -784,8 +859,8 @@
                                 <option value="" disabled>Pilih mata pelajaran</option>
                                 <option v-for="jadwal in props.jadwalData" :key="jadwal.id"
                                     :value="jadwal.id">
-                                    {{ jadwal . mata_pelajaran }} - {{ jadwal . nama_guru }} ({{ jadwal . nama_kelas }})
-                                    ({{ jadwal . jam_mulai }}–{{ jadwal . jam_selesai }})
+                                    {{ jadwal.mata_pelajaran }} - {{ jadwal.nama_guru }} ({{ jadwal.nama_kelas }})
+                                    ({{ jadwal.jam_mulai }}–{{ jadwal.jam_selesai }})
                                 </option>
                             </select>
 
@@ -798,7 +873,6 @@
                             <p v-if="checkinDescriptionError" class="mt-1 text-sm text-red-500">
                                 {{ checkinDescriptionError }}</p>
 
-                            <!-- Tombol kirim Izin/Sakit -->
                             <button @click="lessonCheckIn" :disabled="!canSubmitLessonCheckIn"
                                 class="flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-white transition-all duration-300"
                                 :class="canSubmitLessonCheckIn ? 'bg-blue-600 hover:bg-blue-700 active:scale-95' :
@@ -807,13 +881,9 @@
                             </button>
                         </div>
 
-                        <!-- Jika status Hadir -->
                         <div v-else>
                             <button
-                                @click="
-                                        isScanning = true;
-                                        scanResult = '';
-                                    "
+                                @click="isScanning = true; scanResult = '';"
                                 :disabled="!canScanQR"
                                 class="flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-white transition-all duration-300"
                                 :class="canScanQR
@@ -838,7 +908,7 @@
                     <div v-for="(attendance, index) in props.recentAttendance.slice(0, 4)" :key="index"
                         class="rounded-2xl border border-gray-200 p-4 hover:bg-gray-50 transition-all duration-200">
                         <div class="flex items-center justify-between mb-1">
-                            <p class="font-semibold text-gray-900">{{ attendance . name }}</p>
+                            <p class="font-semibold text-gray-900">{{ attendance.name }}</p>
                             <span class="text-xs font-medium rounded-full px-2 py-0.5"
                                 :class="{
                                     'bg-green-100 text-green-600': attendance.color === 'green',
@@ -847,10 +917,10 @@
                                     'bg-red-100 text-red-600': attendance.color === 'red',
                                     'bg-gray-100 text-gray-600': attendance.color === 'gray',
                                 }">
-                                {{ attendance . status }}
+                                {{ attendance.status }}
                             </span>
                         </div>
-                        <p class="text-xs text-gray-500 mb-1">Waktu: {{ attendance . time }}</p>
+                        <p class="text-xs text-gray-500 mb-1">Waktu: {{ attendance.time }}</p>
                         <p v-if="['Izin', 'Sakit'].includes(attendance.status)" class="text-xs text-gray-500">
                             Verifikasi:
                             <span
@@ -863,7 +933,7 @@
                                         .verifikasi === 'cek' || !attendance.verifikasi,
                                 }"
                                 class="px-2 py-0.5 rounded-full text-[11px] font-medium">
-                                {{ attendance . verifikasi || 'Menunggu' }}
+                                {{ attendance.verifikasi || 'Menunggu' }}
                             </span>
                         </p>
                     </div>
@@ -874,7 +944,53 @@
                 </div>
             </div>
         </div>
-                    <Absensi v-if="showAbsensiModal" @close="showAbsensiModal = false" />
+
+        <Absensi v-if="showAbsensiModal" @close="showAbsensiModal = false" />
+
+        <!-- 🔹 Late Check-in Modal (PRIORITAS TINGGI) -->
+        <Teleport to="body">
+            <div v-if="showLateModal"
+                class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+                @click.self="closeLateModal">
+                <div class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white shadow-2xl animate-in fade-in zoom-in duration-200" @click.stop>
+                    <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+                        <div class="flex items-center gap-2">
+                            <CheckCircle class="h-5 w-5 text-orange-600" />
+                            <h2 class="text-lg font-semibold text-gray-900">Kenapa Terlambat?</h2>
+                        </div>
+                        <button @click="closeLateModal" type="button"
+                            class="text-gray-400 transition-colors hover:text-gray-600 text-2xl leading-none">✕</button>
+                    </div>
+                    <div class="space-y-4 p-6">
+                        <div>
+                            <label for="late_description"
+                                class="mb-2 block text-sm font-medium text-gray-700">Keterangan Terlambat <span class="text-red-500">*</span></label>
+                            <textarea id="late_description" v-model="lateDescription"
+                                class="w-full rounded-lg border border-gray-300 p-3 text-gray-900 placeholder-gray-400 focus:border-orange-500 focus:ring-2 focus:ring-orange-500 focus:outline-none"
+                                :class="{ 'border-red-500': lateDescriptionError }" 
+                                placeholder="Contoh: Terlambat bangun, macet di jalan, dll."
+                                rows="4"
+                                required
+                                autofocus></textarea>
+                            <p v-if="lateDescriptionError" class="mt-1 text-sm text-red-500">
+                                {{ lateDescriptionError }}
+                            </p>
+                        </div>
+                        <div class="flex gap-3 pt-4">
+                            <button type="button" @click="closeLateModal"
+                                class="flex-1 rounded-xl bg-gray-500 py-3 font-medium text-white transition-colors hover:bg-gray-600 active:scale-95">
+                                Batal
+                            </button>
+                            <button type="button" @click="submitLateCheckIn" :disabled="processingIn"
+                                class="flex-1 rounded-xl bg-orange-600 py-3 font-medium text-white transition-colors hover:bg-orange-700 disabled:bg-orange-400 active:scale-95">
+                                <span v-if="processingIn">Memproses...</span>
+                                <span v-else>Kirim Absensi</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
 
         <!-- Weekend Restriction Modal -->
         <div v-if="showWeekendModal"
@@ -921,10 +1037,7 @@
                         <p class="font-semibold text-green-600">QR Code Terdeteksi:</p>
                         <p class="rounded bg-gray-100 p-2 font-mono">{{ scanResult }}</p>
                         <button
-                            @click="
-                                isScanning = true;
-                                scanResult = '';
-                            "
+                            @click="isScanning = true; scanResult = '';"
                             class="mt-4 rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600">
                             Scan Ulang
                         </button>
@@ -1000,7 +1113,7 @@
                             :class="{ 'border-red-500': passwordErrors.current_password }"
                             placeholder="Masukkan password saat ini" autocomplete="current-password" required />
                         <p v-if="passwordErrors.current_password" class="mt-1 text-sm text-red-500">
-                            {{ passwordErrors . current_password[0] }}</p>
+                            {{ passwordErrors.current_password[0] }}</p>
                     </div>
                     <div>
                         <label for="new_password" class="mb-2 block text-sm font-medium text-gray-700">Password
@@ -1010,7 +1123,7 @@
                             :class="{ 'border-red-500': passwordErrors.new_password }"
                             placeholder="Masukkan password baru" autocomplete="new-password" required />
                         <p v-if="passwordErrors.new_password" class="mt-1 text-sm text-red-500">
-                            {{ passwordErrors . new_password[0] }}</p>
+                            {{ passwordErrors.new_password[0] }}</p>
                     </div>
                     <div>
                         <label for="new_password_confirmation"
@@ -1021,7 +1134,7 @@
                             :class="{ 'border-red-500': passwordErrors.new_password_confirmation }"
                             placeholder="Konfirmasi password baru" autocomplete="new-password" required />
                         <p v-if="passwordErrors.new_password_confirmation" class="mt-1 text-sm text-red-500">
-                            {{ passwordErrors . new_password_confirmation[0] }}
+                            {{ passwordErrors.new_password_confirmation[0] }}
                         </p>
                     </div>
                     <div class="flex gap-3 pt-4">
@@ -1062,10 +1175,7 @@
                         {{ toastType === 'success' ? 'Berhasil' : 'Gagal' }}</h2>
                     <p class="mb-6 text-gray-600">{{ toastMessage }}</p>
                     <button
-                        @click="
-                            fetchStatus();
-                            showToast = false;
-                        "
+                        @click="fetchStatus(); showToast = false;"
                         class="w-full rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-4 py-2 font-medium text-white shadow hover:from-blue-700 hover:to-purple-700">
                         Tutup
                     </button>
@@ -1076,7 +1186,6 @@
 </template>
 
 <style scoped>
-    /* Checkmark animation for toast notification */
     .checkmark-circle {
         stroke: #4caf50;
         stroke-width: 2;
