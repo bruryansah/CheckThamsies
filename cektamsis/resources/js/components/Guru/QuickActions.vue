@@ -8,7 +8,7 @@
         </h2>
 
         <!-- Dropdown Pilih Jadwal -->
-        <div class="mb-6 relative" ref="dropdownContainer">
+        <div class="mb-8 relative" ref="dropdownContainer">
             <label class="mb-2 block text-sm font-semibold text-gray-700 flex items-center">
                 <svg class="mr-2 h-4 w-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -16,14 +16,15 @@
                 Pilih Jadwal:
             </label>
 
-            <div @click="toggleDropdown" class="relative">
+            <div class="relative">
                 <div
+                    @click="toggleDropdown"
                     class="flex items-center justify-between w-full rounded-xl border border-gray-300 bg-white/90 px-4 py-3 text-gray-900 shadow-md transition-all duration-300 cursor-pointer hover:border-blue-400 focus:border-blue-500"
                 >
                     <span v-if="selectedLabel" class="truncate">{{ selectedLabel }}</span>
                     <span v-else class="text-gray-500">-- Pilih Jadwal --</span>
                     <svg
-                        class="ml-2 h-5 w-5 text-gray-500 transition-transform duration-300"
+                        class="ml-2 h-5 w-5 text-gray-500 transition-transform duration-300 flex-shrink-0"
                         :class="{ 'rotate-180': isOpen }"
                         fill="none"
                         stroke="currentColor"
@@ -32,44 +33,53 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                     </svg>
                 </div>
-
-                <!-- Dropdown list -->
-                <transition name="fade-slide">
-                    <ul
-                        v-if="isOpen"
-                        class="absolute z-20 mt-2 max-h-56 w-full overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-lg ring-1 ring-black/5"
-                    >
-                        <li
-                            v-for="j in jadwalData"
-                            :key="j.id_jadwal"
-                            @click.stop="selectJadwal(j)"
-                            :class="[
-                                'cursor-pointer px-4 py-2 transition-colors duration-200',
-                                j.status === 'aktif'
-                                    ? 'text-gray-700 hover:bg-blue-50 hover:text-blue-700'
-                                    : 'text-gray-400 cursor-not-allowed opacity-50'
-                            ]"
-                        >
-                            <div class="text-sm font-medium">
-                                {{ j.mata_pelajaran }} - {{ j.nama_kelas }}
-                            </div>
-                            <div class="text-xs" :class="j.status === 'aktif' ? 'text-gray-500' : 'text-gray-400'">
-                                ({{ formatHari(j.hari) }} {{ j.jam_mulai }} - {{ j.jam_selesai }}) - Lt.{{ j.lantai }} R.{{ j.ruang }}
-                                <span v-if="j.status === 'tutup'" class="ml-2 font-semibold text-red-500">[Tutup]</span>
-                            </div>
-                        </li>
-                        <li
-                            v-if="jadwalData.length === 0"
-                            class="px-4 py-2 text-gray-500 text-sm italic"
-                        >
-                            Tidak ada jadwal tersedia
-                        </li>
-                    </ul>
-                </transition>
             </div>
 
             <p v-if="!selectedJadwal" class="mt-2 text-sm text-gray-500 italic">Silakan pilih jadwal terlebih dahulu</p>
         </div>
+
+        <!-- Dropdown Portal - Render di luar container -->
+        <teleport to="body">
+            <transition name="fade-slide">
+                <div
+                    v-if="isOpen"
+                    class="fixed inset-0 z-[9999]"
+                    @click="isOpen = false"
+                >
+                    <ul
+                        v-if="dropdownPosition"
+                        :style="{
+                            position: 'fixed',
+                            top: dropdownPosition.top + 'px',
+                            left: dropdownPosition.left + 'px',
+                            width: dropdownPosition.width + 'px'
+                        }"
+                        class="max-h-64 overflow-y-auto rounded-xl border border-gray-200 bg-white shadow-2xl ring-1 ring-black/5"
+                        @click.stop
+                    >
+                        <li
+                            v-for="j in activeJadwal"
+                            :key="j.id_jadwal"
+                            @click.stop="selectJadwal(j)"
+                            class="cursor-pointer px-4 py-3 transition-colors duration-200 text-gray-700 hover:bg-blue-50 hover:text-blue-700 border-b border-gray-100 last:border-b-0"
+                        >
+                            <div class="text-sm font-medium">
+                                {{ j.mata_pelajaran }} - {{ j.nama_kelas }}
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                ({{ formatHari(j.hari) }} {{ j.jam_mulai }} - {{ j.jam_selesai }}) - Lt.{{ j.lantai }} R.{{ j.ruang }}
+                            </div>
+                        </li>
+                        <li
+                            v-if="activeJadwal.length === 0"
+                            class="px-4 py-2 text-gray-500 text-sm italic"
+                        >
+                            Tidak ada jadwal aktif tersedia
+                        </li>
+                    </ul>
+                </div>
+            </transition>
+        </teleport>
 
         <!-- Tombol Aksi -->
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -137,7 +147,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 
 const props = defineProps({
     selectedJadwal: String,
@@ -152,10 +162,34 @@ const emit = defineEmits(['update:selectedJadwal', 'generateQR', 'showAttendance
 const isOpen = ref(false);
 const selectedLabel = ref('');
 const dropdownContainer = ref(null);
+const dropdownPosition = ref(null);
+
+// Filter hanya jadwal aktif
+const activeJadwal = computed(() => {
+    return props.jadwalData.filter(j => j.status === 'aktif');
+});
+
+// Calculate dropdown position
+const updateDropdownPosition = () => {
+    if (!dropdownContainer.value || !isOpen.value) return;
+    
+    const container = dropdownContainer.value.querySelector('div');
+    if (!container) return;
+    
+    const rect = container.getBoundingClientRect();
+    dropdownPosition.value = {
+        top: rect.bottom + 8,
+        left: rect.left,
+        width: rect.width
+    };
+};
 
 // Toggle dropdown
 const toggleDropdown = () => {
     isOpen.value = !isOpen.value;
+    if (isOpen.value) {
+        setTimeout(updateDropdownPosition, 10);
+    }
 };
 
 // Close dropdown ketika klik di luar
@@ -165,11 +199,15 @@ const handleClickOutside = (event) => {
     }
 };
 
+// Handle window resize
+const handleResize = () => {
+    if (isOpen.value) {
+        updateDropdownPosition();
+    }
+};
+
 // Saat pilih jadwal
 const selectJadwal = (jadwal) => {
-    if (jadwal.status === 'tutup') return; // Jangan pilih jadwal yang tutup
-    
-    // Kirimkan id_jadwal asli agar backend bisa menemukan jadwal dengan benar
     emit('update:selectedJadwal', String(jadwal.id_jadwal));
     selectedLabel.value = `${jadwal.mata_pelajaran} - ${jadwal.nama_kelas} (${props.formatHari(jadwal.hari)} ${jadwal.jam_mulai} - ${jadwal.jam_selesai})`;
     isOpen.value = false;
@@ -186,10 +224,14 @@ watch(
 // Lifecycle hooks
 onMounted(() => {
     document.addEventListener('click', handleClickOutside);
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('scroll', updateDropdownPosition, true);
 });
 
 onUnmounted(() => {
     document.removeEventListener('click', handleClickOutside);
+    window.removeEventListener('resize', handleResize);
+    window.removeEventListener('scroll', updateDropdownPosition, true);
 });
 </script>
 
