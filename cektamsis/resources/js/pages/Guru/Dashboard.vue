@@ -489,8 +489,11 @@ const recentAttendance = computed(() => {
 });
 
 // attendanceStats tetap menggunakan filteredAbsensiData (hari ini)
+// ⭐ GANTI computed property attendanceStats yang lama dengan yang ini
+// Lokasi: resources/js/Pages/Guru/Dashboard.vue (sekitar baris 350-400)
+
 const attendanceStats = computed(() => {
-    // Filter hanya untuk hari ini
+    // Filter hanya untuk hari ini (untuk persentase)
     const todayStr = new Date().toISOString().split('T')[0];
     const todayData = filteredAbsensiData.value.filter((a) => {
         const recordDate = a.date || a.tanggal;
@@ -504,24 +507,33 @@ const attendanceStats = computed(() => {
         alphaCount = 0,
         izinCount = 0,
         sakitCount = 0;
-    const lateMap = {};
 
-    // Proses data hari ini saja
+    // Proses data hari ini untuk persentase
     todayData.forEach((a) => {
         const processedAttendance = processAttendanceStatus(a);
         const status = processedAttendance.displayStatus.toLowerCase();
         const originalStatus = (a.status || '').toLowerCase();
 
-        // Hitung berdasarkan status yang diproses
         if (status === 'hadir') hadirCount++;
-        else if (status === 'terlambat') {
-            terlambatCount++;
-            // Untuk siswa sering terlambat
-            const studentName = a.name || a.nama_siswa || 'Unknown';
-            lateMap[studentName] = (lateMap[studentName] || 0) + 1;
-        } else if (status === 'alfa' || status === 'alpha') alphaCount++;
+        else if (status === 'terlambat') terlambatCount++;
+        else if (status === 'alfa' || status === 'alpha') alphaCount++;
         else if (status === 'izin' || originalStatus === 'izin') izinCount++;
         else if (status === 'sakit' || originalStatus === 'sakit') sakitCount++;
+    });
+
+    // ⭐ PERBAIKAN: Hitung siswa terlambat dari SEMUA WAKTU menggunakan absensiHistory
+    const lateMap = {};
+    
+    // Gunakan absensiHistory untuk data semua waktu
+    absensiHistory.value.forEach((a) => {
+        const processedAttendance = processAttendanceStatus(a);
+        const status = processedAttendance.displayStatus.toLowerCase();
+        
+        // Hanya hitung yang terlambat
+        if (status === 'terlambat') {
+            const studentName = a.name || a.nama_siswa || 'Unknown';
+            lateMap[studentName] = (lateMap[studentName] || 0) + 1;
+        }
     });
 
     const topLateStudents = Object.entries(lateMap)
