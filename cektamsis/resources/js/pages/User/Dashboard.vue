@@ -102,25 +102,23 @@ const pelajaranStats = computed(() => {
     
     const total = filteredData.length || 1;
     
-    let hadir = 0, terlambat = 0, alfa = 0, izin = 0, sakit = 0;
+    let hadir = 0, alfa = 0, izin = 0, sakit = 0;
     
     filteredData.forEach(a => {
         const status = (a.status || '').toLowerCase();
         if (status === 'hadir') hadir++;
-        else if (status === 'terlambat') terlambat++;
         else if (status === 'alfa' || status === 'alpha') alfa++;
         else if (status === 'izin') izin++;
         else if (status === 'sakit') sakit++;
+        // status 'terlambat' diabaikan dari statistik
     });
 
     return {
         hadirPct: Math.round((hadir / total) * 100) || 0,
-        terlambatPct: Math.round((terlambat / total) * 100) || 0,
         alfaPct: Math.round((alfa / total) * 100) || 0,
         izinPct: Math.round((izin / total) * 100) || 0,
         sakitPct: Math.round((sakit / total) * 100) || 0,
         totalHadir: hadir,
-        totalTerlambat: terlambat,
         totalAlfa: alfa,
         totalIzin: izin,
         totalSakit: sakit,
@@ -134,14 +132,14 @@ const perMapelStats = computed(() => {
     const statsMap: Record<string, { hadir: number; terlambat: number; alfa: number; izin: number; sakit: number; total: number }> = {};
     
     data.forEach(a => {
+        const status = (a.status || '').toLowerCase();
+        if (status === 'terlambat') return; // abaikan 'terlambat' dari statistik per mapel
         const mapel = a.mata_pelajaran;
         if (!statsMap[mapel]) {
             statsMap[mapel] = { hadir: 0, terlambat: 0, alfa: 0, izin: 0, sakit: 0, total: 0 };
         }
         statsMap[mapel].total++;
-        const status = (a.status || '').toLowerCase();
         if (status === 'hadir') statsMap[mapel].hadir++;
-        else if (status === 'terlambat') statsMap[mapel].terlambat++;
         else if (status === 'alfa' || status === 'alpha') statsMap[mapel].alfa++;
         else if (status === 'izin') statsMap[mapel].izin++;
         else if (status === 'sakit') statsMap[mapel].sakit++;
@@ -150,7 +148,7 @@ const perMapelStats = computed(() => {
     return Object.entries(statsMap).map(([mapel, s]) => ({
         mapel,
         ...s,
-        hadirPct: Math.round(((s.hadir + s.terlambat) / (s.total || 1)) * 100),
+        hadirPct: Math.round((s.hadir / (s.total || 1)) * 100),
     })).sort((a, b) => b.hadirPct - a.hadirPct);
 });
 
@@ -572,17 +570,7 @@ onMounted(async () => {
                             </div>
                             <p class="text-xs text-gray-500 mt-0.5">{{ pelajaranStats.totalHadir }} pertemuan</p>
                         </div>
-                        <div>
-                            <div class="flex items-center justify-between mb-1">
-                                <span class="text-sm font-medium text-gray-700">Terlambat</span>
-                                <span class="text-sm font-semibold text-yellow-600">{{ pelajaranStats.terlambatPct }}%</span>
-                            </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="bg-yellow-500 h-2 rounded-full transition-all duration-500" :style="{ width: `${pelajaranStats.terlambatPct}%` }"></div>
-                            </div>
-                            <p class="text-xs text-gray-500 mt-0.5">{{ pelajaranStats.totalTerlambat }} pertemuan</p>
-                        </div>
-                        <div>
+                                                <div>
                             <div class="flex items-center justify-between mb-1">
                                 <span class="text-sm font-medium text-gray-700">Alfa</span>
                                 <span class="text-sm font-semibold text-red-600">{{ pelajaranStats.alfaPct }}%</span>
@@ -622,7 +610,7 @@ onMounted(async () => {
                                 <p class="text-xs text-gray-600">Total Pertemuan</p>
                             </div>
                             <div class="text-center p-3 bg-green-50 rounded-xl">
-                                <p class="text-xl font-bold text-green-600">{{ pelajaranStats.hadirPct + pelajaranStats.terlambatPct }}%</p>
+                                <p class="text-xl font-bold text-green-600">{{ pelajaranStats.hadirPct }}%</p>
                                 <p class="text-xs text-gray-600">Tingkat Kehadiran</p>
                             </div>
                         </div>
@@ -655,7 +643,7 @@ onMounted(async () => {
                             <p class="text-xs text-red-600">Tingkat alfa pada {{ selectedMapelFilter === 'all' ? 'beberapa mata pelajaran' : selectedMapelFilter }} cukup tinggi.</p>
                         </div>
                     </div>
-                    <div v-else-if="(pelajaranStats.hadirPct + pelajaranStats.terlambatPct) >= 85" class="mt-4 p-3 bg-green-50 border border-green-200 rounded-xl flex items-start gap-2">
+                    <div v-else-if="pelajaranStats.hadirPct >= 85" class="mt-4 p-3 bg-green-50 border border-green-200 rounded-xl flex items-start gap-2">
                         <CheckCircle class="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
                         <div>
                             <p class="text-sm font-medium text-green-700">Bagus! 🎉</p>
