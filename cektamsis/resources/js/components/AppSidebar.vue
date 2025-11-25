@@ -117,13 +117,13 @@ onUnmounted(() => {
 });
 
 const mainNavItems = [
-  { title: "Dashboard", href: "/dashboard", icon: LayoutGrid },
-  { title: "Manage User", href: "/user", icon: Users },
-  { title: "Data Guru", href: "/guru", icon: Users },
-  { title: "Data Jadwal", href: "/jadwal", icon: Users },
-  { title: "Data Mapel", href: "/mapel", icon: BookOpen },
-  { title: "Data Kelas", href: "/kelas", icon: School },
-  { title: "Data Jurusan", href: "/jurusan", icon: Group },
+  { icon: LayoutGrid, title: "Dashboard", href: "/dashboard" },
+  { icon: Users, title: "Manage User", href: "/user" },
+  { icon: Users, title: "Data Guru", href: "/guru" },
+  { icon: Users, title: "Data Jadwal", href: "/jadwal" },
+  { icon: BookOpen, title: "Data Mapel", href: "/mapel" },
+  { icon: School, title: "Data Kelas", href: "/kelas" },
+  {  icon: Group, title: "Data Jurusan", href: "/jurusan" },
   {
     title: "Data Siswa",
     icon: GraduationCap,
@@ -166,7 +166,7 @@ const mainNavItems = [
               class="flex items-center w-full text-left"
             >
               <AppLogo class="w-9 h-9" />
-              <span class="ml-2">My Dashboard</span>
+              <span class="ml-2"></span>
             </button>
           </SidebarMenuButton>
         </SidebarMenuItem>

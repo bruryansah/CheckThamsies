@@ -17,6 +17,7 @@ return new class extends Migration {
             $table->dateTime('waktu_scan');            // waktu absen
             $table->enum('status', ['hadir', 'izin', 'sakit', 'alfa'])->default('hadir');
             $table->string('keterangan', 255)->nullable();
+            $table->enum('verifikasi', ['menunggu', 'approve', 'disapprove', '-'])->default('-');
             $table->timestamps();
 
             $table->foreign('id_jadwal')->references('id_jadwal')->on('jadwal')->onDelete('cascade');

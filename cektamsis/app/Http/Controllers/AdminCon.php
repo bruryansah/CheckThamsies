@@ -21,24 +21,24 @@ class AdminCon extends Controller
     public function dashboard(Request $request): Response
     {
         $hariIni = now()->toDateString();
-        $bulan = $request->input('bulan'); // ex: "Oktober" atau "Semua"
-        $tahun = $request->input('tahun'); // ex: "2025"
+        $bulan = $request->input('bulan');
+        $tahun = $request->input('tahun');
 
+        // Query distribusi per kelas (HANYA HARI INI)
         $distribusi = DB::table('kelas as k')
             ->leftJoin('siswa as s', 's.id_kelas', '=', 'k.id_kelas')
-            ->leftJoin('absensi_sekolah as a', 'a.id_siswa', '=', 's.id_siswa')
-            ->select(
-                'k.nama_kelas',
-                DB::raw("COALESCE(SUM(CASE WHEN a.status = 'hadir' THEN 1 ELSE 0 END), 0) as hadir"),
-                DB::raw("COALESCE(SUM(CASE WHEN a.status = 'terlambat' THEN 1 ELSE 0 END), 0) as terlambat"),
-                DB::raw("COALESCE(SUM(CASE WHEN a.status = 'izin' THEN 1 ELSE 0 END), 0) as izin"),
-                DB::raw("COALESCE(SUM(CASE WHEN a.status = 'sakit' THEN 1 ELSE 0 END), 0) as sakit"),
-                DB::raw("COALESCE(SUM(CASE WHEN a.status = 'alfa' THEN 1 ELSE 0 END), 0) as alfa"),
-                DB::raw('COUNT(DISTINCT s.id_siswa) as total'), // total siswa per kelas
-            )
-            ->whereDate('a.tanggal', $hariIni) // filter hanya absensi hari ini
-            ->orWhereNull('a.tanggal') // biar kelas tetap tampil walau belum ada absen
-            ->groupBy('k.nama_kelas')
+            ->leftJoin('absensi_sekolah as a', function ($join) use ($hariIni) {
+                $join->on('a.id_siswa', '=', 's.id_siswa')->whereDate('a.tanggal', '=', $hariIni);
+            })
+            ->select('k.nama_kelas', 
+            DB::raw("COALESCE(SUM(CASE WHEN a.status = 'terlambat' THEN 1 ELSE 0 END), 0) as terlambat"),
+            DB::raw("COALESCE(SUM(CASE WHEN a.status = 'hadir' THEN 1 ELSE 0 END), 0) as hadir"), 
+            DB::raw("COALESCE(SUM(CASE WHEN a.status = 'izin' THEN 1 ELSE 0 END), 0) as izin"), 
+            DB::raw("COALESCE(SUM(CASE WHEN a.status = 'sakit' THEN 1 ELSE 0 END), 0) as sakit"), 
+            DB::raw("COALESCE(SUM(CASE WHEN a.status = 'alfa' THEN 1 ELSE 0 END), 0) as alfa"), 
+            DB::raw('COUNT(DISTINCT s.id_siswa) as total'))
+            ->groupBy('k.id_kelas', 'k.nama_kelas')
+            ->orderBy('k.nama_kelas')
             ->get();
 
         $rekapHarian = DB::table('absensi_sekolah')
@@ -65,19 +65,29 @@ class AdminCon extends Controller
             'totalSiswa' => User::where('role', 'user')->count(),
             'totalGuru' => User::where('role', 'guru')->count(),
             'totalAdmin' => User::where('role', 'admin')->count(),
-            'totalabsen' => AbsensiSekolah::where('status', 'hadir')->count(),
-            'totalterlambat' => AbsensiSekolah::where('status', 'terlambat')->count(),
-            'totalizin' => AbsensiSekolah::where('status', 'izin')->count(),
-            'totalsakit' => AbsensiSekolah::where('status', 'sakit')->count(),
-            'totalalfa' => AbsensiSekolah::where('status', 'alfa')->count(),
-            'absen' => AbsensiSekolah::whereBetween('jam_masuk', ['06:40:00', '06:50:00'])->count(),
-            'warning' => AbsensiSekolah::whereBetween('jam_masuk', ['06:51:00', '07:00:00'])->count(),
-            'telat' => AbsensiSekolah::whereBetween('jam_masuk', ['07:01:00', '09:00:00'])->count(),
-            'alfa' => AbsensiSekolah::whereBetween('jam_masuk', ['09:01:00', '24:00:00'])->count(),
 
-            // Data chart
-            'distribusi' => $distribusi, // tetap ada
-            'rekapHarian' => $rekapHarian, // ✅ tambahan
+            // ✅ FILTER HANYA HARI INI
+            'totalabsen' => AbsensiSekolah::whereDate('tanggal', $hariIni)->where('status', 'hadir')->count(),
+            'totalterlambat' => AbsensiSekolah::whereDate('tanggal', $hariIni)->where('status', 'terlambat')->count(),
+            'totalizin' => AbsensiSekolah::whereDate('tanggal', $hariIni)->where('status', 'izin')->count(),
+            'totalsakit' => AbsensiSekolah::whereDate('tanggal', $hariIni)->where('status', 'sakit')->count(),
+            'totalalfa' => AbsensiSekolah::whereDate('tanggal', $hariIni)->where('status', 'alfa')->count(),
+
+            'absen' => AbsensiSekolah::whereDate('tanggal', $hariIni)
+                ->whereBetween('jam_masuk', ['06:40:00', '06:50:00'])
+                ->count(),
+            'warning' => AbsensiSekolah::whereDate('tanggal', $hariIni)
+                ->whereBetween('jam_masuk', ['06:51:00', '07:00:00'])
+                ->count(),
+            'telat' => AbsensiSekolah::whereDate('tanggal', $hariIni)
+                ->whereBetween('jam_masuk', ['07:01:00', '09:00:00'])
+                ->count(),
+            'alfa' => AbsensiSekolah::whereDate('tanggal', $hariIni)
+                ->whereBetween('jam_masuk', ['09:01:00', '24:00:00'])
+                ->count(),
+
+            'distribusi' => $distribusi,
+            'rekapHarian' => $rekapHarian,
         ]);
     }
 
@@ -1362,11 +1372,11 @@ class AdminCon extends Controller
     {
         // Ambil daftar kelas unik di tingkat XII
         $kelasList = DB::table('siswa')->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')->where('kelas.tingkat_kelas', 'like', '3%')->pluck('kelas.nama_kelas')->unique()->values();
-    
+
         // Ambil filter kelas & search dari query string
         $selectedKelas = $request->input('kelas');
         $search = $request->input('search');
-    
+
         // Query absensi + siswa + kelas
         $absensi = DB::table('absensi_pelajaran')
             ->join('siswa', 'absensi_pelajaran.id_siswa', '=', 'siswa.id_siswa')
@@ -1392,7 +1402,7 @@ class AdminCon extends Controller
             })
             ->paginate(5)
             ->appends($request->query());
-    
+
         return Inertia::render('Admin/pelajaranx', [
             'absen' => $absensi,
             'kelasList' => $kelasList,
@@ -1402,24 +1412,24 @@ class AdminCon extends Controller
             ],
         ]);
     }
-    
+
     public function editpelajaranx($id)
     {
         // Ambil data absensi berdasarkan id
         $absensi = DB::table('absensi_pelajaran')->where('id_absensi_pelajaran', $id)->first();
-    
+
         // Ambil data jadwal untuk dropdown
         $jadwal = DB::table('jadwal')->join('mapel', 'jadwal.id_mapel', '=', 'mapel.id_mapel')->select('jadwal.id_jadwal', 'mapel.nama_mapel')->orderBy('mapel.nama_mapel')->get();
         // Ambil daftar siswa untuk dropdown
         $siswa = DB::table('siswa')->select('id_siswa', 'nama')->orderBy('nama')->get();
-    
+
         return Inertia::render('Admin/editpelx', [
             'absensi' => $absensi,
             'siswa' => $siswa,
             'jadwal' => $jadwal,
         ]);
     }
-    
+
     public function updatepelajaranx(Request $request, $id)
     {
         // Validasi data
@@ -1431,13 +1441,13 @@ class AdminCon extends Controller
             'keterangan' => 'nullable|string|max:255',
             'verifikasi' => 'required|string|max:255',
         ]);
-    
+
         // Update ke DB
         DB::table('absensi_pelajaran')->where('id_absensi_pelajaran', $id)->update($validated);
-    
+
         return redirect()->route('pelajaranx')->with('success', 'Data absensi berhasil diperbarui.');
     }
-    
+
     public function destroypelajaranx($id)
     {
         DB::table('absensi_pelajaran')->where('id_absensi_pelajaran', operator: $id)->delete();
@@ -1450,11 +1460,11 @@ class AdminCon extends Controller
     {
         // Ambil daftar kelas unik di tingkat XII
         $kelasList = DB::table('siswa')->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')->where('kelas.tingkat_kelas', 'like', '3%')->pluck('kelas.nama_kelas')->unique()->values();
-    
+
         // Ambil filter kelas & search dari query string
         $selectedKelas = $request->input('kelas');
         $search = $request->input('search');
-    
+
         // Query absensi + siswa + kelas
         $absensi = DB::table('absensi_pelajaran')
             ->join('siswa', 'absensi_pelajaran.id_siswa', '=', 'siswa.id_siswa')
@@ -1480,7 +1490,7 @@ class AdminCon extends Controller
             })
             ->paginate(5)
             ->appends($request->query());
-    
+
         return Inertia::render('Admin/pelajaranxi', [
             'absen' => $absensi,
             'kelasList' => $kelasList,
@@ -1490,24 +1500,24 @@ class AdminCon extends Controller
             ],
         ]);
     }
-    
+
     public function editpelajaranxi($id)
     {
         // Ambil data absensi berdasarkan id
         $absensi = DB::table('absensi_pelajaran')->where('id_absensi_pelajaran', $id)->first();
-    
+
         // Ambil data jadwal untuk dropdown
         $jadwal = DB::table('jadwal')->join('mapel', 'jadwal.id_mapel', '=', 'mapel.id_mapel')->select('jadwal.id_jadwal', 'mapel.nama_mapel')->orderBy('mapel.nama_mapel')->get();
         // Ambil daftar siswa untuk dropdown
         $siswa = DB::table('siswa')->select('id_siswa', 'nama')->orderBy('nama')->get();
-    
+
         return Inertia::render('Admin/editpelxi', [
             'absensi' => $absensi,
             'siswa' => $siswa,
             'jadwal' => $jadwal,
         ]);
     }
-    
+
     public function updatepelajaranxi(Request $request, $id)
     {
         // Validasi data
@@ -1519,13 +1529,13 @@ class AdminCon extends Controller
             'keterangan' => 'nullable|string|max:255',
             'verifikasi' => 'required|string|max:255',
         ]);
-    
+
         // Update ke DB
         DB::table('absensi_pelajaran')->where('id_absensi_pelajaran', $id)->update($validated);
-    
+
         return redirect()->route('pelajaranxi')->with('success', 'Data absensi berhasil diperbarui.');
     }
-    
+
     public function destroypelajaranxi($id)
     {
         DB::table('absensi_pelajaran')->where('id_absensi_pelajaran', operator: $id)->delete();
