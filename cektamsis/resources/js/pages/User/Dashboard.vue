@@ -95,8 +95,9 @@ const uniqueMapel = computed(() => {
 const pelajaranStats = computed(() => {
     const data = props.absensiPelajaranData || [];
     
-    const filteredData = selectedMapelFilter.value === 'all'
-        ? data
+    // Filter berdasarkan mata pelajaran yang dipilih
+    const filteredData = selectedMapelFilter.value === 'all' 
+        ? data 
         : data.filter(a => a.mata_pelajaran === selectedMapelFilter.value);
     
     const total = filteredData.length || 1;
@@ -104,30 +105,19 @@ const pelajaranStats = computed(() => {
     let hadir = 0, alfa = 0, izin = 0, sakit = 0;
     
     filteredData.forEach(a => {
-        const status = (a.status || '').trim().toLowerCase();
-        switch(status) {
-            case 'hadir':
-                hadir++;
-                break;
-            case 'alfa':
-            case 'alpha':
-                alfa++;
-                break;
-            case 'izin':
-                izin++;
-                break;
-            case 'sakit':
-                sakit++;
-                break;
-            // status 'terlambat' atau lainnya diabaikan
-        }
+        const status = (a.status || '').toLowerCase();
+        if (status === 'hadir') hadir++;
+        else if (status === 'alfa' || status === 'alpha') alfa++;
+        else if (status === 'izin') izin++;
+        else if (status === 'sakit') sakit++;
+        // status 'terlambat' diabaikan dari statistik
     });
 
     return {
-        hadirPct: Math.round((hadir / total) * 100),
-        alfaPct: Math.round((alfa / total) * 100),
-        izinPct: Math.round((izin / total) * 100),
-        sakitPct: Math.round((sakit / total) * 100),
+        hadirPct: Math.round((hadir / total) * 100) || 0,
+        alfaPct: Math.round((alfa / total) * 100) || 0,
+        izinPct: Math.round((izin / total) * 100) || 0,
+        sakitPct: Math.round((sakit / total) * 100) || 0,
         totalHadir: hadir,
         totalAlfa: alfa,
         totalIzin: izin,
@@ -135,7 +125,6 @@ const pelajaranStats = computed(() => {
         totalPertemuan: filteredData.length,
     };
 });
-
 
 // Statistik per mata pelajaran (untuk ringkasan)
 const perMapelStats = computed(() => {
@@ -581,7 +570,7 @@ onMounted(async () => {
                             </div>
                             <p class="text-xs text-gray-500 mt-0.5">{{ pelajaranStats.totalHadir }} pertemuan</p>
                         </div>
-                            <div>
+                                                <div>
                             <div class="flex items-center justify-between mb-1">
                                 <span class="text-sm font-medium text-gray-700">Alfa</span>
                                 <span class="text-sm font-semibold text-red-600">{{ pelajaranStats.alfaPct }}%</span>
