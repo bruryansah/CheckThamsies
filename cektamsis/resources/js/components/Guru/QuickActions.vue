@@ -146,6 +146,7 @@
     </div>
 </template>
 
+<!-- szsdc -->
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 
@@ -221,7 +222,9 @@ watch(
     }
 );
 
-// Lifecycle hooks
+
+uiop/p
+// Lifecycle hooksoo
 onMounted(() => {
     document.addEventListener('click', handleClickOutside);
     window.addEventListener('resize', handleResize);
