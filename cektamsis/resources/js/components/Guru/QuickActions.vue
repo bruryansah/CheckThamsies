@@ -223,7 +223,6 @@ watch(
 );
 
 
-uiop/p
 // Lifecycle hooksoo
 onMounted(() => {
     document.addEventListener('click', handleClickOutside);
