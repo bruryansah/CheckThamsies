@@ -396,6 +396,9 @@ onMounted(async () => {
     document.addEventListener('click', handleClick);
     onUnmounted(() => { document.removeEventListener('click', handleClick); clearInterval(interval); });
 });
+
+// Tambahan untuk collapsible ringkasan per mapel
+const showPerMapelSummary = ref(false);
 </script>
 
 <template>
@@ -547,121 +550,129 @@ onMounted(async () => {
                 </div>
 
                 <!-- ⭐ Card Statistik Absensi Pelajaran -->
-                <div class="rounded-2xl border border-gray-200 bg-white p-6 shadow-md hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
-                    <div class="mb-4 flex items-center justify-between">
+                <details class="rounded-2xl border border-gray-200 bg-white p-6 shadow-md hover:-translate-y-1 hover:shadow-lg transition-all duration-300">
+                    <summary class="flex items-center justify-between cursor-pointer mb-4 list-none">
                         <div class="flex items-center gap-3">
-                            <div class="flex h-8 w-8 items-center justify-center rounded-2xl bg-indigo-100 shadow-inner">
-                                <BarChart3 class="h-5 w-5 text-indigo-600" />
-                            </div>
-                            <h3 class="text-lg font-semibold text-gray-900">Statistik Absensi Pelajaran</h3>
+                        <div class="flex h-8 w-8 items-center justify-center rounded-2xl bg-indigo-100 shadow-inner">
+                            <BarChart3 class="h-5 w-5 text-indigo-600" />
                         </div>
-                    </div>
+                        <h3 class="text-lg font-semibold text-gray-900">Statistik Absensi Pelajaran</h3>
+                        </div>
+                        <span class="text-gray-500">▼</span>
+                    </summary>
 
                     <!-- Filter Mata Pelajaran -->
                     <div class="mb-4">
                         <div class="flex items-center gap-2 mb-2">
-                            <Filter class="h-4 w-4 text-gray-500" />
-                            <label class="text-sm font-medium text-gray-700">Filter Mata Pelajaran</label>
+                        <Filter class="h-4 w-4 text-gray-500" />
+                        <label class="text-sm font-medium text-gray-700">Filter Mata Pelajaran</label>
                         </div>
                         <select v-model="selectedMapelFilter" class="w-full rounded-lg border border-gray-300 p-2 text-sm text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500">
-                            <option value="all">📚 Semua Mata Pelajaran</option>
-                            <option v-for="mapel in uniqueMapel" :key="mapel" :value="mapel">{{ mapel }}</option>
+                        <option value="all">📚 Semua Mata Pelajaran</option>
+                        <option v-for="mapel in uniqueMapel" :key="mapel" :value="mapel">{{ mapel }}</option>
                         </select>
                     </div>
 
                     <!-- Progress Bars -->
                     <div class="space-y-3">
                         <div>
-                            <div class="flex items-center justify-between mb-1">
-                                <span class="text-sm font-medium text-gray-700">Hadir</span>
-                                <span class="text-sm font-semibold text-green-600">{{ pelajaranStats.hadirPct }}%</span>
-                            </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="bg-green-500 h-2 rounded-full transition-all duration-500" :style="{ width: `${pelajaranStats.hadirPct}%` }"></div>
-                            </div>
-                            <p class="text-xs text-gray-500 mt-0.5">{{ pelajaranStats.totalHadir }} pertemuan</p>
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-sm font-medium text-gray-700">Hadir</span>
+                            <span class="text-sm font-semibold text-green-600">{{ pelajaranStats.hadirPct }}%</span>
                         </div>
-                            <div>
-                            <div class="flex items-center justify-between mb-1">
-                                <span class="text-sm font-medium text-gray-700">Alfa</span>
-                                <span class="text-sm font-semibold text-red-600">{{ pelajaranStats.alfaPct }}%</span>
-                            </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="bg-red-500 h-2 rounded-full transition-all duration-500" :style="{ width: `${pelajaranStats.alfaPct}%` }"></div>
-                            </div>
-                            <p class="text-xs text-gray-500 mt-0.5">{{ pelajaranStats.totalAlfa }} pertemuan</p>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-green-500 h-2 rounded-full transition-all duration-500" :style="{ width: `${pelajaranStats.hadirPct}%` }"></div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-0.5">{{ pelajaranStats.totalHadir }} pertemuan</p>
                         </div>
                         <div>
-                            <div class="flex items-center justify-between mb-1">
-                                <span class="text-sm font-medium text-gray-700">Izin</span>
-                                <span class="text-sm font-semibold text-blue-600">{{ pelajaranStats.izinPct }}%</span>
-                            </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="bg-blue-500 h-2 rounded-full transition-all duration-500" :style="{ width: `${pelajaranStats.izinPct}%` }"></div>
-                            </div>
-                            <p class="text-xs text-gray-500 mt-0.5">{{ pelajaranStats.totalIzin }} pertemuan</p>
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-sm font-medium text-gray-700">Alfa</span>
+                            <span class="text-sm font-semibold text-red-600">{{ pelajaranStats.alfaPct }}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-red-500 h-2 rounded-full transition-all duration-500" :style="{ width: `${pelajaranStats.alfaPct}%` }"></div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-0.5">{{ pelajaranStats.totalAlfa }} pertemuan</p>
                         </div>
                         <div>
-                            <div class="flex items-center justify-between mb-1">
-                                <span class="text-sm font-medium text-gray-700">Sakit</span>
-                                <span class="text-sm font-semibold text-purple-600">{{ pelajaranStats.sakitPct }}%</span>
-                            </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="bg-purple-500 h-2 rounded-full transition-all duration-500" :style="{ width: `${pelajaranStats.sakitPct}%` }"></div>
-                            </div>
-                            <p class="text-xs text-gray-500 mt-0.5">{{ pelajaranStats.totalSakit }} pertemuan</p>
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-sm font-medium text-gray-700">Izin</span>
+                            <span class="text-sm font-semibold text-blue-600">{{ pelajaranStats.izinPct }}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-500 h-2 rounded-full transition-all duration-500" :style="{ width: `${pelajaranStats.izinPct}%` }"></div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-0.5">{{ pelajaranStats.totalIzin }} pertemuan</p>
+                        </div>
+                        <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-sm font-medium text-gray-700">Sakit</span>
+                            <span class="text-sm font-semibold text-purple-600">{{ pelajaranStats.sakitPct }}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-purple-500 h-2 rounded-full transition-all duration-500" :style="{ width: `${pelajaranStats.sakitPct}%` }"></div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-0.5">{{ pelajaranStats.totalSakit }} pertemuan</p>
                         </div>
                     </div>
 
                     <!-- Summary -->
                     <div class="mt-4 pt-4 border-t border-gray-200">
                         <div class="grid grid-cols-2 gap-3">
-                            <div class="text-center p-3 bg-indigo-50 rounded-xl">
-                                <p class="text-xl font-bold text-indigo-600">{{ pelajaranStats.totalPertemuan }}</p>
-                                <p class="text-xs text-gray-600">Total Pertemuan</p>
-                            </div>
-                            <div class="text-center p-3 bg-green-50 rounded-xl">
-                                <p class="text-xl font-bold text-green-600">{{ pelajaranStats.hadirPct }}%</p>
-                                <p class="text-xs text-gray-600">Tingkat Kehadiran</p>
-                            </div>
+                        <div class="text-center p-3 bg-indigo-50 rounded-xl">
+                            <p class="text-xl font-bold text-indigo-600">{{ pelajaranStats.totalPertemuan }}</p>
+                            <p class="text-xs text-gray-600">Total Pertemuan</p>
+                        </div>
+                        <div class="text-center p-3 bg-green-50 rounded-xl">
+                            <p class="text-xl font-bold text-green-600">{{ pelajaranStats.hadirPct }}%</p>
+                            <p class="text-xs text-gray-600">Tingkat Kehadiran</p>
+                        </div>
                         </div>
                     </div>
 
-                    <!-- Ringkasan Per Mapel (hanya tampil jika filter = all) -->
+                    <!-- Ringkasan Per Mapel -->
                     <div v-if="selectedMapelFilter === 'all' && perMapelStats.length > 0" class="mt-4 pt-4 border-t border-gray-200">
-                        <h4 class="text-sm font-semibold text-gray-700 mb-3">📊 Ringkasan Per Mata Pelajaran</h4>
-                        <div class="space-y-2 max-h-48 overflow-y-auto">
+                        <button @click="showPerMapelSummary = !showPerMapelSummary" class="flex items-center justify-between w-full text-sm font-semibold text-gray-700 mb-3 hover:text-gray-900 transition-colors">
+                        📊 Ringkasan Per Mata Pelajaran
+                        <ChevronDown class="h-4 w-4 transition-transform duration-300" :class="{ 'rotate-180': showPerMapelSummary }" />
+                        </button>
+                        <transition name="fade-scale">
+                        <div v-if="showPerMapelSummary" class="space-y-2 max-h-48 overflow-y-auto">
                             <div v-for="(item, idx) in perMapelStats" :key="idx" class="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer" @click="selectedMapelFilter = item.mapel">
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-medium text-gray-800 truncate">{{ item.mapel }}</p>
-                                    <p class="text-xs text-gray-500">{{ item.total }} pertemuan</p>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-800 truncate">{{ item.mapel }}</p>
+                                <p class="text-xs text-gray-500">{{ item.total }} pertemuan</p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-16 bg-gray-200 rounded-full h-1.5">
+                                <div class="h-1.5 rounded-full transition-all duration-300" :class="item.hadirPct >= 80 ? 'bg-green-500' : item.hadirPct >= 60 ? 'bg-yellow-500' : 'bg-red-500'" :style="{ width: `${item.hadirPct}%` }"></div>
                                 </div>
-                                <div class="flex items-center gap-2">
-                                    <div class="w-16 bg-gray-200 rounded-full h-1.5">
-                                        <div class="h-1.5 rounded-full transition-all duration-300" :class="item.hadirPct >= 80 ? 'bg-green-500' : item.hadirPct >= 60 ? 'bg-yellow-500' : 'bg-red-500'" :style="{ width: `${item.hadirPct}%` }"></div>
-                                    </div>
-                                    <span class="text-xs font-semibold w-10 text-right" :class="item.hadirPct >= 80 ? 'text-green-600' : item.hadirPct >= 60 ? 'text-yellow-600' : 'text-red-600'">{{ item.hadirPct }}%</span>
-                                </div>
+                                <span class="text-xs font-semibold w-10 text-right" :class="item.hadirPct >= 80 ? 'text-green-600' : item.hadirPct >= 60 ? 'text-yellow-600' : 'text-red-600'">{{ item.hadirPct }}%</span>
+                            </div>
                             </div>
                         </div>
+                        </transition>
                     </div>
 
-                    <!-- Alert -->
+                    <!-- Alerts -->
                     <div v-if="pelajaranStats.alfaPct > 15" class="mt-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
                         <AlertTriangle class="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
                         <div>
-                            <p class="text-sm font-medium text-red-700">Perhatian!</p>
-                            <p class="text-xs text-red-600">Tingkat alfa pada {{ selectedMapelFilter === 'all' ? 'beberapa mata pelajaran' : selectedMapelFilter }} cukup tinggi.</p>
+                        <p class="text-sm font-medium text-red-700">Perhatian!</p>
+                        <p class="text-xs text-red-600">Tingkat alfa pada {{ selectedMapelFilter === 'all' ? 'beberapa mata pelajaran' : selectedMapelFilter }} cukup tinggi.</p>
                         </div>
                     </div>
                     <div v-else-if="pelajaranStats.hadirPct >= 85" class="mt-4 p-3 bg-green-50 border border-green-200 rounded-xl flex items-start gap-2">
                         <CheckCircle class="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
                         <div>
-                            <p class="text-sm font-medium text-green-700">Bagus! 🎉</p>
-                            <p class="text-xs text-green-600">Kehadiran {{ selectedMapelFilter === 'all' ? 'kamu' : 'di ' + selectedMapelFilter }} sangat baik!</p>
+                        <p class="text-sm font-medium text-green-700">Bagus! 🎉</p>
+                        <p class="text-xs text-green-600">Kehadiran {{ selectedMapelFilter === 'all' ? 'kamu' : 'di ' + selectedMapelFilter }} sangat baik!</p>
                         </div>
                     </div>
-                </div>
+
+                    </details>
+
             </div>
         </div>
 
