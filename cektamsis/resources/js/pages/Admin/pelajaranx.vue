@@ -110,6 +110,7 @@ const performSearch = () => {
                 <td class="px-6 py-4 text-center">{{ ab.status }}</td>
                 <td class="px-6 py-4 text-center">{{ ab.keterangan || 'Tidak ada'}}</td>
                 <td class="px-6 py-4 text-center">{{ ab.verifikasi}}</td>
+                <td class="px-6 py-4 text-center"></td>
                 <td class="px-6 py-4 text-center">
                   <div class="flex justify-center gap-2">
                     <TextLink

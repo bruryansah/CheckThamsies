@@ -33,7 +33,6 @@
             jam_keluar: string | null
             status: string
             keterangan: string
-            verifikasi: string
         },
         siswa: {
             id_siswa: number
@@ -61,7 +60,6 @@
             form.jam_keluar = props.absensi.jam_keluar || ''
             form.status = props.absensi.status || ''
             form.keterangan = props.absensi.keterangan || ''
-            form.verifikasi = props.absensi.verifikasi || ''
         }
     })
 </script>
@@ -150,19 +148,6 @@
                         <span v-if="form.errors.keterangan"
                             class="text-red-500 text-sm">{{ form . errors . keterangan }}</span>
                     </div>
-
-                                        <!-- Verifikasi -->
-                    <div>
-                        <label class="block text-sm font-medium text-zinc-300 mb-1">Verifikasi</label>
-                        <select v-model="form.verifikasi"
-                            class="w-full rounded-lg border border-zinc-700 bg-zinc-800 text-white px-4 py-2">
-                            <option value="">-- Pilih Status --</option>
-                            <option value="approve">Approve</option>
-                            <option value="disapprove">Disapprove</option>
-                        </select>
-                        <span v-if="form.errors.status" class="text-red-500 text-sm">{{ form . errors . verifikasi }}</span>
-                    </div>
-
                     <!-- Tombol -->
                     <div class="flex justify-end gap-3">
                         <Link href="/absenx"
