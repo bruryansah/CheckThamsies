@@ -489,6 +489,7 @@ const recentAttendance = computed(() => {
 });
 
 // attendanceStats tetap menggunakan filteredAbsensiData (hari ini)
+// attendanceStats tetap menggunakan filteredAbsensiData (hari ini)
 // ⭐ GANTI computed property attendanceStats yang lama dengan yang ini
 // Lokasi: resources/js/Pages/Guru/Dashboard.vue (sekitar baris 350-400)
 
