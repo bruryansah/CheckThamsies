@@ -36,7 +36,7 @@ class AbsenController extends Controller
             // Statistik absensi sekolah
             $totalAbsensi = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)->count();
             $kehadiransekolah = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)
-                ->whereIn('status', ['hadir', 'terlambat'])
+                ->whereIn('status', ['hadir', 'terlambat', 'pulang cepat'])
                 ->count();
             $totalSakit = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)->where('status', 'sakit')->count();
             $totalIzin = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)->where('status', 'izin')->count();
