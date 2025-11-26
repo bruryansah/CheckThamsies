@@ -41,6 +41,8 @@ interface Props {
         id: number; idenc: string; mata_pelajaran: string; hari: string;
         jam_selesai: string; jam_mulai: string; nama_kelas: string; nama_guru: string;
     }>;
+    // Data absensi sekolah (real data absen masuk)
+    absensiSekolah: Array<{ tanggal: string; jam_masuk: string; jam_keluar?: string | null; status: string; keterangan?: string | null }>;
     // Data absensi pelajaran untuk statistik
     absensiPelajaranData?: AbsensiPelajaran[];
     statsPelajaran?: StatsPelajaran;
@@ -265,7 +267,7 @@ const fetchStatus = async () => {
             canScanQR.value = ['hadir', 'terlambat'].includes(latestStatus.status);
         } else if (data.status === 'sudah_pulang') {
             checkinStatus.value = 'Sudah Absen'; checkoutStatus.value = 'Sudah Pulang';
-            canCheckout.value = false; canScanQR.value = false; latestCheckinStatus.value = null;
+            canCheckout.value = false; canScanQR.value = false; latestCheckinStatus.value = null; canCheckIn.value = false;
         }
     } catch (error) {
         checkinStatus.value = 'Belum Absen'; checkoutStatus.value = 'Belum Pulang';
@@ -485,7 +487,7 @@ const showPerMapelSummary = ref(false);
                             <p v-if="checkinDescriptionError" class="mt-1 text-sm text-red-500">{{ checkinDescriptionError }}</p>
                         </div>
                         <p class="text-sm font-medium text-gray-900">Status: <span :class="{ 'font-semibold text-green-600': checkinStatus === 'Sudah Absen', 'font-semibold text-orange-600': checkinStatus === 'Terlambat', 'font-semibold text-red-600': checkinStatus === 'Alfa', 'text-gray-600': checkinStatus === 'Belum Absen' }">{{ checkinStatus }}</span></p>
-                        <button @click="checkIn" :disabled="!canCheckIn || checkinStatus.includes('Sudah') || processingIn" class="w-full rounded-xl px-4 py-2 text-sm font-medium transition-all duration-300" :class="!canCheckIn || checkinStatus.includes('Sudah') ? 'cursor-not-allowed bg-gray-100 text-gray-500' : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95'">
+                        <button @click="checkIn" :disabled="!canCheckIn || checkinStatus.includes('Sudah') || checkoutStatus === 'Sudah Pulang' || processingIn" class="w-full rounded-xl px-4 py-2 text-sm font-medium transition-all duration-300" :class="!canCheckIn || checkinStatus.includes('Sudah') || checkoutStatus === 'Sudah Pulang' ? 'cursor-not-allowed bg-gray-100 text-gray-500' : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95'">
                             <span v-if="processingIn">Memproses...</span><span v-else>Absensi Masuk</span>
                         </button>
                     </div>
@@ -676,7 +678,12 @@ const showPerMapelSummary = ref(false);
             </div>
         </div>
 
-        <Absensi v-if="showAbsensiModal" @close="showAbsensiModal = false" />
+        <Absensi
+            v-if="showAbsensiModal"
+            :showAbsensiModal="showAbsensiModal"
+            :absensiSekolah="props.absensiSekolah"
+            @close="showAbsensiModal = false"
+        />
 
         <!-- Late Modal -->
         <Teleport to="body">
