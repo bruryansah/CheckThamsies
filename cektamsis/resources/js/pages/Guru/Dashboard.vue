@@ -481,7 +481,7 @@ const recentAttendance = computed(() => {
             .map((a) => {
                 const statusLower = (a.originalStatus || a.status || '').toLowerCase();
                 if (['izin', 'sakit'].includes(statusLower) && a.keterangan) {
-                    return { ...a, displayStatus: `${a.displayStatus} - ${a.keterangan}` };
+                    return { ...a, displayStatus: `${a.displayStatus}` };
                 }
                 return a;
             })
