@@ -30,7 +30,7 @@ class AbsenController extends Controller
         $recentAttendance = [];
         $jadwalData = [];
         $absensiSekolahData = [];
-        $absensiPelajaranData = []; // 🔹 Data real untuk statistik
+        $absensiPelajaranData = [];
 
         if ($siswa) {
             // Statistik absensi sekolah
@@ -44,15 +44,21 @@ class AbsenController extends Controller
 
             $persentaseKehadiran = $totalAbsensi > 0 ? round(($kehadiransekolah / $totalAbsensi) * 100, 1) : 0;
 
-            // 🔹 Ambil semua data absensi sekolah (untuk popup)
+            // Ambil semua data absensi sekolah (untuk popup)
             $absensiSekolahData = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)
                 ->select('tanggal', 'jam_masuk', 'jam_keluar', 'status', 'keterangan')
                 ->orderBy('tanggal', 'desc')
                 ->get();
 
-            // 🔹 Ambil SEMUA data absensi pelajaran untuk statistik
+            // 🔹 PERBAIKAN: Ambil data absensi pelajaran yang sudah APPROVE atau langsung HADIR
+            // Status 'menunggu' dan 'disapprove' tidak dihitung dalam statistik
             $absensiPelajaranData = AbsensiPelajaran::with(['jadwal.mapel'])
                 ->where('id_siswa', $siswa->id_siswa)
+                ->where(function($query) {
+                    $query->where('verifikasi', 'approve')  // Izin/Sakit yang sudah di-approve
+                          ->orWhere('verifikasi', '-')       // Status hadir (tidak perlu verifikasi)
+                          ->orWhere('status', 'hadir');      // Pastikan status hadir masuk
+                })
                 ->orderBy('waktu_scan', 'desc')
                 ->get()
                 ->map(function ($attendance) {
@@ -62,16 +68,18 @@ class AbsenController extends Controller
                         'tanggal' => $attendance->waktu_scan ? $attendance->waktu_scan->format('Y-m-d') : 'N/A',
                         'waktu' => $attendance->waktu_scan ? $attendance->waktu_scan->format('H:i') : 'N/A',
                         'keterangan' => $attendance->keterangan ?? '-',
+                        'verifikasi' => $attendance->verifikasi ?? '-',
                     ];
                 })
                 ->toArray();
 
-            Log::info('Data absensi pelajaran untuk statistik:', [
+            Log::info('Data absensi pelajaran untuk statistik (hanya approved):', [
                 'id_siswa' => $siswa->id_siswa,
                 'count' => count($absensiPelajaranData),
             ]);
 
-            // 🔹 Recent attendance pelajaran (tetap 5 terakhir untuk card)
+            // 🔹 Recent attendance pelajaran - TAMPILKAN SEMUA (termasuk yang menunggu)
+            // Tapi tetap beri info status verifikasi
             $recentAttendance = AbsensiPelajaran::with(['jadwal.mapel'])
                 ->where('id_siswa', $siswa->id_siswa)
                 ->orderBy('waktu_scan', 'desc')
@@ -82,7 +90,7 @@ class AbsenController extends Controller
                         'name' => $attendance->jadwal->mapel->nama_mapel ?? 'Unknown',
                         'time' => $attendance->waktu_scan ? $attendance->waktu_scan->format('d-M-Y H:i') : 'N/A',
                         'status' => ucfirst($attendance->status ?? 'N/A'),
-                        'verifikasi' => $attendance->verifikasi,
+                        'verifikasi' => $attendance->verifikasi ?? '-',
                         'color' => match ($attendance->status) {
                             'hadir' => 'green',
                             'terlambat' => 'orange',
@@ -94,7 +102,7 @@ class AbsenController extends Controller
                 })
                 ->toArray();
 
-            // 🔹 Jadwal hari ini
+            // Jadwal hari ini
             $today = Carbon::today('Asia/Jakarta');
             $hari = strtolower($today->locale('id')->dayName);
 
@@ -126,7 +134,7 @@ class AbsenController extends Controller
                 })
                 ->toArray();
 
-            // 🔹 Log alfa otomatis untuk absensi sekolah
+            // Log alfa otomatis untuk absensi sekolah
             $absensiHariIni = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)
                 ->whereDate('tanggal', $today)
                 ->first();
@@ -157,7 +165,7 @@ class AbsenController extends Controller
             Log::error('Siswa tidak ditemukan untuk user_id:', ['user_id' => $user->id]);
         }
 
-        // 🔹 Kirim semua data ke Inertia
+        // Kirim semua data ke Inertia
         return Inertia::render('User/Dashboard', [
             'auth' => [
                 'user' => $user,
@@ -179,7 +187,7 @@ class AbsenController extends Controller
             'recentAttendance' => $recentAttendance,
             'jadwalData' => $jadwalData,
             'absensiSekolah' => $absensiSekolahData,
-            'absensiPelajaranData' => $absensiPelajaranData, // 👈 Data real untuk statistik
+            'absensiPelajaranData' => $absensiPelajaranData,
         ]);
     }
 
@@ -206,8 +214,6 @@ class AbsenController extends Controller
             ->first();
 
         if ($absensiHariIni) {
-            // Jika sudah ada absensi hari ini, larang check-in lagi.
-            // Termasuk jika sudah pulang (jam_keluar terisi) maupun belum pulang (sudah absen masuk).
             Log::warning('Cegah check-in ulang di hari yang sama', [
                 'id_siswa' => $siswa->id_siswa,
                 'jam_keluar' => $absensiHariIni->jam_keluar,
@@ -221,7 +227,6 @@ class AbsenController extends Controller
             return back()->with('error', 'Anda sudah absen masuk hari ini');
         }
 
-        // Validasi input
         try {
             $validated = $request->validate([
                 'latitude' => 'required|numeric',
@@ -238,34 +243,27 @@ class AbsenController extends Controller
 
         $now = Carbon::now('Asia/Jakarta');
         $timeInMinutes = $now->hour * 60 + $now->minute;
-        $startHadir = 6 * 60 + 40; // 06:40
-        $endHadir = 7 * 60 + 10; // 07:10
-        $endTerlambat = 13 * 60 + 40; // 13:40
+        $endHadir = 7 * 60 + 10;
+        $endTerlambat = 13 * 60 + 40;
 
-        // Tentukan status berdasarkan waktu jika status awal adalah 'hadir'
         $status = $validated['status'];
 
         Log::info('Status awal dari request:', ['status' => $status, 'description' => $validated['description'] ?? 'kosong']);
 
-        // Jangan ubah status jika sudah ada description (berarti dari modal terlambat)
-        // Atau jika status sudah ditentukan dari frontend (izin, sakit, terlambat)
         if ($status === 'hadir' && empty($validated['description'])) {
             if ($timeInMinutes > $endTerlambat) {
                 Log::warning('Waktu melewati batas:', ['timeInMinutes' => $timeInMinutes]);
                 return back()->with('error', 'Waktu sudah melewati 13:40, status alfa otomatis diterapkan.');
             } elseif ($timeInMinutes > $endHadir && $timeInMinutes <= $endTerlambat) {
-                // Jangan ubah ke terlambat di sini, biarkan frontend yang handle
                 Log::info('Waktu terlambat tapi description kosong, frontend harus handle:', ['timeInMinutes' => $timeInMinutes]);
             }
         }
 
-        // Validasi keterangan untuk status tertentu
         if (in_array($status, ['izin', 'sakit']) && empty($validated['description'])) {
             Log::warning('Keterangan kosong untuk status:', ['status' => $status]);
             return back()->withErrors(['description' => 'Keterangan diperlukan untuk status ' . ucfirst($status)]);
         }
 
-        // Validasi khusus untuk terlambat (hanya jika ada description yang dikirim atau status memang terlambat dari awal)
         if ($status === 'terlambat') {
             if (empty($validated['description'])) {
                 Log::warning('Keterangan kosong untuk terlambat');
