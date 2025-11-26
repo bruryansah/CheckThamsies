@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AbsensiPelajaran;
 use App\Models\Kelas;
 use App\Models\Mapel;
 use App\Models\Guru;
@@ -30,12 +31,12 @@ class AdminCon extends Controller
             ->leftJoin('absensi_sekolah as a', function ($join) use ($hariIni) {
                 $join->on('a.id_siswa', '=', 's.id_siswa')->whereDate('a.tanggal', '=', $hariIni);
             })
-            ->select('k.nama_kelas', 
+            ->select('k.nama_kelas',
             DB::raw("COALESCE(SUM(CASE WHEN a.status = 'terlambat' THEN 1 ELSE 0 END), 0) as terlambat"),
-            DB::raw("COALESCE(SUM(CASE WHEN a.status = 'hadir' THEN 1 ELSE 0 END), 0) as hadir"), 
-            DB::raw("COALESCE(SUM(CASE WHEN a.status = 'izin' THEN 1 ELSE 0 END), 0) as izin"), 
-            DB::raw("COALESCE(SUM(CASE WHEN a.status = 'sakit' THEN 1 ELSE 0 END), 0) as sakit"), 
-            DB::raw("COALESCE(SUM(CASE WHEN a.status = 'alfa' THEN 1 ELSE 0 END), 0) as alfa"), 
+            DB::raw("COALESCE(SUM(CASE WHEN a.status = 'hadir' THEN 1 ELSE 0 END), 0) as hadir"),
+            DB::raw("COALESCE(SUM(CASE WHEN a.status = 'izin' THEN 1 ELSE 0 END), 0) as izin"),
+            DB::raw("COALESCE(SUM(CASE WHEN a.status = 'sakit' THEN 1 ELSE 0 END), 0) as sakit"),
+            DB::raw("COALESCE(SUM(CASE WHEN a.status = 'alfa' THEN 1 ELSE 0 END), 0) as alfa"),
             DB::raw('COUNT(DISTINCT s.id_siswa) as total'))
             ->groupBy('k.id_kelas', 'k.nama_kelas')
             ->orderBy('k.nama_kelas')
@@ -65,6 +66,7 @@ class AdminCon extends Controller
             'totalSiswa' => User::where('role', 'user')->count(),
             'totalGuru' => User::where('role', 'guru')->count(),
             'totalAdmin' => User::where('role', 'admin')->count(),
+            'totalverifikasi' => AbsensiPelajaran::where('verifikasi', 'menunggu')->count(),
 
             // ✅ FILTER HANYA HARI INI
             'totalabsen' => AbsensiSekolah::whereDate('tanggal', $hariIni)->where('status', 'hadir')->count(),
@@ -1124,7 +1126,7 @@ class AdminCon extends Controller
         $absensi = DB::table('absensi_sekolah')
             ->join('siswa', 'absensi_sekolah.id_siswa', '=', 'siswa.id_siswa')
             ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
-            ->select('absensi_sekolah.id_absensi', 'absensi_sekolah.id_siswa', 'absensi_sekolah.tanggal', 'absensi_sekolah.jam_masuk', 'absensi_sekolah.jam_keluar', 'absensi_sekolah.status', 'absensi_sekolah.keterangan', 'absensi_sekolah.verifikasi', 'siswa.nama as siswa', 'kelas.nama_kelas as kelas')
+            ->select('absensi_sekolah.id_absensi', 'absensi_sekolah.id_siswa', 'absensi_sekolah.tanggal', 'absensi_sekolah.jam_masuk', 'absensi_sekolah.jam_keluar', 'absensi_sekolah.status', 'absensi_sekolah.keterangan', 'siswa.nama as siswa', 'kelas.nama_kelas as kelas')
             ->where('kelas.tingkat_kelas', 'like', '1%')
             ->when($selectedKelas, function ($query, $kelas) {
                 return $query->where('kelas.nama_kelas', $kelas);
@@ -1136,7 +1138,6 @@ class AdminCon extends Controller
                         ->orWhere('absensi_sekolah.jam_keluar', 'like', "%{$search}%")
                         ->orWhere('absensi_sekolah.status', 'like', "%{$search}%")
                         ->orWhere('absensi_sekolah.keterangan', 'like', "%{$search}%")
-                        ->orWhere('absensi_sekolah.verifikasi', 'like', "%{$search}%")
                         ->orWhere('siswa.nama', 'like', "%{$search}%")
                         ->orWhere('kelas.nama_kelas', 'like', "%{$search}%");
                     //
@@ -1179,7 +1180,6 @@ class AdminCon extends Controller
             'jam_keluar' => 'nullable|date_format:H:i:s',
             'status' => 'required|in:hadir,izin,sakit,alpa,pulang cepat',
             'keterangan' => 'nullable|string|max:255',
-            'verifikasi' => 'required|string|max:255',
         ]);
 
         // Update ke DB
@@ -1210,7 +1210,7 @@ class AdminCon extends Controller
         $absensi = DB::table('absensi_sekolah')
             ->join('siswa', 'absensi_sekolah.id_siswa', '=', 'siswa.id_siswa')
             ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
-            ->select('absensi_sekolah.id_absensi', 'absensi_sekolah.id_siswa', 'absensi_sekolah.tanggal', 'absensi_sekolah.jam_masuk', 'absensi_sekolah.jam_keluar', 'absensi_sekolah.status', 'absensi_sekolah.keterangan', 'absensi_sekolah.verifikasi', 'siswa.nama as siswa', 'kelas.nama_kelas as kelas')
+            ->select('absensi_sekolah.id_absensi', 'absensi_sekolah.id_siswa', 'absensi_sekolah.tanggal', 'absensi_sekolah.jam_masuk', 'absensi_sekolah.jam_keluar', 'absensi_sekolah.status', 'absensi_sekolah.keterangan', 'siswa.nama as siswa', 'kelas.nama_kelas as kelas')
             ->where('kelas.tingkat_kelas', 'like', '2%')
             ->when($selectedKelas, function ($query, $kelas) {
                 return $query->where('kelas.nama_kelas', $kelas);
@@ -1222,7 +1222,6 @@ class AdminCon extends Controller
                         ->orWhere('absensi_sekolah.jam_keluar', 'like', "%{$search}%")
                         ->orWhere('absensi_sekolah.status', 'like', "%{$search}%")
                         ->orWhere('absensi_sekolah.keterangan', 'like', "%{$search}%")
-                        ->orWhere('absensi_sekolah.verifikasi', 'like', "%{$search}%")
                         ->orWhere('siswa.nama', 'like', "%{$search}%")
                         ->orWhere('kelas.nama_kelas', 'like', "%{$search}%");
                     //
@@ -1265,7 +1264,6 @@ class AdminCon extends Controller
             'jam_keluar' => 'nullable|date_format:H:i:s',
             'status' => 'required|in:hadir,izin,sakit,alpa,pulang cepat',
             'keterangan' => 'nullable|string|max:255',
-            'verifikasi' => 'required|string|max:255',
         ]);
 
         // Update ke DB
@@ -1296,7 +1294,7 @@ class AdminCon extends Controller
         $absensi = DB::table('absensi_sekolah')
             ->join('siswa', 'absensi_sekolah.id_siswa', '=', 'siswa.id_siswa')
             ->join('kelas', 'siswa.id_kelas', '=', 'kelas.id_kelas')
-            ->select('absensi_sekolah.id_absensi', 'absensi_sekolah.id_siswa', 'absensi_sekolah.tanggal', 'absensi_sekolah.jam_masuk', 'absensi_sekolah.jam_keluar', 'absensi_sekolah.status', 'absensi_sekolah.keterangan', 'absensi_sekolah.verifikasi', 'siswa.nama as siswa', 'kelas.nama_kelas as kelas')
+            ->select('absensi_sekolah.id_absensi', 'absensi_sekolah.id_siswa', 'absensi_sekolah.tanggal', 'absensi_sekolah.jam_masuk', 'absensi_sekolah.jam_keluar', 'absensi_sekolah.status', 'absensi_sekolah.keterangan', 'siswa.nama as siswa', 'kelas.nama_kelas as kelas')
             ->where('kelas.tingkat_kelas', 'like', '3%')
             ->when($selectedKelas, function ($query, $kelas) {
                 return $query->where('kelas.nama_kelas', $kelas);
@@ -1308,7 +1306,6 @@ class AdminCon extends Controller
                         ->orWhere('absensi_sekolah.jam_keluar', 'like', "%{$search}%")
                         ->orWhere('absensi_sekolah.status', 'like', "%{$search}%")
                         ->orWhere('absensi_sekolah.keterangan', 'like', "%{$search}%")
-                        ->orWhere('absensi_sekolah.verifikasi', 'like', "%{$search}%")
                         ->orWhere('siswa.nama', 'like', "%{$search}%")
                         ->orWhere('kelas.nama_kelas', 'like', "%{$search}%");
                     //
@@ -1351,7 +1348,6 @@ class AdminCon extends Controller
             'jam_keluar' => 'nullable|date_format:H:i:s',
             'status' => 'required|in:hadir,izin,sakit,alpa,pulang cepat',
             'keterangan' => 'nullable|string|max:255',
-            'verifikasi' => 'required|string|max:255',
         ]);
 
         // Update ke DB
