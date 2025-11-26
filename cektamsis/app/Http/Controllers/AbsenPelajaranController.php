@@ -91,6 +91,7 @@ class AbsenPelajaranController extends Controller
                     'waktu_scan' => now('Asia/Jakarta'),
                     'status'     => $inputStatus,
                     'keterangan' => $description ?: ucfirst($inputStatus),
+                    'verifikasi'  => 'menunggu',
                 ]);
             } else {
                 // Absensi Hadir

@@ -13,7 +13,7 @@ absensiSekolah: {
 
 <template>
     <transition name="fade">
-        <div v-if="absensiSekolah"
+        <div v-if="showAbsensiModal"
             class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30 backdrop-blur-sm p-4">
 
             <div
@@ -49,7 +49,7 @@ absensiSekolah: {
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(item, index) in absensiSekolahData" :key="index"
+                            <tr v-for="(item, index) in absensiSekolah" :key="index"
                                 class="odd:bg-white even:bg-gray-50 border-b">
                                 <td class="px-4 py-2">{{ item.tanggal }}</td>
                                 <td class="px-4 py-2">{{ item.jam_masuk }}</td>
