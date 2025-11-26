@@ -96,15 +96,15 @@ const uniqueMapel = computed(() => {
 // Statistik absensi pelajaran
 const pelajaranStats = computed(() => {
     const data = props.absensiPelajaranData || [];
-    
+
     const filteredData = selectedMapelFilter.value === 'all'
         ? data
         : data.filter(a => a.mata_pelajaran === selectedMapelFilter.value);
-    
+
     const total = filteredData.length || 1;
-    
+
     let hadir = 0, alfa = 0, izin = 0, sakit = 0;
-    
+
     filteredData.forEach(a => {
         const status = (a.status || '').trim().toLowerCase();
         switch(status) {
@@ -143,7 +143,7 @@ const pelajaranStats = computed(() => {
 const perMapelStats = computed(() => {
     const data = props.absensiPelajaranData || [];
     const statsMap: Record<string, { hadir: number; terlambat: number; alfa: number; izin: number; sakit: number; total: number }> = {};
-    
+
     data.forEach(a => {
         const status = (a.status || '').toLowerCase();
         if (status === 'terlambat') return; // abaikan 'terlambat' dari statistik per mapel
@@ -545,7 +545,7 @@ const showPerMapelSummary = ref(false);
                                 <span class="text-xs font-medium rounded-full px-2 py-0.5" :class="{ 'bg-green-100 text-green-600': attendance.color === 'green', 'bg-orange-100 text-orange-600': attendance.color === 'orange', 'bg-purple-100 text-purple-600': attendance.color === 'purple', 'bg-red-100 text-red-600': attendance.color === 'red', 'bg-gray-100 text-gray-600': attendance.color === 'gray' }">{{ attendance.status }}</span>
                             </div>
                             <p class="text-xs text-gray-500 mb-1">Waktu: {{ attendance.time }}</p>
-                            <p v-if="['Izin', 'Sakit'].includes(attendance.status)" class="text-xs text-gray-500">Verifikasi: <span :class="{ 'bg-green-100 text-green-700 border border-green-300': attendance.verifikasi === 'approve', 'bg-red-100 text-red-700 border border-red-300': attendance.verifikasi === 'disapprove', 'bg-yellow-100 text-yellow-700 border border-yellow-300': attendance.verifikasi === 'cek' || !attendance.verifikasi }" class="px-2 py-0.5 rounded-full text-[11px] font-medium">{{ attendance.verifikasi || 'Menunggu' }}</span></p>
+                            <p v-if="['Izin', 'Sakit'].includes(attendance.status)" class="text-xs text-gray-500">Verifikasi: <span :class="{ 'bg-green-100 text-green-700 border border-green-300': attendance.verifikasi === 'approve', 'bg-red-100 text-red-700 border border-red-300': attendance.verifikasi === 'disapprove', 'bg-yellow-100 text-yellow-700 border border-yellow-300': attendance.verifikasi === 'menunggu' || !attendance.verifikasi }" class="px-2 py-0.5 rounded-full text-[11px] font-medium">{{ attendance.verifikasi || 'Menunggu' }}</span></p>
                         </div>
                         <p v-if="props.recentAttendance.length === 0" class="text-center text-gray-500 text-sm">Tidak ada data absensi pelajaran terbaru.</p>
                     </div>

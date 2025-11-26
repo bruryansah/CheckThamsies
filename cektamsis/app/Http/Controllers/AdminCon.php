@@ -33,7 +33,17 @@ class AdminCon extends Controller
             })
             ->select('k.nama_kelas',
             DB::raw("COALESCE(SUM(CASE WHEN a.status = 'terlambat' THEN 1 ELSE 0 END), 0) as terlambat"),
-            DB::raw("COALESCE(SUM(CASE WHEN a.status = 'hadir' THEN 1 ELSE 0 END), 0) as hadir"),
+            DB::raw("
+    COALESCE(
+        SUM(CASE WHEN a.status = 'hadir' THEN 1 ELSE 0 END), 0
+    )
+    +
+    COALESCE(
+        SUM(CASE WHEN a.status = 'terlambat' THEN 1 ELSE 0 END), 0
+    )
+    as hadir
+"),
+
             DB::raw("COALESCE(SUM(CASE WHEN a.status = 'izin' THEN 1 ELSE 0 END), 0) as izin"),
             DB::raw("COALESCE(SUM(CASE WHEN a.status = 'sakit' THEN 1 ELSE 0 END), 0) as sakit"),
             DB::raw("COALESCE(SUM(CASE WHEN a.status = 'alfa' THEN 1 ELSE 0 END), 0) as alfa"),
@@ -82,10 +92,10 @@ class AdminCon extends Controller
                 ->whereBetween('jam_masuk', ['06:51:00', '07:00:00'])
                 ->count(),
             'telat' => AbsensiSekolah::whereDate('tanggal', $hariIni)
-                ->whereBetween('jam_masuk', ['07:01:00', '09:00:00'])
+                ->whereBetween('jam_masuk', ['07:01:00', '13:39:00'])
                 ->count(),
             'alfa' => AbsensiSekolah::whereDate('tanggal', $hariIni)
-                ->whereBetween('jam_masuk', ['09:01:00', '24:00:00'])
+                ->whereBetween('jam_masuk', ['13:40:00', '24:00:00'])
                 ->count(),
 
             'distribusi' => $distribusi,
