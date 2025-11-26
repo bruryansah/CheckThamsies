@@ -12,6 +12,7 @@
         User,
         GraduationCap,
         Shield,
+        ShieldQuestion,
         Settings,
         PieChart
     } from 'lucide-vue-next';
@@ -71,6 +72,7 @@
         totalSiswa: number;
         totalGuru: number;
         totalAdmin: number;
+        totalverifikasi: number;
         totalabsen: number;
         totalterlambat: number;
         totalizin: number;
@@ -218,6 +220,7 @@
         totalSiswa: props.totalSiswa || 0,
         totalGuru: props.totalGuru || 0,
         totalAdmin: props.totalAdmin || 0,
+        totalverifikasi: props.totalverifikasi || 0,
         totalabsen: props.totalabsen || 0,
         totalterlambat: props.totalterlambat || 0,
         totalizin: props.totalizin || 0,
@@ -253,14 +256,14 @@
             totalSakit: props.totalsakit || 0,
             totalAlfa: props.totalalfa || 0,
             // Total keseluruhan absensi hari ini
-            totalSemua: (props.totalabsen || 0) + 
-                        (props.totalterlambat || 0) + 
-                        (props.totalizin || 0) + 
-                        (props.totalsakit || 0) + 
+            totalSemua: (props.totalabsen || 0) +
+                        (props.totalterlambat || 0) +
+                        (props.totalizin || 0) +
+                        (props.totalsakit || 0) +
                         (props.totalalfa || 0),
         };
     });
-    
+
 </script>
 
 <style>
@@ -291,10 +294,10 @@
 
         <div class="flex h-full flex-1 flex-col gap-6 p-6 overflow-x-auto">
             <!-- Statistik Cards -->
-            <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
                 <div class="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 shadow-lg">
                     <div class="flex items-center justify-between">
-                        <h3 class="text-sm text-zinc-400">Total Users</h3>
+                        <h3 class="text-sm text-zinc-200">Total Users</h3>
                         <Users class="h-5 w-5 text-indigo-400" />
                     </div>
                     <p class="mt-4 text-3xl font-bold text-white">{{ stats . totalUsers }}</p>
@@ -302,7 +305,7 @@
 
                 <div class="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 shadow-lg">
                     <div class="flex items-center justify-between">
-                        <h3 class="text-sm text-zinc-400">Total Siswa</h3>
+                        <h3 class="text-sm text-zinc-200">Total Siswa</h3>
                         <GraduationCap class="h-5 w-5 text-green-400" />
                     </div>
                     <p class="mt-4 text-3xl font-bold text-white">{{ stats . totalSiswa }}</p>
@@ -310,7 +313,7 @@
 
                 <div class="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 shadow-lg">
                     <div class="flex items-center justify-between">
-                        <h3 class="text-sm text-zinc-400">Total Guru</h3>
+                        <h3 class="text-sm text-zinc-200">Total Guru</h3>
                         <User class="h-5 w-5 text-purple-400" />
                     </div>
                     <p class="mt-4 text-3xl font-bold text-white">{{ stats . totalGuru }}</p>
@@ -318,10 +321,17 @@
 
                 <div class="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 shadow-lg">
                     <div class="flex items-center justify-between">
-                        <h3 class="text-sm text-zinc-400">Total Admin</h3>
+                        <h3 class="text-sm text-zinc-200">Total Admin</h3>
                         <Shield class="h-5 w-5 text-amber-400" />
                     </div>
                     <p class="mt-4 text-3xl font-bold text-white">{{ stats . totalAdmin }}</p>
+                </div>
+                <div class="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm text-zinc-200">Menunggu Verifikasi</h3>
+                        <ShieldQuestion class="h-7 w-7 text-amber-400" />
+                    </div>
+                    <p class="mt-4 text-3xl font-bold text-white">{{ stats . totalverifikasi }}</p>
                 </div>
             </div>
 

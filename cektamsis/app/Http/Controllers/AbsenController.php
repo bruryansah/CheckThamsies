@@ -46,7 +46,7 @@ class AbsenController extends Controller
 
             // 🔹 Ambil semua data absensi sekolah (untuk popup)
             $absensiSekolahData = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)
-                ->select('tanggal', 'jam_masuk', 'jam_keluar', 'status', 'keterangan', 'verifikasi')
+                ->select('tanggal', 'jam_masuk', 'jam_keluar', 'status', 'keterangan')
                 ->orderBy('tanggal', 'desc')
                 ->get();
 
@@ -145,7 +145,6 @@ class AbsenController extends Controller
                         'longitude_in' => 0,
                         'status' => 'alfa',
                         'keterangan' => 'Absen otomatis alfa setelah 13:40',
-                        'verifikasi' => '-',
                     ]);
 
                     Log::info('Absen alfa otomatis diterapkan:', [
@@ -233,9 +232,9 @@ class AbsenController extends Controller
 
         // Tentukan status berdasarkan waktu jika status awal adalah 'hadir'
         $status = $validated['status'];
-        
+
         Log::info('Status awal dari request:', ['status' => $status, 'description' => $validated['description'] ?? 'kosong']);
-        
+
         // Jangan ubah status jika sudah ada description (berarti dari modal terlambat)
         // Atau jika status sudah ditentukan dari frontend (izin, sakit, terlambat)
         if ($status === 'hadir' && empty($validated['description'])) {
@@ -253,7 +252,7 @@ class AbsenController extends Controller
             Log::warning('Keterangan kosong untuk status:', ['status' => $status]);
             return back()->withErrors(['description' => 'Keterangan diperlukan untuk status ' . ucfirst($status)]);
         }
-        
+
         // Validasi khusus untuk terlambat (hanya jika ada description yang dikirim atau status memang terlambat dari awal)
         if ($status === 'terlambat') {
             if (empty($validated['description'])) {
@@ -261,16 +260,6 @@ class AbsenController extends Controller
                 return back()->withErrors(['description' => 'Keterangan diperlukan untuk status Terlambat']);
             }
         }
-
-        // Set verifikasi
-        $verifikasi = '-';
-        if (in_array($status, ['izin', 'sakit'])) {
-            $verifikasi = 'cek';
-        } elseif ($status === 'terlambat') {
-            $verifikasi = 'cek'; // Terlambat juga perlu verifikasi
-        }
-
-        Log::info('Verifikasi diset:', ['verifikasi' => $verifikasi]);
 
         try {
             $absensi = AbsensiSekolah::create([
@@ -281,7 +270,6 @@ class AbsenController extends Controller
                 'longitude_in' => $validated['longitude'],
                 'status' => $status,
                 'keterangan' => $validated['description'] ?? '',
-                'verifikasi' => $verifikasi,
             ]);
 
             Log::info('Check-in berhasil:', [
@@ -293,7 +281,7 @@ class AbsenController extends Controller
             ]);
 
             return back()->with('success', 'Absen masuk berhasil sebagai ' . ucfirst($status));
-            
+
         } catch (\Exception $e) {
             Log::error('Error saat menyimpan absensi:', [
                 'message' => $e->getMessage(),
@@ -344,14 +332,6 @@ class AbsenController extends Controller
             $rules['keterangan'] = 'required|string|max:1000';
         }
 
-        $verifikasi = $absensi->verifikasi;
-
-        if ($isEarlyCheckout) {
-            $verifikasi = 'cek';
-        } else {
-            $verifikasi = '-';
-        }
-
         $validated = $request->validate($rules);
 
         $absensi->update([
@@ -360,7 +340,6 @@ class AbsenController extends Controller
             'longitude_out' => $validated['longitude'],
             'keterangan' => $isEarlyCheckout ? $validated['keterangan'] : $absensi->keterangan,
             'status' => $isEarlyCheckout ? 'pulang cepat' : $absensi->status,
-            'verifikasi' => $verifikasi,
         ]);
 
         Log::info('Check-out berhasil:', [
