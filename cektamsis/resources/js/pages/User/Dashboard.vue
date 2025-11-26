@@ -267,7 +267,7 @@ const fetchStatus = async () => {
             canScanQR.value = ['hadir', 'terlambat'].includes(latestStatus.status);
         } else if (data.status === 'sudah_pulang') {
             checkinStatus.value = 'Sudah Absen'; checkoutStatus.value = 'Sudah Pulang';
-            canCheckout.value = false; canScanQR.value = false; latestCheckinStatus.value = null;
+            canCheckout.value = false; canScanQR.value = false; latestCheckinStatus.value = null; canCheckIn.value = false;
         }
     } catch (error) {
         checkinStatus.value = 'Belum Absen'; checkoutStatus.value = 'Belum Pulang';
@@ -487,7 +487,7 @@ const showPerMapelSummary = ref(false);
                             <p v-if="checkinDescriptionError" class="mt-1 text-sm text-red-500">{{ checkinDescriptionError }}</p>
                         </div>
                         <p class="text-sm font-medium text-gray-900">Status: <span :class="{ 'font-semibold text-green-600': checkinStatus === 'Sudah Absen', 'font-semibold text-orange-600': checkinStatus === 'Terlambat', 'font-semibold text-red-600': checkinStatus === 'Alfa', 'text-gray-600': checkinStatus === 'Belum Absen' }">{{ checkinStatus }}</span></p>
-                        <button @click="checkIn" :disabled="!canCheckIn || checkinStatus.includes('Sudah') || processingIn" class="w-full rounded-xl px-4 py-2 text-sm font-medium transition-all duration-300" :class="!canCheckIn || checkinStatus.includes('Sudah') ? 'cursor-not-allowed bg-gray-100 text-gray-500' : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95'">
+                        <button @click="checkIn" :disabled="!canCheckIn || checkinStatus.includes('Sudah') || checkoutStatus === 'Sudah Pulang' || processingIn" class="w-full rounded-xl px-4 py-2 text-sm font-medium transition-all duration-300" :class="!canCheckIn || checkinStatus.includes('Sudah') || checkoutStatus === 'Sudah Pulang' ? 'cursor-not-allowed bg-gray-100 text-gray-500' : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95'">
                             <span v-if="processingIn">Memproses...</span><span v-else>Absensi Masuk</span>
                         </button>
                     </div>
