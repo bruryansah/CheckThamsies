@@ -41,6 +41,8 @@ interface Props {
         id: number; idenc: string; mata_pelajaran: string; hari: string;
         jam_selesai: string; jam_mulai: string; nama_kelas: string; nama_guru: string;
     }>;
+    // Data absensi sekolah (real data absen masuk)
+    absensiSekolah: Array<{ tanggal: string; jam_masuk: string; jam_keluar?: string | null; status: string; keterangan?: string | null }>;
     // Data absensi pelajaran untuk statistik
     absensiPelajaranData?: AbsensiPelajaran[];
     statsPelajaran?: StatsPelajaran;
@@ -676,7 +678,12 @@ const showPerMapelSummary = ref(false);
             </div>
         </div>
 
-        <Absensi v-if="showAbsensiModal" @close="showAbsensiModal = false" />
+        <Absensi
+            v-if="showAbsensiModal"
+            :showAbsensiModal="showAbsensiModal"
+            :absensiSekolah="props.absensiSekolah"
+            @close="showAbsensiModal = false"
+        />
 
         <!-- Late Modal -->
         <Teleport to="body">
