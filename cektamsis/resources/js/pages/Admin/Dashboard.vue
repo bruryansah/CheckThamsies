@@ -238,7 +238,7 @@
     function getPercentage(kelas: KelasDistribusi) {
         if (!kelas.total || kelas.total === 0) return 0;
         // Hadir + Terlambat dihitung sebagai kehadiran
-        const totalKehadiran = kelas.hadir + kelas.terlambat;
+        const totalKehadiran = kelas.hadir;
         return Math.round((totalKehadiran / kelas.total) * 100);
     }
 
