@@ -36,7 +36,7 @@ class AbsenController extends Controller
             // Statistik absensi sekolah
             $totalAbsensi = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)->count();
             $kehadiransekolah = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)
-                ->whereIn('status', ['hadir', 'terlambat'])
+                ->whereIn('status', ['hadir', 'terlambat', 'pulang cepat'])
                 ->count();
             $totalSakit = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)->where('status', 'sakit')->count();
             $totalIzin = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)->where('status', 'izin')->count();
@@ -200,12 +200,24 @@ class AbsenController extends Controller
             return back()->withErrors(['message' => "❌ Data siswa tidak ditemukan untuk user_id: $userId. Silakan hubungi admin!"]);
         }
 
+        $todayJkt = Carbon::today('Asia/Jakarta');
         $absensiHariIni = AbsensiSekolah::where('id_siswa', $siswa->id_siswa)
-            ->whereDate('tanggal', Carbon::today())
+            ->whereDate('tanggal', $todayJkt)
             ->first();
 
         if ($absensiHariIni) {
-            Log::warning('Siswa sudah absen hari ini:', ['id_siswa' => $siswa->id_siswa]);
+            // Jika sudah ada absensi hari ini, larang check-in lagi.
+            // Termasuk jika sudah pulang (jam_keluar terisi) maupun belum pulang (sudah absen masuk).
+            Log::warning('Cegah check-in ulang di hari yang sama', [
+                'id_siswa' => $siswa->id_siswa,
+                'jam_keluar' => $absensiHariIni->jam_keluar,
+                'status' => $absensiHariIni->status,
+            ]);
+
+            if (!empty($absensiHariIni->jam_keluar)) {
+                return back()->with('error', 'Anda sudah pulang hari ini, tidak dapat absen masuk lagi.');
+            }
+
             return back()->with('error', 'Anda sudah absen masuk hari ini');
         }
 
