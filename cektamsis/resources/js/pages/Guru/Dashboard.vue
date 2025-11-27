@@ -417,11 +417,13 @@ const dynamicStats = computed(() => {
     const uniqueClasses = [...new Set(jadwalArray.map((j) => j.nama_kelas))].length;
     const uniqueSubjects = [...new Set(jadwalArray.map((j) => j.mata_pelajaran))].length;
 
-    const todayAttendance = attendanceData.filter((a) => {
-        const recordDate = a.tanggal || a.date;
-        return recordDate === today || recordDate === new Date().toLocaleDateString('en-CA');
-    });
+    // Tanggal hari ini (YYYY-MM-DD)
+    const todayStr = new Date().toISOString().split('T')[0];
 
+    // Absensi hari ini
+    const todayAttendance = attendanceData.filter((a) => (a.tanggal || a.date) === todayStr);
+
+    // Hadir hari ini (present) dan tampilkan sebagai present/total siswa kelas guru
     const presentToday = todayAttendance.filter((a) => (a.status || '').toLowerCase() === 'hadir').length;
 
     return [
@@ -435,8 +437,8 @@ const dynamicStats = computed(() => {
         },
         {
             label: 'Hadir Hari Ini',
-            value: presentToday || '0',
-            change: todayAttendance.length > 0 ? `${presentToday}/${todayAttendance.length}` : 'Belum ada',
+            value: `${presentToday}/${totalStudentsInTeacherClasses || 0}`,
+            change: todayAttendance.length > 0 ? `${presentToday} hadir` : 'Belum ada',
             icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
             bgColor: 'bg-gradient-to-r from-green-500 to-green-600',
             textColor: 'text-green-600',
@@ -461,29 +463,34 @@ const dynamicStats = computed(() => {
 });
 
 const recentAttendance = computed(() => {
-    // Dapatkan hari ini dalam format lowercase (senin, selasa, dll)
     const todayHari = getTodayHariLower();
     const todayStr = new Date().toISOString().split('T')[0];
 
     return (
         [...filteredAbsensiData.value]
-            // Filter: hanya data hari ini (tanggal dan hari harus sesuai)
             .filter((a) => {
                 const recordDate = a.date || a.tanggal;
                 const recordHari = normalizeHari(a.hari || '');
-
-                // Harus tanggal hari ini DAN hari sesuai
                 return recordDate === todayStr && recordHari === todayHari;
             })
             .sort((a, b) => new Date(b.tanggal + ' ' + b.waktu) - new Date(a.tanggal + ' ' + a.waktu))
             .slice(0, 5)
-            .map((attendance) => processAttendanceStatus(attendance))
-            .map((a) => {
-                const statusLower = (a.originalStatus || a.status || '').toLowerCase();
-                if (['izin', 'sakit'].includes(statusLower) && a.keterangan) {
-                    return { ...a, displayStatus: `${a.displayStatus}` };
+            .map((attendance) => {
+                const processed = processAttendanceStatus(attendance);
+                const statusLower = (attendance.status || '').toLowerCase();
+                
+                // Tampilkan keterangan untuk status yang di-approve
+                if (['izin', 'sakit'].includes(statusLower)) {
+                    const verifikasi = (attendance.verifikasi || '').toLowerCase();
+                    if (verifikasi === 'approve' && attendance.keterangan) {
+                        return { 
+                            ...processed, 
+                            displayStatus: `${processed.displayStatus}`,
+                            keterangan: attendance.keterangan 
+                        };
+                    }
                 }
-                return a;
+                return processed;
             })
     );
 });
@@ -523,22 +530,27 @@ const attendanceStats = computed(() => {
     });
 
     // ⭐ PERBAIKAN: Hitung siswa terlambat dari SEMUA WAKTU menggunakan absensiHistory
+    // Kumpulkan per siswa + kelas agar bisa tampilkan keduanya
     const lateMap = {};
-    
+
     // Gunakan absensiHistory untuk data semua waktu
     absensiHistory.value.forEach((a) => {
         const processedAttendance = processAttendanceStatus(a);
         const status = processedAttendance.displayStatus.toLowerCase();
-        
-        // Hanya hitung yang terlambat
+
         if (status === 'terlambat') {
             const studentName = a.name || a.nama_siswa || 'Unknown';
-            lateMap[studentName] = (lateMap[studentName] || 0) + 1;
+            const studentClass = a.class || a.nama_kelas || '-';
+            const key = `${studentName}||${studentClass}`;
+            lateMap[key] = (lateMap[key] || 0) + 1;
         }
     });
 
     const topLateStudents = Object.entries(lateMap)
-        .map(([name, count]) => ({ name, lateCount: count }))
+        .map(([key, count]) => {
+            const [name, kelas] = key.split('||');
+            return { name, kelas, lateCount: count };
+        })
         .sort((a, b) => b.lateCount - a.lateCount)
         .slice(0, 5);
 
