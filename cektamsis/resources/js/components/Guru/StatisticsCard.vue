@@ -63,10 +63,10 @@
                 <div class="space-y-2">
                     <div
                         v-for="student in stats.topLateStudents"
-                        :key="student.name"
+                        :key="student.name + '-' + (student.kelas || '')"
                         class="flex items-center justify-between text-sm"
                     >
-                        <span class="text-gray-600">{{ student.name }}</span>
+                        <span class="text-gray-600">{{ student.name }} <span class="text-gray-400">•</span> {{ student.kelas }}</span>
                         <span class="font-medium text-red-500">{{ student.lateCount }}x</span>
                     </div>
                 </div>
